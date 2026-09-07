@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero is-fullheight is-flex is-justify-content-center is-align-items-center">
+    <div class="box has-background-light">
+        <h3 class="title has-text-black">{{ _('Login') }}</h3>
+        <!-- Error div-->
+        <div id="error-messages" class="notification is-danger is-hidden"></div>
+        {% if sso_error %}
+        <div class="notification is-warning">{{ sso_error }}</div>
+        {% endif %}
+
+        <div class="field">
+            <div class="control">
+                <input id="id_email" class="input is-large" type="email" name="email" placeholder="{{ _('Your Email') }}"
+                    autofocus="" required autocomplete="email">
+            </div>
+        </div>
+
+        <div class="field">
+            <div class="control">
+                <input id="id_password" class="input is-large" type="password" name="password" placeholder="{{ _('Your Password') }}"
+                    required autocomplete="password">
+            </div>
+        </div>
+
+        <button id="btn_login" class="button is-block is-link is-large is-fullwidth">{{ _('Login') }}</button>
+
+        {% if orcid_enabled and auth_mode in ['orcid', 'both'] %}
+        <div class="has-text-centered has-text-grey my-3">{{ _('or') }}</div>
+        <a href="{{ request.script_root }}/auth/orcid/login"
+           class="button is-block is-large is-fullwidth has-text-weight-semibold"
+           style="background-color:#a6ce39;color:#fff;">
+            {{ _('Sign in with ORCID') }}
+        </a>
+        {% endif %}
+    </div>
+</div>
+<script>
+    
+    const loginButton = document.querySelector('#btn_login');
+    const errorMessagesDiv = document.querySelector('#error-messages');
+
+    //  Function to reset field styles
+    function resetFieldStyles() {
+        const fields = ['email', 'password'];
+        fields.forEach(field => {
+            const input = document.querySelector(`#id_${field}`);
+            if (input) {
+                input.classList.remove('is-danger');
+            }
+        });
+    }
+
+    //  Function to apply error styling to a field
+    function markFieldAsInvalid(fieldName) {
+        const input = document.querySelector(`#id_${fieldName}`);
+        if (input) {
+            input.classList.add('is-danger');
+        }
+    }
+
+    
+    loginButton.addEventListener('click', async function (event) {
+        event.preventDefault(); // Prevent default button behavior
+
+        resetFieldStyles();
+
+        const email = document.querySelector('#id_email').value;
+        const password = document.querySelector('#id_password').value;
+
+        if (!email || !password) {
+            alert({{ _('All fields are required')|tojson }});
+            return;
+        }
+
+        const data = {
+            email: email,
+            password: password
+        };
+
+        try {
+
+            const response = await fetch('{{ request.script_root }}/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            });
+
+            const responseJson = await response.json();
+
+
+            if (response.ok) {
+
+                const token = responseJson.access_token;
+                localStorage.setItem('access_token', token);
+                window.location.href = '{{ request.script_root }}/'; 
+            } else {
+                //json erros can be [] so test the length
+                if (responseJson.errors && responseJson.errors.length) {  
+                    let errorMessages = '<ul>';
+                    responseJson.errors.forEach(error => {
+                        const fieldName = error.field; 
+                        errorMessages += `<li><strong>${fieldName}</strong>: ${error.message}</li>`;
+                        markFieldAsInvalid(fieldName); 
+                    });
+                    errorMessages += '</ul>';
+
+                    errorMessagesDiv.innerHTML = errorMessages;
+                    errorMessagesDiv.classList.remove('is-hidden');
+                } else {
+                    errorMessagesDiv.textContent = responseJson.msg || {{ _('An error occurred')|tojson }};
+                    errorMessagesDiv.classList.remove('is-hidden');
+                    markFieldAsInvalid('email');
+                    markFieldAsInvalid('password');
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert({{ _('An unexpected error occurred')|tojson }});
+        }
+    });
+</script>
+
+{% endblock %}

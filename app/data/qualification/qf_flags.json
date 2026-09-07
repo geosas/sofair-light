@@ -1,0 +1,65 @@
+{
+    "name": "Argo QA/QC Flags",
+    "description": "Qualification code used by the service",
+    "definition": "http://mmisw.org/ont/argo",
+    "raw_default": 0,
+    "severity": [
+        10,
+        0,
+        4,
+        9,
+        2,
+        8,
+        5,
+        1
+    ],
+    "properties": {
+        "0": {
+            "description": "No quality control was performed",
+            "uri": "http://mmisw.org/ont/argo/qualityFlag/_0",
+            "color": null
+        },
+        "1": {
+            "description": "QC was performed, good data",
+            "uri": "http://mmisw.org/ont/argo/qualityFlag/_1",
+            "color": "#55cc70",
+            "action": "validated"
+        },
+        "2": {
+            "description": "Probably good data but value may be inconsistent with statistics (differ from climatology)",
+            "uri": "http://mmisw.org/ont/argo/qualityFlag/_2",
+            "color": "#f0a416",
+            "action": "douteux"
+        },
+        "4": {
+            "description": "Bad data",
+            "uri": "http://mmisw.org/ont/argo/qualityFlag/_4",
+            "color": "#ff0000",
+            "action": "delete"
+        },
+        "5": {
+            "description": "Value modified during quality control",
+            "uri": "http://mmisw.org/ont/argo/qualityFlag/_5",
+            "color": "#2882dc",
+            "action": "corrected"
+        },
+        "8": {
+            "description": "Interpolated value",
+            "uri": "http://mmisw.org/ont/argo/qualityFlag/_8",
+            "color": "#2882dc",
+            "action": "interpolation"
+        },
+        "9": {
+            "description": "Missing value",
+            "uri": "http://mmisw.org/ont/argo/qualityFlag/_9",
+            "color": "#5a5a5a",
+            "action": "gap"
+        },
+        "10": {
+            "description": "Calibration data",
+            "uri": "",
+            "color": "#9664e6",
+            "action": "calibration"
+        }
+    }
+}

@@ -1,0 +1,45 @@
+services:
+  app_partage:
+    image: fraunhoferiosb/frost-server:latest
+    environment:
+      # For all settings see: https://fraunhoferiosb.github.io/FROST-Server/settings/settings.html
+      - serviceRootUrl=http://127.0.0.1:5000/sta/partage
+      - plugins_multiDatastream.enable=false
+      - http_cors_enable=true
+      - http_cors_allowed_origins=*
+      - persistence_db_driver=org.postgresql.Driver
+      - persistence_db_url=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/sta_partage
+      - persistence_db_username=${POSTGRES_USER}
+      - persistence_db_password=${POSTGRES_PASSWORD}
+      - persistence_autoUpdateDatabase=true
+    ports:
+      - 8080:8080
+      - 1883:1883
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - frost_network
+  app_archive:
+    image: fraunhoferiosb/frost-server:latest
+    environment:
+      # For all settings see: https://fraunhoferiosb.github.io/FROST-Server/settings/settings.html
+      - serviceRootUrl=http://127.0.0.1:5000/sta/archive
+      - plugins_multiDatastream.enable=true
+      - http_cors_enable=true
+      - http_cors_allowed_origins=*
+      - persistence_db_driver=org.postgresql.Driver
+      - persistence_db_url=jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/sta_archive
+      - persistence_db_username=${POSTGRES_USER}
+      - persistence_db_password=${POSTGRES_PASSWORD}
+      - persistence_autoUpdateDatabase=true
+    ports:
+      - 8081:8080
+      - 1884:1883
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - frost_network
+
+networks:
+  frost_network:
+    driver: bridge

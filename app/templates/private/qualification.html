@@ -1,0 +1,1008 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/lib/dygraph.min.js') }}"></script>
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/dygraph.min.css') }}" />
+
+<style>
+    #le_container { padding: 0 1.25rem; }
+    .q2-panel { position: sticky; top: 1rem; }
+    .q2-sub { color: var(--bulma-text-weak); font-size: .85rem; }
+    .q2-card { border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px var(--bulma-shadow); }
+    .q2-card .card-header { background: var(--bulma-scheme-main-bis); box-shadow: none;
+        border-bottom: 1px solid var(--bulma-border); align-items: center; }
+    .q2-graph { border: 1px solid var(--bulma-border); border-radius: 6px;
+        background: #fff; user-select: none; }
+    .q2-legend { display: flex; flex-wrap: wrap; gap: .35rem; align-items: center; margin-bottom: .6rem; }
+    .q2-legend .tag { font-size: .72rem; }
+    .q2-recap-item { display: flex; align-items: center; gap: .4rem; font-size: .85rem;
+        padding: .25rem 0; border-bottom: 1px solid var(--bulma-border-weak); }
+    .q2-recap-item .tag { flex: 0 0 auto; }
+    .q2-recap-item .q2-range { flex: 1; min-width: 0; color: var(--bulma-text); }
+    .q2-dy-legend { min-height: 1.1rem; font-size: .8rem; color: var(--bulma-text); }
+</style>
+
+<div class="mt-5 has-text-left">
+    <div class="card q2-card mb-4" id="overviewCard" style="display:none">
+        <header class="card-header">
+            <p class="card-header-title">{{ _('Overview, daily summary (min / mean / max)') }}</p>
+        </header>
+        <div class="card-content">
+            <p class="q2-sub mb-2">{{ _('Each day is colored by its most severe qualification (white = to qualify). Click a start day then an end day to load that period for qualification.') }}</p>
+            <div id="overviewGraph" class="q2-graph" style="width:100%;height:220px"></div>
+            <div id="overviewLegend" class="q2-dy-legend mt-1"></div>
+        </div>
+    </div>
+    <div class="columns">
+        <!-- Control panel -->
+        <div class="column is-3">
+            <div class="box q2-panel">
+                <h3 class="title is-4 mb-1">{{ _('Qualification') }}</h3>
+                <p class="q2-sub mb-4">{{ _('Click the start then the end of an interval (drag to zoom, double-click to zoom out), choose its type, then send.') }}</p>
+
+                <div class="field">
+                    <label class="label is-small mb-1">{{ _('Measurement point') }}</label>
+                    <div class="control"><div class="select is-fullwidth">
+                        <select id="thingSel"><option value="">{{ _('Select a Thing') }}</option></select>
+                    </div></div>
+                </div>
+                <div class="field">
+                    <label class="label is-small mb-1">Datastream</label>
+                    <div class="control"><div class="select is-fullwidth">
+                        <select id="dsSel"><option value="">{{ _('Select a Datastream') }}</option></select>
+                    </div></div>
+                </div>
+                <div class="q2-sub" id="dsInfo"></div>
+
+                <hr class="my-3">
+
+                <label class="label is-small mb-1">{{ _('Displayed window') }}</label>
+                <div class="field has-addons">
+                    <div class="control"><button id="btnPrev" class="button" onclick="moveWindow(-1)" disabled>◀</button></div>
+                    <div class="control is-expanded"><span id="winLabel" class="button is-static is-fullwidth" style="width:100%">-</span></div>
+                    <div class="control"><button id="btnNext" class="button" onclick="moveWindow(1)" disabled>▶</button></div>
+                </div>
+
+                <hr class="my-3">
+
+                <label class="label is-small mb-1">{{ _('Marked ranges') }}</label>
+                <div id="recapList" class="q2-sub mb-3">{{ _('No range marked.<br>Sending will validate the whole window.')|safe }}</div>
+
+                <button id="btnSend" class="button is-primary is-fullwidth" onclick="sendQualif()" disabled>
+                    <strong>{{ _('Send the qualification') }}</strong>
+                </button>
+                <p class="q2-sub mt-2">{{ _('Validates the whole displayed window, except the marked ranges.') }}</p>
+                <div id="qualifResult" class="notification is-success is-light mt-3 is-hidden"></div>
+            </div>
+        </div>
+
+        <!-- Graphe -->
+        <div class="column">
+            <div class="card q2-card">
+                <header class="card-header">
+                    <p class="card-header-title" id="graphTitle">{{ _('Select a datastream') }}</p>
+                </header>
+                <div class="card-content">
+                    <div class="q2-legend">
+                        <span class="q2-sub mr-1">{{ _('Already qualified:') }}</span>
+                        <span class="tag" style="background:rgba(85,204,112,.22);color:var(--bulma-text)">{{ _('Validated') }}</span>
+                        <span class="tag" style="background:rgba(240,164,22,.40);color:#000">{{ _('Doubtful') }}</span>
+                        <span class="tag" style="background:rgba(255,0,0,.40);color:#000">{{ _('Wrong') }}</span>
+                        <span class="tag" style="background:rgba(90,90,90,.40);color:#000">{{ _('Missing') }}</span>
+                        <span class="tag" style="background:rgba(150,100,230,.40);color:#000">{{ _('Calibration') }}</span>
+                        <span class="tag" style="background:rgba(40,130,220,.40);color:#000">{{ _('Interpolation') }}</span>
+                    </div>
+
+                    <!-- action menu: appears after a drag -->
+                    <div id="actionMenu" class="notification is-light p-3 mb-3" style="display:none">
+                        <p class="mb-2" style="font-size:.9rem">{{ _('Selected range:') }} <strong id="actionRange"></strong></p>
+                        <div class="buttons are-small mb-0">
+                            <button class="button is-warning" onclick="applyAction('douteux')">{{ _('Doubtful') }}</button>
+                            <button class="button is-danger" onclick="applyAction('delete')">{{ _('Wrong') }}</button>
+                            <button class="button is-dark" onclick="applyAction('gap')">{{ _('Missing') }}</button>
+                            <button class="button" style="background:rgba(150,100,230,.9);color:#fff" onclick="applyAction('calibration')">{{ _('Calibration') }}</button>
+                            <button class="button is-info" onclick="applyAction('interpolation')">{{ _('Interpolation') }}</button>
+                            <button class="button is-light" onclick="cancelAction()">{{ _('Cancel') }}</button>
+                        </div>
+                    </div>
+
+                    <div id="graph" class="q2-graph" style="width:100%;height:460px"></div>
+                    <div id="graphLegend" class="q2-dy-legend mt-1"></div>
+
+                    <!-- Overlay panel: superimpose external SensorThings feeds (view-only) -->
+                    <div id="overlayPanel" class="mt-3" style="display:none">
+                        <hr class="my-2">
+                        <label class="label is-small mb-1">{{ _('➕ Overlay a data stream') }}</label>
+                        <p class="q2-sub mb-2">{{ _('Paste a SensorThings Datastream URL (this service or external). Same unit as the main series → left axis, otherwise right axis. Rainfall is drawn as an inverted hyetograph (bars hanging from the top).') }}</p>
+                        <div class="field has-addons">
+                            <div class="control is-expanded">
+                                <input id="ovUrl" class="input is-small" type="url"
+                                    placeholder="https://…/Datastreams(12)">
+                            </div>
+                            <div class="control">
+                                <input id="ovLabel" class="input is-small" type="text"
+                                    placeholder="{{ _('label (optional)') }}" style="max-width:150px">
+                            </div>
+                            <div class="control"><div class="select is-small">
+                                <select id="ovMode">
+                                    <option value="line">{{ _('Line') }}</option>
+                                    <option value="rain">{{ _('Rainfall (bars)') }}</option>
+                                </select>
+                            </div></div>
+                            <div class="control">
+                                <button class="button is-small is-link" id="ovAdd" onclick="addOverlay()">{{ _('Add') }}</button>
+                            </div>
+                        </div>
+                        <div id="overlayList" class="mt-1"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card q2-card mb-5" id="tableCard" style="display:none">
+        <header class="card-header">
+            <p class="card-header-title">{{ _('Period table, manual editing') }}</p>
+        </header>
+        <div class="card-content">
+            <button class="button" id="btnLoadTable" onclick="loadTable()">{{ _('📋 Show the table (editing, 100/page)') }}</button>
+
+            <div id="tableTools" style="display:none">
+                <div class="buttons are-small mb-2">
+                    <button class="button" onclick="exportCsv()">{{ _('⬇ Export CSV (whole period)') }}</button>
+                    <label class="button">{{ _('⬆ Import CSV') }}
+                        <input type="file" accept=".csv,text/csv" id="csvInput" style="display:none"
+                            onchange="importCsv(this)">
+                    </label>
+                    <button class="button is-primary" id="btnSendRows" onclick="sendRows()" disabled>
+                        {{ _('Send the changes') }} (<span id="dirtyCount">0</span>)
+                    </button>
+                    <button class="button is-light" onclick="closeTable()">{{ _('✖ Close') }}</button>
+                    <span class="q2-sub ml-2" id="tableInfo"></span>
+                </div>
+                <p class="q2-sub mb-2">{{ _('Editing the “Correction” switches the row to the corrected flag. Only modified rows are sent. CSV export/import covers <strong>the whole period</strong>.')|safe }}</p>
+                <div class="field has-addons mb-2">
+                    <div class="control"><button class="button is-small" id="tPrev"
+                            onclick="tablePageMove(-1)">◀</button></div>
+                    <div class="control"><span class="button is-small is-static" id="tPageLabel">-</span></div>
+                    <div class="control"><button class="button is-small" id="tNext"
+                            onclick="tablePageMove(1)">▶</button></div>
+                </div>
+                <div style="max-height:520px;overflow:auto">
+                    <table class="table is-narrow is-fullwidth is-hoverable" id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>phenomenonTime</th>
+                                <th>{{ _('Result (raw)') }}</th>
+                                <th>{{ _('Correction') }}</th>
+                                <th>{{ _('Qualification') }}</th>
+                                <th>id</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('le_container').classList.remove('container');
+
+    var apiUrl = '{{ url_archive }}/';
+    var g = null, idData = null, unit = '';
+    var dataStart = null, dataEnd = null, lastWinStart = null;
+    var WIN = 62 * 24 * 3600 * 1000;     // 62 days in ms (default window)
+    var DAY = 24 * 3600 * 1000;
+    var winStart = null, winEnd = null;
+    var overview = null, ovClickStart = null;
+    var pending = [];                    // [{a,b,action}]  marked ranges (ms)
+    var existing = [];                   // [{start,end,qf}] already qualified (read from QF)
+    var clickStart = null;               // 1st click of an interval (waiting for the 2nd)
+    var lastSel = null;                  // {a,b} waiting for a type
+
+    // ---- Quality-flag vocabulary (single source of truth: Config.STALT_OBSP_QF) ----
+    // The whole table is injected; codes / colors / severity live in the JSON.
+    var QF_TABLE = {{ qf_table|tojson }};
+    // Short UI labels stay translated (gettext), keyed by the stable action name.
+    var ACTION_LABELS = {
+        validated: {{ _('Validated')|tojson }},
+        douteux: {{ _('Doubtful')|tojson }},
+        delete: {{ _('Wrong')|tojson }},
+        calibration: {{ _('Calibration')|tojson }},
+        gap: {{ _('Missing')|tojson }},
+        interpolation: {{ _('Interpolation')|tojson }},
+        corrected: {{ _('Corrected value')|tojson }}
+    };
+    // Bulma tag class per action (presentational only).
+    var ACTION_TAG = { delete: "is-danger", douteux: "is-warning", gap: "is-dark", calibration: "", interpolation: "is-info", validated: "is-success", corrected: "is-info" };
+
+    function hexToRgba(hex, a) {
+        var h = (hex || '').replace('#', '');
+        if (h.length !== 6) return 'rgba(150,150,150,' + a + ')';
+        return 'rgba(' + parseInt(h.slice(0, 2), 16) + ',' + parseInt(h.slice(2, 4), 16)
+            + ',' + parseInt(h.slice(4, 6), 16) + ',' + a + ')';
+    }
+
+    // Derived maps from QF_TABLE (change the JSON -> these follow).
+    var QF_COLORS = {};     // qf code -> background rgba (graph + overview)
+    var QF_OPTIONS = {};    // qf code -> label (selectable in the editable table)
+    var ACTION_COLORS = {}; // action -> stronger rgba (pending selection overlay)
+    var ACTION_CODE = {};   // action -> qf code (what each UI button writes)
+    (function () {
+        var props = (QF_TABLE && QF_TABLE.properties) || {};
+        for (var code in props) {
+            var m = props[code], c = parseInt(code), act = m.action;
+            if (m.color) QF_COLORS[c] = hexToRgba(m.color, 0.40);
+            if (act) {
+                ACTION_CODE[act] = c;
+                if (m.color) ACTION_COLORS[act] = hexToRgba(m.color, 0.55);
+                QF_OPTIONS[c] = ACTION_LABELS[act] || m.description || String(code);
+            }
+        }
+    })();
+    var QF_CORRECTED = ACTION_CODE['corrected'];   // code applied when a correction is edited
+
+    var tableRows = [], tablePage = 0;
+    var PAGE_SIZE = 100;
+
+    // ---- Overlays (superimposed external SensorThings feeds, view-only) ----
+    var overlays = [];             // [{url,label,color,mode:'line'|'rain',axis:'y1'|'y2',unit,data,max}]
+    var OV_PALETTE = ["#e6550d", "#31a354", "#756bb1", "#c51b8a", "#2c7fb8", "#8c6d31"];
+    var ovColorIdx = 0;
+    var mainUnitSymbol = '';        // symbol of the qualified series (drives the axis choice)
+    var mainObs = [];               // [[Date,val]] of the qualified series over the current window
+    var MAIN_LABEL = {{ _('Value')|tojson }};
+
+    function getCookie(name) {
+        var v = `; ${document.cookie}`, p = v.split(`; ${name}=`);
+        if (p.length === 2) return p.pop().split(';').shift();
+    }
+    function isoFmt(ms) { return new Date(ms).toISOString().slice(0, 16).replace('T', ' '); }
+
+    // ---- Chargement Things / Datastreams ----
+    fetch(`${apiUrl}Things?$select=name,id`).then(r => r.json()).then(data => {
+        var sel = document.getElementById('thingSel');
+        (data.value || []).forEach(t => { sel.innerHTML += `<option value="${t['@iot.id']}">${t.name}</option>`; });
+    }).catch(() => alert({{ _('Error loading Things.')|tojson }}));
+
+    document.getElementById('thingSel').addEventListener('change', function () {
+        var ds = document.getElementById('dsSel');
+        ds.innerHTML = `<option value="">{{ _('Select a Datastream') }}</option>`;
+        document.getElementById('dsInfo').innerHTML = '';
+        if (!this.value) return;
+        fetch(`${apiUrl}Things(${this.value})/MultiDatastreams?$select=name,id,phenomenonTime`)
+            .then(r => r.json()).then(data => {
+                (data.value || []).forEach(d => {
+                    if (d.hasOwnProperty('phenomenonTime'))
+                        ds.innerHTML += `<option value="${d['@iot.id']}">${d.name}</option>`;
+                });
+            });
+    });
+
+    document.getElementById('dsSel').addEventListener('change', function () {
+        idData = this.value;
+        if (!idData) return;
+        fetch(`${apiUrl}MultiDatastreams(${idData})?$select=name,description,unitOfMeasurements,phenomenonTime&$expand=Sensor($select=name)`)
+            .then(r => r.json()).then(d => {
+                unit = d.unitOfMeasurements ? (d.unitOfMeasurements[0].name + ' ' + d.unitOfMeasurements[0].symbol) : '';
+                mainUnitSymbol = d.unitOfMeasurements ? (d.unitOfMeasurements[0].symbol || '') : '';
+                document.getElementById('overlayPanel').style.display = '';
+                renderOverlayList();
+                document.getElementById('graphTitle').textContent = d.name + (unit ? ' (' + unit + ')' : '');
+                document.getElementById('dsInfo').innerHTML =
+                    `${d.description || ''}<br>{{ _('Sensor:') }} ${d.Sensor ? d.Sensor.name : '?'}`;
+                var pt = d.phenomenonTime || '';
+                var parts = pt.split('/');
+                dataStart = Date.parse(parts[0]);
+                dataEnd = Date.parse(parts[1] || parts[0]);
+                if (isNaN(dataStart)) { alert({{ _('This datastream has no data period.')|tojson }}); return; }
+                lastWinStart = dataStart + Math.floor((dataEnd - dataStart) / WIN) * WIN;
+                winStart = lastWinStart;            // start on the most recent window
+                winEnd = winStart + WIN;
+                loadOverview();
+                loadWindow();
+            });
+    });
+
+    // ---- Window navigation ----
+    function moveWindow(dir) {
+        var span = winEnd - winStart;
+        winStart += dir * span;
+        if (winStart < dataStart) winStart = dataStart;
+        if (winStart + span > dataEnd) winStart = Math.max(dataStart, dataEnd - span);
+        winEnd = winStart + span;
+        loadWindow();
+    }
+
+    // ---- Daily overview (min/mean/max, colored by QF) ----
+    function loadOverview() {
+        if (idData == null) return;
+        ovClickStart = null;
+        document.getElementById('overviewCard').style.display = '';
+        var el = document.getElementById('overviewGraph');
+        el.innerHTML = `<p class="p-4 has-text-grey">{{ _('Loading…') }}</p>`;
+        fetch(`{{ request.script_root }}/private/qualification-overview?idData=${idData}`).then(r => r.json()).then(rows => {
+            if (!Array.isArray(rows) || rows.length === 0) {
+                el.innerHTML = `<p class="p-4 has-text-grey">{{ _('No data.') }}</p>`; overview = null; return;
+            }
+            var series = rows.map(d => [new Date(d.day + 'T00:00:00Z'), [d.min, d.mean, d.max]]);
+            window._ovQf = rows.map(d => ({ t: new Date(d.day + 'T00:00:00Z').getTime(), qf: d.qf }));
+            el.innerHTML = '';
+            overview = new Dygraph(el, series, {
+                labels: ["Date", {{ _('Value')|tojson }}], labelsUTC: true, labelsDiv: 'overviewLegend',
+                customBars: true, colors: ["#2366d1"], strokeWidth: 1.6, fillAlpha: 0.45,
+                clickCallback: onOverviewClick, underlayCallback: drawOverviewUnderlay
+            });
+        }).catch(() => { el.innerHTML = `<p class="p-4 has-text-danger">{{ _('Loading error.') }}</p>`; });
+    }
+
+    function drawOverviewUnderlay(canvas, area, gg) {
+        (window._ovQf || []).forEach(d => {
+            var col = QF_COLORS[d.qf];
+            if (!col) return;   // not qualified -> left white (to do)
+            var x1 = gg.toDomXCoord(d.t), x2 = gg.toDomXCoord(d.t + DAY);
+            canvas.fillStyle = col;
+            canvas.fillRect(x1, area.y, x2 - x1, area.h);
+        });
+        if (ovClickStart != null) vbar(canvas, area, gg, ovClickStart);
+    }
+
+    function onOverviewClick(e, x, pts) {
+        if (ovClickStart == null) {
+            ovClickStart = x;                         // 1st click: start
+            if (overview) overview.updateOptions({});
+        } else {
+            var a = Math.min(ovClickStart, x), b = Math.max(ovClickStart, x);
+            ovClickStart = null;
+            if (overview) overview.updateOptions({});
+            if (b - a < DAY) return;                  // 2 clics trop proches
+            winStart = a; winEnd = b + DAY;           // includes the end day
+            loadWindow();
+            document.getElementById('graph').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    // ---- Paginated retrieval of observations ----
+    async function fetchObs(url) {
+        var rows = [], next = url;
+        while (next) {
+            try {
+                var data = await (await fetch(next)).json();
+                if (data.value && data.value[0]) rows = rows.concat(data.value[0].dataArray || []);
+                next = data['@iot.nextLink'] || null;
+            } catch (e) { console.error(e); break; }
+        }
+        return rows.map(r => [new Date(r[0]), r[1]]);   // [Date, [val,code,partage]]
+    }
+
+    // Group the obs into contiguous ranges of the same QF
+    function computeExisting(obs) {
+        var ranges = [], cur = null, start = null;
+        for (var i = 0; i < obs.length; i++) {
+            var t = obs[i][0].getTime();
+            var code = Array.isArray(obs[i][1]) ? obs[i][1][1] : null;
+            if (code !== cur) {
+                if (cur != null && QF_COLORS[cur] !== undefined) ranges.push({ start: start, end: t, qf: cur });
+                cur = code; start = t;
+            }
+        }
+        if (obs.length && cur != null && QF_COLORS[cur] !== undefined)
+            ranges.push({ start: start, end: obs[obs.length - 1][0].getTime(), qf: cur });
+        return ranges;
+    }
+
+    function loadWindow() {
+        if (idData == null || winStart == null) return;
+        if (winEnd == null) winEnd = winStart + WIN;
+        document.getElementById('winLabel').textContent = isoFmt(winStart) + '  →  ' + isoFmt(winEnd);
+        document.getElementById('btnPrev').disabled = winStart <= dataStart;
+        document.getElementById('btnNext').disabled = winEnd >= dataEnd;
+        // reset marking
+        pending = []; lastSel = null; clickStart = null; renderRecap();
+        document.getElementById('actionMenu').style.display = 'none';
+
+        var d1 = new Date(winStart).toISOString(), d2 = new Date(winEnd).toISOString();
+        var url = `${apiUrl}MultiDatastreams(${idData})/Observations?$select=phenomenonTime,result&$orderby=phenomenonTime asc&$resultFormat=dataArray&$filter=phenomenonTime ge ${d1} and phenomenonTime lt ${d2}`;
+        document.getElementById('graph').innerHTML = `<p class="p-4 has-text-grey">{{ _('Loading…') }}</p>`;
+        fetchObs(url).then(async obs => {
+            existing = computeExisting(obs);
+            mainObs = obs.map(o => [o[0], Array.isArray(o[1]) ? o[1][0] : o[1]]);
+            await refreshOverlayData();
+            drawMainGraph();
+        });
+        resetTable();
+    }
+
+    // black vertical bar (range delimiter)
+    function vbar(canvas, area, gg, ms) {
+        var x = Math.round(gg.toDomXCoord(ms)) + 0.5;
+        canvas.save();
+        canvas.strokeStyle = "rgba(0,0,0,0.9)";
+        canvas.lineWidth = 1.5;
+        canvas.beginPath();
+        canvas.moveTo(x, area.y);
+        canvas.lineTo(x, area.y + area.h);
+        canvas.stroke();
+        canvas.restore();
+    }
+
+    // ---- Graph background: already qualified + marked ranges + current selection ----
+    function drawUnderlay(canvas, area, gg) {
+        existing.forEach(r => {
+            canvas.fillStyle = QF_COLORS[r.qf] || "rgba(150,150,150,.3)";
+            var x1 = gg.toDomXCoord(r.start), x2 = gg.toDomXCoord(r.end);
+            canvas.fillRect(x1, area.y, x2 - x1, area.h);
+        });
+        pending.forEach(p => {
+            canvas.fillStyle = ACTION_COLORS[p.action] || "rgba(240,164,22,.5)";
+            var x1 = gg.toDomXCoord(p.a), x2 = gg.toDomXCoord(p.b);
+            canvas.fillRect(x1 - 1, area.y, x2 - x1 + 2, area.h);
+            vbar(canvas, area, gg, p.a); vbar(canvas, area, gg, p.b);
+        });
+        // selection finished, waiting for a type
+        if (lastSel) {
+            canvas.fillStyle = "rgba(120,120,120,.18)";
+            var la = gg.toDomXCoord(lastSel.a), lb = gg.toDomXCoord(lastSel.b);
+            canvas.fillRect(la, area.y, lb - la, area.h);
+            vbar(canvas, area, gg, lastSel.a); vbar(canvas, area, gg, lastSel.b);
+        }
+        // 1st click placed, waiting for the 2nd
+        if (clickStart != null) {
+            vbar(canvas, area, gg, clickStart);
+        }
+        // rainfall overlays: inverted hyetograph (bars hanging from the top)
+        drawRainOverlays(canvas, area, gg);
+    }
+
+    // ---- Click start then click end to create an interval (drag = native zoom) ----
+    function onGraphClick(e, x, pts) {
+        if (clickStart == null) {
+            clickStart = x;                       // 1st click: start bound
+            if (g) g.updateOptions({});           // show the 1st black bar
+        } else {
+            var a = Math.min(clickStart, x), b = Math.max(clickStart, x);
+            clickStart = null;
+            if (b - a > 60000) { lastSel = { a: a, b: b }; showActionMenu(); }   // ignore a 2nd click that is too close
+            else { lastSel = null; }
+            if (g) g.updateOptions({});
+        }
+    }
+
+    function showActionMenu() {
+        document.getElementById('actionRange').textContent = isoFmt(lastSel.a) + '  →  ' + isoFmt(lastSel.b);
+        document.getElementById('actionMenu').style.display = '';
+    }
+    function cancelAction() {
+        lastSel = null;
+        document.getElementById('actionMenu').style.display = 'none';
+        if (g) g.updateOptions({});   // clear the selection bars
+    }
+    function applyAction(action) {
+        if (!lastSel) return;
+        pending.push({ a: lastSel.a, b: lastSel.b, action: action });
+        lastSel = null;
+        document.getElementById('actionMenu').style.display = 'none';
+        renderRecap();
+        if (g) g.updateOptions({});
+    }
+    function removePending(i) { pending.splice(i, 1); renderRecap(); if (g) g.updateOptions({}); }
+
+    function renderRecap() {
+        var el = document.getElementById('recapList');
+        if (pending.length === 0) {
+            el.innerHTML = {{ _('No range marked.<br>Sending will validate the whole window.')|tojson }};
+            return;
+        }
+        el.innerHTML = '';
+        pending.forEach((p, i) => {
+            var row = document.createElement('div');
+            row.className = 'q2-recap-item';
+            row.innerHTML =
+                `<span class="tag ${ACTION_TAG[p.action]}">${ACTION_LABELS[p.action]}</span>` +
+                `<span class="q2-range">${isoFmt(p.a)} → ${isoFmt(p.b)}</span>` +
+                `<button class="delete is-small" title="{{ _('Remove') }}" onclick="removePending(${i})"></button>`;
+            el.appendChild(row);
+        });
+    }
+
+    // Show the qualification result + links to the produced data (STAV simple-plot):
+    // partage = published/qualified value, archive = raw + corrected.
+    function showQualifResult(data, changed) {
+        var el = document.getElementById('qualifResult');
+        if (!data || data.response !== 'ok') {
+            el.innerHTML = {{ _('Error while sending.')|tojson }};
+            el.classList.remove('is-success'); el.classList.add('is-danger');
+            el.classList.remove('is-hidden');
+            return;
+        }
+        el.classList.remove('is-danger'); el.classList.add('is-success');
+        var n = (changed != null) ? changed : data.changed;
+        var html = (n != null)
+            ? {{ _('✅ Qualification saved ({n} point(s)).')|tojson }}.replace('{n}', n)
+            : {{ _('✅ Qualification saved.')|tojson }};
+        html += '<br>' + {{ _('If you want to check the produced data:')|tojson }} + '<br>';
+        var base = '{{ request.script_root }}/{{ observatoire }}/espace/simple-plot/?id=';
+        if (data.idPartage != null) {
+            html += `<a href="${base}${data.idPartage}&config={{ request.script_root }}/{{ observatoire }}/config/{{ observatoire }}.json" target="_blank">`
+                + {{ _('Published data')|tojson }} + `</a><br>`;
+        }
+        if (data.idArchive != null) {
+            html += `<a href="${base}${data.idArchive}&config={{ request.script_root }}/{{ observatoire }}/config/{{ observatoire }}-archive.json" target="_blank">`
+                + {{ _('Raw + corrected data (archive)')|tojson }} + `</a><br>`;
+        }
+        el.innerHTML = html;
+        el.classList.remove('is-hidden');
+    }
+
+    // ---- Envoi ----
+    function sendQualif() {
+        if (idData == null || winStart == null) return;
+        var btn = document.getElementById('btnSend');
+        btn.classList.add('is-loading'); btn.disabled = true;
+        var payload = {
+            idData: idData,
+            value: {
+                plage: pending.map(p => new Date(p.a).toISOString() + '/' + new Date(p.b).toISOString()),
+                action: pending.map(p => p.action)
+            },
+            date_start: new Date(winStart).toISOString(),
+            date_end: new Date(winEnd).toISOString()
+        };
+        fetch('{{ request.script_root }}/private/qualification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCookie('csrf_access_token')
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(payload)
+        }).then(r => r.json()).then(data => {
+            btn.classList.remove('is-loading');
+            showQualifResult(data);
+            loadOverview();   // refresh the top overview colors (worst-QF/day, server-side)
+            loadWindow();   // reload -> the new QF ranges show in the background
+        }).catch(err => {
+            btn.classList.remove('is-loading'); btn.disabled = false;
+            alert({{ _('Error while sending.')|tojson }}); console.error(err);
+        });
+    }
+
+    // ============ Editable period table ============
+    // Reset the table to the "not loaded" state (button), called on every window change
+    function resetTable() {
+        document.getElementById('tableCard').style.display = '';
+        document.getElementById('tableTools').style.display = 'none';
+        var b = document.getElementById('btnLoadTable');
+        b.style.display = ''; b.classList.remove('is-loading'); b.disabled = false;
+        tableRows = []; tablePage = 0;
+        document.getElementById('dataTbody').innerHTML = '';
+    }
+
+    // Effective period = visible range of the qualification graph (accounts for zoom)
+    function currentRange() {
+        if (g && typeof g.xAxisRange === 'function') {
+            var r = g.xAxisRange();
+            return [Math.round(r[0]), Math.round(r[1])];
+        }
+        return [winStart, winEnd];
+    }
+
+    function loadTable() {
+        if (idData == null || winStart == null) return;
+        var b = document.getElementById('btnLoadTable');
+        b.classList.add('is-loading'); b.disabled = true;
+        var rg = currentRange();
+        var d1 = new Date(rg[0]).toISOString(), d2 = new Date(rg[1]).toISOString();
+        var url = `${apiUrl}MultiDatastreams(${idData})/Observations?$select=phenomenonTime,result,id&$orderby=phenomenonTime asc&$resultFormat=dataArray&$filter=phenomenonTime ge ${d1} and phenomenonTime lt ${d2}`;
+        fetchTable(url).then(rows => {
+            tableRows = rows; tablePage = 0;
+            b.style.display = 'none';
+            document.getElementById('tableTools').style.display = '';
+            renderTable();
+        });
+    }
+
+    // Zooming on the graph reloads the table (if open) over the visible range
+    function onGraphZoom() {
+        var tools = document.getElementById('tableTools');
+        if (!tools || tools.style.display === 'none') return;
+        if (tableRows.filter(isDirty).length &&
+            !confirm({{ _('Reload the table for the new period? Unsent changes will be lost.')|tojson }})) return;
+        loadTable();
+    }
+
+    function closeTable() {
+        if (tableRows.filter(isDirty).length &&
+            !confirm({{ _('Close the table? Unsent changes will be lost.')|tojson }})) return;
+        resetTable();
+    }
+
+    async function fetchTable(url) {
+        var out = [], next = url;
+        while (next) {
+            try {
+                var data = await (await fetch(next)).json();
+                var block = data.value && data.value[0];
+                if (block) {
+                    var comp = block.components || [];
+                    var iT = comp.indexOf('phenomenonTime'), iR = comp.indexOf('result');
+                    var iId = comp.indexOf('@iot.id'); if (iId < 0) iId = comp.indexOf('id');
+                    (block.dataArray || []).forEach(r => {
+                        var res = r[iR];
+                        out.push({
+                            id: r[iId], t: r[iT],
+                            result_raw: Array.isArray(res) ? res[0] : res,
+                            QF: Array.isArray(res) ? res[1] : null,
+                            result_share: Array.isArray(res) ? res[2] : null
+                        });
+                    });
+                }
+                next = data['@iot.nextLink'] || null;
+            } catch (e) { console.error(e); break; }
+        }
+        out.forEach(o => { o._origQF = o.QF; o._origShare = o.result_share; });
+        return out;
+    }
+
+    function qfOptionsHtml(cur) {
+        var html = '', known = false;
+        for (var code in QF_OPTIONS) {
+            var sel = (String(cur) === String(code)) ? ' selected' : '';
+            if (sel) known = true;
+            html += `<option value="${code}"${sel}>${code}, ${QF_OPTIONS[code]}</option>`;
+        }
+        if (cur == null) html = `<option value="" selected>-</option>` + html;
+        else if (!known) html = `<option value="${cur}" selected>${cur}, {{ _('(other)') }}</option>` + html;
+        return html;
+    }
+
+    function rowHtml(i) {
+        var row = tableRows[i];
+        var corr = (row.result_share == null ? '' : row.result_share);
+        var raw = (row.result_raw == null ? '' : row.result_raw);
+        return `<tr data-i="${i}">
+            <td>${isoFmt(Date.parse(row.t))}</td>
+            <td>${raw}</td>
+            <td><input class="input is-small" type="number" step="any" value="${corr}" oninput="onCorrEdit(${i}, this.value)"></td>
+            <td><div class="select is-small is-fullwidth"><select onchange="onQfEdit(${i}, this.value)">${qfOptionsHtml(row.QF)}</select></div></td>
+            <td class="q2-sub">${row.id}</td>
+        </tr>`;
+    }
+
+    function renderTable() {
+        var tb = document.getElementById('dataTbody');
+        var total = tableRows.length;
+        var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        if (tablePage >= pages) tablePage = pages - 1;
+        if (tablePage < 0) tablePage = 0;
+        var start = tablePage * PAGE_SIZE, end = Math.min(start + PAGE_SIZE, total);
+        if (!total) {
+            tb.innerHTML = `<tr><td colspan="5" class="has-text-grey p-3">{{ _('No data in this period.') }}</td></tr>`;
+        } else {
+            var html = '';
+            for (var i = start; i < end; i++) html += rowHtml(i);
+            tb.innerHTML = html;
+        }
+        document.getElementById('tPageLabel').textContent = total ? `${start + 1}-${end} / ${total}` : '0';
+        document.getElementById('tPrev').disabled = tablePage <= 0;
+        document.getElementById('tNext').disabled = tablePage >= pages - 1;
+        updateDirty();
+    }
+
+    function tablePageMove(d) { tablePage += d; renderTable(); }
+
+    function onCorrEdit(i, val) {
+        tableRows[i].result_share = (val === '' ? null : parseFloat(val));
+        tableRows[i].QF = QF_CORRECTED;   // D2: editing a correction -> corrected value
+        var tr = document.querySelector(`#dataTbody tr[data-i="${i}"] select`);
+        if (tr) tr.value = "4";
+        updateDirty();
+    }
+    function onQfEdit(i, val) {
+        tableRows[i].QF = (val === '' ? null : parseInt(val));
+        updateDirty();
+    }
+
+    function isDirty(row) {
+        var s = (row.result_share == null ? '' : row.result_share);
+        var so = (row._origShare == null ? '' : row._origShare);
+        return String(row.QF) !== String(row._origQF) || String(s) !== String(so);
+    }
+    function updateDirty() {
+        var n = tableRows.filter(isDirty).length;
+        document.getElementById('dirtyCount').textContent = n;
+        document.getElementById('btnSendRows').disabled = (n === 0);
+    }
+
+    // Consistency check: a correction different from the raw value must be flagged QF=4
+    function verifyCorrections() {
+        var bad = [];
+        tableRows.forEach(r => {
+            if (r.result_share != null && r.result_raw != null &&
+                Number(r.result_share) !== Number(r.result_raw) && Number(r.QF) !== QF_CORRECTED)
+                bad.push(r.id);
+        });
+        return bad;
+    }
+
+    function exportCsv() {
+        if (!tableRows.length) return;
+        var lines = ['id,phenomenonTime,result_raw,correction,QF'];
+        tableRows.forEach(r => lines.push([
+            r.id, r.t, r.result_raw == null ? '' : r.result_raw,
+            r.result_share == null ? '' : r.result_share, r.QF == null ? '' : r.QF
+        ].join(',')));
+        var blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `qualif_${idData}_${new Date(winStart).toISOString().slice(0, 10)}_${new Date(winEnd).toISOString().slice(0, 10)}.csv`;
+        a.click(); URL.revokeObjectURL(a.href);
+    }
+
+    function importCsv(input) {
+        var file = input.files[0]; if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function () {
+            var lines = reader.result.split(/\r?\n/).filter(l => l.trim() !== '');
+            var header = lines.shift().split(',').map(s => s.trim());
+            var iId = header.indexOf('id'), iCorr = header.indexOf('correction'), iQF = header.indexOf('QF');
+            if (iId < 0) { alert({{ _('Invalid CSV: "id" column missing.')|tojson }}); return; }
+            var byId = {}; tableRows.forEach((r, idx) => byId[String(r.id)] = idx);
+            var applied = 0;
+            lines.forEach(l => {
+                var c = l.split(',');
+                var idx = byId[(c[iId] || '').trim()];
+                if (idx === undefined) return;
+                if (iCorr >= 0) { var v = (c[iCorr] || '').trim(); tableRows[idx].result_share = (v === '' ? null : parseFloat(v)); }
+                if (iQF >= 0) { var q = (c[iQF] || '').trim(); tableRows[idx].QF = (q === '' ? null : parseInt(q)); }
+                applied++;
+            });
+            renderTable();
+            var bad = verifyCorrections();
+            document.getElementById('tableInfo').textContent =
+                {{ _('{n} row(s) imported, {m} modified.')|tojson }}.replace('{n}', applied).replace('{m}', tableRows.filter(isDirty).length) +
+                (bad.length ? {{ _(' ⚠️ {k} correction(s) without the corrected flag.')|tojson }}.replace('{k}', bad.length) : '');
+            if (bad.length)
+                alert({{ _('⚠️ {k} row(s) have a correction different from the raw value but a QF ≠ 4 (corrected value).')|tojson }}.replace('{k}', bad.length) + '\n' +
+                    {{ _('ids: ')|tojson }} + bad.slice(0, 20).join(', ') + (bad.length > 20 ? '…' : ''));
+        };
+        reader.readAsText(file); input.value = '';
+    }
+
+    function sendRows() {
+        var bad = verifyCorrections();
+        if (bad.length && !confirm({{ _('⚠️ {k} row(s) have a correction ≠ raw value without the corrected flag. Send anyway?')|tojson }}.replace('{k}', bad.length))) return;
+        var changed = tableRows.filter(isDirty).map(r => ({
+            id: r.id, phenomenonTime: r.t, result_raw: r.result_raw,
+            QF: r.QF, result_share: r.result_share
+        }));
+        if (!changed.length) return;
+        var btn = document.getElementById('btnSendRows');
+        btn.classList.add('is-loading'); btn.disabled = true;
+        fetch('{{ request.script_root }}/private/qualification-rows', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCookie('csrf_access_token')
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ idData: idData, rows: changed })
+        }).then(r => r.json()).then(data => {
+            btn.classList.remove('is-loading');
+            showQualifResult(data, data.changed != null ? data.changed : null);
+            loadOverview();   // refresh the daily colors
+            loadWindow();     // reload graph + table (persisted state)
+        }).catch(err => {
+            btn.classList.remove('is-loading'); btn.disabled = false;
+            alert({{ _('Error while sending.')|tojson }}); console.error(err);
+        });
+    }
+
+    // ============ Overlays (superimposed external SensorThings feeds) ============
+    // Add an overlay from a pasted URL. Same unit as the qualified series -> left
+    // axis (y1), otherwise right axis (y2). Rainfall is drawn as bars from the top.
+    async function addOverlay() {
+        var url = document.getElementById('ovUrl').value.trim();
+        if (!url) return;
+        var label = document.getElementById('ovLabel').value.trim();
+        var mode = document.getElementById('ovMode').value;
+        var btn = document.getElementById('ovAdd');
+        btn.classList.add('is-loading'); btn.disabled = true;
+        var unit = await fetchOverlayUnit(url);
+        var axis = (unit && mainUnitSymbol && unit === mainUnitSymbol) ? 'y1' : 'y2';
+        overlays.push({
+            url: url, label: label || shortLabel(url),
+            color: OV_PALETTE[ovColorIdx++ % OV_PALETTE.length],
+            mode: mode, axis: axis, unit: unit, data: [], max: 0
+        });
+        document.getElementById('ovUrl').value = '';
+        document.getElementById('ovLabel').value = '';
+        renderOverlayList();
+        await refreshOverlayData();
+        drawMainGraph();
+        btn.classList.remove('is-loading'); btn.disabled = false;
+    }
+
+    function removeOverlay(i) { overlays.splice(i, 1); renderOverlayList(); drawMainGraph(); }
+
+    function renderOverlayList() {
+        var el = document.getElementById('overlayList');
+        if (!overlays.length) { el.innerHTML = `<span class="q2-sub">{{ _('No overlay yet.') }}</span>`; return; }
+        el.innerHTML = '';
+        overlays.forEach((o, i) => {
+            var modeLbl = (o.mode === 'rain') ? {{ _('rainfall')|tojson }} : {{ _('line')|tojson }};
+            var where = (o.mode === 'rain') ? {{ _('top')|tojson }}
+                : (o.axis === 'y2' ? {{ _('right axis')|tojson }} : {{ _('left axis')|tojson }});
+            var row = document.createElement('div');
+            row.className = 'q2-recap-item';
+            row.innerHTML =
+                `<span class="tag" style="background:${o.color};color:#fff">${modeLbl}</span>` +
+                `<span class="q2-range">${o.label} <span class="q2-sub">· ${where}${o.unit ? ' · ' + o.unit : ''}</span></span>` +
+                `<button class="delete is-small" title="{{ _('Remove') }}" onclick="removeOverlay(${i})"></button>`;
+            el.appendChild(row);
+        });
+    }
+
+    // Re-fetch every overlay's data over the current window (parallel).
+    async function refreshOverlayData() {
+        if (!overlays.length || winStart == null) return;
+        var d1 = new Date(winStart).toISOString(), d2 = new Date(winEnd).toISOString();
+        await Promise.all(overlays.map(async o => {
+            try {
+                o.data = await fetchOverlaySeries(o.url, d1, d2);
+                o.max = o.data.reduce((m, p) => (p[1] != null && p[1] > m) ? p[1] : m, 0);
+            } catch (e) { o.data = []; o.max = 0; console.error(e); }
+        }));
+    }
+
+    // Build the dygraph data matrix: union of timestamps, nulls aligned per column.
+    function buildMatrix(main, lineOv) {
+        var n = lineOv.length;
+        if (n === 0) return main.map(o => [o[0], o[1]]);
+        var map = new Map();
+        function row(t) { if (!map.has(t)) map.set(t, [null].concat(new Array(n).fill(null))); return map.get(t); }
+        main.forEach(o => { row(o[0].getTime())[0] = o[1]; });
+        lineOv.forEach((o, i) => { o.data.forEach(p => { row(p[0].getTime())[i + 1] = p[1]; }); });
+        var times = Array.from(map.keys()).sort((a, b) => a - b);
+        return times.map(t => [new Date(t)].concat(map.get(t)));
+    }
+
+    function uniqueLabel(lbl, labels) {
+        var base = lbl || 'series', name = base, i = 2;
+        while (labels.includes(name)) { name = base + ' (' + i + ')'; i++; }
+        return name;
+    }
+
+    // (Re)draw the qualification graph with the qualified series + line overlays.
+    // Rainfall overlays are painted separately by drawRainOverlays (underlay).
+    function drawMainGraph() {
+        var el = document.getElementById('graph');
+        el.innerHTML = '';
+        if (!mainObs || mainObs.length === 0) {
+            el.innerHTML = `<p class="p-4 has-text-grey">{{ _('No data in this window.') }}</p>`;
+            g = null; document.getElementById('btnSend').disabled = true; return;
+        }
+        var lineOv = overlays.filter(o => o.mode === 'line');
+        var matrix = buildMatrix(mainObs, lineOv);
+        var labels = ["Date", MAIN_LABEL];
+        var series = {}; series[MAIN_LABEL] = { color: '#3273dc', strokeWidth: 1, drawPoints: true, pointSize: 1.5 };
+        var useY2 = false;
+        lineOv.forEach(o => {
+            var lbl = uniqueLabel(o.label, labels); o._lbl = lbl; labels.push(lbl);
+            var ax = (o.axis === 'y2') ? 'y2' : 'y'; if (ax === 'y2') useY2 = true;
+            series[lbl] = { color: o.color, strokeWidth: 1.3, axis: ax };
+        });
+        var opts = {
+            labels: labels, labelsUTC: true, labelsDiv: 'graphLegend', series: series,
+            highlightCircleSize: 4, dateWindow: [winStart, winEnd],
+            clickCallback: onGraphClick, underlayCallback: drawUnderlay, zoomCallback: onGraphZoom
+        };
+        if (useY2) opts.axes = { y2: { drawGrid: false } };
+        g = new Dygraph(el, matrix, opts);
+        document.getElementById('btnSend').disabled = false;
+    }
+
+    // Rainfall hyetograph: bars anchored to the top edge, self-scaled per overlay.
+    function drawRainOverlays(canvas, area, gg) {
+        overlays.filter(o => o.mode === 'rain').forEach(o => {
+            if (!o.data.length || !o.max) return;
+            var bw = computeBarWidth(o.data, gg);
+            canvas.save();
+            canvas.globalAlpha = 0.5; canvas.fillStyle = o.color;
+            o.data.forEach(p => {
+                var v = p[1]; if (v == null || isNaN(v)) return;
+                var x = gg.toDomXCoord(p[0].getTime());
+                var h = (v / o.max) * area.h * 0.9;   // leave 10% headroom under the top
+                canvas.fillRect(x - bw / 2, area.y, bw, h);
+            });
+            canvas.restore();
+        });
+    }
+
+    function computeBarWidth(data, gg) {
+        if (data.length < 2) return 4;
+        var deltas = [];
+        for (var i = 1; i < data.length; i++) deltas.push(data[i][0] - data[i - 1][0]);
+        deltas.sort((a, b) => a - b);
+        var med = deltas[Math.floor(deltas.length / 2)];
+        var t0 = data[0][0].getTime();
+        var w = gg.toDomXCoord(t0 + med) - gg.toDomXCoord(t0);
+        return Math.max(1, Math.min(20, w * 0.8));
+    }
+
+    // The pasted URL is a Datastream resource; the observations live under /Observations.
+    function toObsUrl(url) {
+        var base = url.split('?')[0].replace(/\/+$/, '');
+        return /\/Observations$/i.test(base) ? base : base + '/Observations';
+    }
+
+    // Fetch overlay observations over [d1,d2], following @iot.nextLink pagination.
+    async function fetchOverlaySeries(url, d1, d2) {
+        var out = [], next = withWindowFilter(toObsUrl(url), d1, d2), guard = 0;
+        while (next && guard++ < 50) {
+            var data = await (await fetch(next, { credentials: 'omit' })).json();
+            out = out.concat(parseObsResponse(data));
+            next = data['@iot.nextLink'] || null;
+        }
+        return out;
+    }
+
+    // Inject a time filter for the current window (combining with any existing $filter).
+    function withWindowFilter(url, d1, d2) {
+        var tf = `phenomenonTime ge ${d1} and phenomenonTime lt ${d2}`;
+        var m = url.match(/([?&])\$filter=([^&]*)/);
+        if (m) {
+            var ex = decodeURIComponent(m[2]);
+            url = url.replace(m[0], `${m[1]}$filter=(${ex}) and ${tf}`);
+        } else {
+            url += (url.includes('?') ? '&' : '?') + `$filter=${tf}`;
+        }
+        if (!/\$orderby=/.test(url)) url += `&$orderby=phenomenonTime asc`;
+        if (!/\$top=/.test(url)) url += `&$top=10000`;
+        return url;
+    }
+
+    // Parse a STA Observations response (plain value[] or $resultFormat=dataArray).
+    function parseObsResponse(data) {
+        var out = [];
+        var block = data.value && data.value[0];
+        if (block && block.dataArray && block.components) {
+            var comp = block.components, iT = comp.indexOf('phenomenonTime'), iR = comp.indexOf('result');
+            block.dataArray.forEach(r => { out.push(obsPoint(r[iT], r[iR])); });
+        } else if (Array.isArray(data.value)) {
+            data.value.forEach(o => { out.push(obsPoint(o.phenomenonTime, o.result)); });
+        }
+        return out.filter(p => p && p[1] != null && !isNaN(p[1]));
+    }
+
+    function obsPoint(pt, res) {
+        if (pt == null) return null;
+        if (typeof pt === 'string' && pt.indexOf('/') >= 0) pt = pt.split('/')[0];  // interval -> start
+        var v = Array.isArray(res) ? res[0] : res;                                   // archive [raw,qf,share]
+        v = (v == null || v === '') ? null : Number(v);
+        return [new Date(pt), v];
+    }
+
+    // Read the overlay Datastream's unit (to decide y1 vs y2). Best-effort.
+    // Plain GET on the Datastream resource (no $select): a Datastream carries
+    // unitOfMeasurement (singular object), a MultiDatastream unitOfMeasurements
+    // (plural array), accept either.
+    async function fetchOverlayUnit(dsUrl) {
+        try {
+            var base = dsUrl.split('?')[0].replace(/\/+$/, '').replace(/\/Observations$/i, '');
+            var data = await (await fetch(base, { credentials: 'omit' })).json();
+            var u = data.unitOfMeasurement || data.unitOfMeasurements;
+            if (Array.isArray(u)) u = u[0];
+            return (u && u.symbol) ? u.symbol : '';
+        } catch (e) { return ''; }
+    }
+
+    function shortLabel(url) {
+        var m = url.match(/(?:Multi)?Datastreams\(([^)]*)\)/);
+        if (m) return 'DS ' + m[1];
+        try { return new URL(url).hostname; } catch (e) { return url.slice(0, 30); }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Process list</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma2.min.css') }}">
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <h1 class="title is-1">Processes</h1>
+            <p class="subtitle is-4 mt-4">List of available processes</p>
+
+            <div class="mt-6">
+                {% for process in processes %}
+                <div class="box mb-4">
+                    <h2 class="title is-4">
+                        <a href="{{ url_for('.get_processes_id', process_id=process.id) }}">
+                            {{ process.id }}
+                        </a>
+                    </h2>
+                    <p class="is-size-5">{{ process.description }}</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-6">
+                <a href="{{ url_for('.landing') }}" class="button is-light">
+                    ← Back to home
+                </a>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

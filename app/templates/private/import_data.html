@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/lib/dygraph.min.js') }}"></script>
+<link rel=" stylesheet" type="text/css" src="{{ url_for('static', filename='css/dygraph.min.css') }}" />
+
+<div class="container mt-5">
+
+    <h3 class="title is-3">{{ _('VeloProcessing data import') }} 🚲</h3>
+    <div class="modal" id="modal-js-example">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+            <header class="modal-card-head">
+                <p class="modal-card-title">{{ _('Measurement points') }}</p>
+                <button class="delete" aria-label="close"></button>
+            </header>
+            <section class="modal-card-body">
+                <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>{{ _('Name') }}</th>
+                            <th>{{ _('Description') }}</th>
+                            <th>{{ _('Sensors') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, data in pdm.items() %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            <td>{{ data['description'] }}</td>
+                            <td>{{ data['sensor'] | join(", ")}}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+    <div class="columns is-multiline" id="formContainer">
+        <div class="column is-6-tablet is-4-desktop" style="overflow-y:auto; height:50pc">
+            <div class="card">
+                <div class="card-content">
+                    <div class="block">
+                        <p class="title is-6">
+                            {{ _('Information') }}
+                        </p>
+                        <p>
+                            {{ _('To name a file, <b>use the measurement-point name</b>: for example EAMQ.csv, PZ2.1.txt') | safe }}
+                        </p>
+                        <p>
+                            {{ _('For your own organization, you may add the sensor name and the date (separated by an underscore "_"), for example: EAMQ_OTT_20250101.csv') }}
+                        </p>
+                        <button class="button js-modal-trigger" data-target="modal-js-example">
+                            {{ _('List of measurement points') }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% for i in driver %}
+            {% if i['error'] is not defined %}
+            <div class="card">
+                <div class="card-content">
+                    <div class="block">
+                        <p class="title is-6">
+                            {{ i['driver']}}
+                        </p>
+                    </div>
+
+                    <label class="label">{{ _('Import a raw %(driver)s file:', driver=i['driver']) }}
+                        <input class="input" type="file" id="file_{{ i['id']}}" accept=".csv,.txt.dat" required>
+                    </label>
+                    <button class="button is-primary" type="submit"
+                        onclick="postData(this,'{{ i['id']}}', '{{ i['driver']}}')">
+                        {{ _('Inspection') }} 🔍</button>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <div class="column" style="overflow-y:auto; height:95pc">
+
+            <div id="message" class="notification is-hidden"></div>
+            <progress id="message_pgb" class="progress is-small is-primary is-hidden" max="100">30%</progress>
+
+            <div id="graphs"> </div>
+
+
+            <br>
+            <div class="field has-addons is-hidden" id="archive_controls">
+                <div class="control">
+                    <div class="select">
+                        <select id="overlap_choice">
+                            <option value="skip">{{ _('Overlap: keep the stored data') }}</option>
+                            <option value="overwrite">{{ _('Overlap: overwrite with the new data') }}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control">
+                    <button class="button is-primary" id="btn_archivage" onclick="postDataValidated()">
+                        📤 {{ _('Archive the data') }}</button>
+                </div>
+            </div>
+            <div id="message2" class="notification is-hidden"></div>
+            <progress id="message2_pgb" class="progress is-small is-primary is-hidden" max="100">30%</progress>
+            <br>
+            {# TODO: allow async for large files (will be the default) #}
+        </div>
+    </div>
+</div>
+<script>
+    var idDriverInspect
+    var driverInspect
+    function parseDate(date) {
+        date = new Date(date);
+
+        // provide the day of the week with a long date
+        options = {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            second: "numeric"
+        };
+        return date.toLocaleDateString({{ ('en-GB' if current_locale == 'en' else 'fr-FR')|tojson }}, options)
+    }
+
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    function postData(element, idDriver, driver) {
+        element.classList.add("is-hidden");
+        document.getElementById("message2").classList.add("is-hidden");
+        var fileInput = document.getElementById('file_' + idDriver);
+        if (fileInput.files.length === 0) {
+            alert({{ _('Please select a file')|tojson }});
+            element.classList.remove("is-hidden");
+            return;
+        }
+        document.getElementById("message_pgb").classList.remove("is-hidden")
+        var file = fileInput.files[0];
+        var DataSname = file.name;
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            // The result is a Data URL (like "data:text/csv;base64,...")
+            var dataUrl = e.target.result;
+            // Extract only the Base64 part
+            var base64String = dataUrl.split(',')[1];
+            var container = document.getElementById('graphs');
+            container.innerHTML = ''
+            // Send the encoded file via a JSON POST request to the Flask API
+            fetch('{{ request.script_root }}/ogc-processes/processes/dataDriverInspectBeforeSTA/execution', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    rawFile64: base64String,
+                    name: DataSname,
+                    driver: driver
+                })
+            })
+                .then(response => {
+                    document.getElementById("message_pgb").classList.add("is-hidden");
+                    if (!response.ok) {
+                        // Check the response contains JSON before trying to read it
+                        return response.json().then(err => {
+                            console.log(err)
+                            const errorMessage = err['error'];
+                            throw new Error(errorMessage);
+                        })
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const messageDiv = document.getElementById("message");
+                    messageDiv.classList.remove("is-hidden");
+                    messageDiv.classList.remove("is-danger");
+                    messageDiv.classList.add("is-success");
+                    messageDiv.innerHTML = {{ _('✅ Data decoded; you must now inspect it before validating the import. <br>')|tojson }};
+                    messageDiv.innerHTML += {{ _('The inspection is about checking you did not pick the wrong measurement point, and that there is no gap between the already stored data (archive) and the upcoming import.<br>')|tojson }};
+                    messageDiv.innerHTML += {{ _('⚠️ <b>Do not modify the data</b> (except for manual data, e.g. the light probe, if there was a typo error in your spreadsheet).<br>')|tojson }};
+                    messageDiv.innerHTML += {{ _('If this is not the right file, re-import another file and rerun the inspection')|tojson }};
+                    const firstDateStr = data.first_date;
+                    const lastDateStr = data.last_date;
+                    const lastObservationsStr = data.last_observations;
+                    const firstDate = parseDate(firstDateStr);
+                    const lastDate = parseDate(lastDateStr);
+                    const lastObservations = parseDate(lastObservationsStr);
+
+                    ///
+                    container = document.getElementById('graphs');
+
+                    const dateDiv = document.createElement('div');
+
+                    dateDiv.innerHTML = {{ _('First record:')|tojson }} + " <b>" + firstDate + "</b><br>" + {{ _('Last record:')|tojson }} + " <b>" + lastDate + "</b><br><br>"
+                    let overlapHtml = "";
+                    if (data.len_data_import - data.archive_duplicates == 0) {
+                        overlapHtml = {{ _('⚠️ The data already exists')|tojson }};
+                    } else if (data.archive_duplicates > 0) {
+                        overlapHtml = {{ _('⚠️ There is an overlap ({dup}/{total} records) between the last date and the stored data.')|tojson }}.replace('{dup}', data.archive_duplicates).replace('{total}', data.len_data_import);
+                    }
+                    if (overlapHtml) {
+                        dateDiv.innerHTML += '<span class="is-size-4 has-text-weight-bold">' + overlapHtml + '</span>';
+                    }
+
+                    dateDiv.classList.add("title");
+                    dateDiv.classList.add("is-6");
+                    container.appendChild(dateDiv);
+
+
+                    components = data.values.components
+                    const baseColumns = {}
+                    components.forEach((comp, i) => {
+                        if (comp === "phenomenonTime") return;
+
+                        // Remove _archive
+                        const base = comp.replace(/_archive\d*$/, "");
+                        if (!baseColumns[base]) baseColumns[base] = [];
+                        baseColumns[base].push(i);
+                    });
+                    // For each base, we build a graph
+                    Object.entries(baseColumns).forEach(([base, indices]) => {
+                        // Prepare the data for Dygraph: [date, val1, val2, ...]
+                        const rows = data.values.dataArray.map(row => {
+                            const date = new Date(row[0]);
+                            const values = indices.map(idx => {
+                                const val = row[idx];
+                                return val == null || isNaN(val) ? null : val;
+                            });
+                            return [date, ...values];
+                        });
+
+                        // Create a container for the graph
+                        const container = document.createElement('div');
+                        container.style.marginBottom = '40px';
+
+                        const title = document.createElement('div');
+                        title.textContent = base;
+                        title.style.fontWeight = 'bold';
+                        title.style.marginBottom = '8px';
+
+                        const graphDiv = document.createElement('div');
+                        graphDiv.style.width = '100%';
+                        graphDiv.style.height = '300px';
+
+                        const legendDiv = document.createElement('div');
+                        legendDiv.classList.add("has-text-left")
+
+                        container.appendChild(title);
+                        container.appendChild(graphDiv);
+                        container.appendChild(legendDiv);
+                        document.getElementById('graphs').appendChild(container);
+
+                        // Column names to display: "<obsp> new data" for the import,
+                        // "<obsp> old data" for the already-stored (archive) series.
+                        const labels = ["Date", ...indices.map(i => {
+                            const c = components[i];
+                            return /_archive\d*$/.test(c)
+                                ? c.replace(/_archive\d*$/, "") + " " + {{ _('old data')|tojson }}
+                                : c + " " + {{ _('new data')|tojson }};
+                        })];
+
+                        const graphOptions = {
+                            labels: labels,
+                            showRoller: false,
+                            drawPoints: true,
+                            strokeWidth: 1.5,
+                            legend: "always",
+                            labelsDiv: legendDiv,
+                        };
+
+                        // If it is the second graph, change the color of the first series (dark green)
+                        if (labels.length == 2) {
+                            graphOptions.colors = ['#00cc99'];  // Dark green for the first series
+                        } else if (labels.length == 3) {
+                            graphOptions.colors = ['#00cc99', '#ff9966'];  // Dark green for the first series
+                        }
+
+                        new Dygraph(graphDiv, rows, graphOptions);
+                    });
+                    document.getElementById("archive_controls").classList.remove("is-hidden")
+                    idDriverInspect = idDriver
+                    driverInspect = driver
+                    element.classList.remove("is-hidden");
+
+                })
+                .catch(error => {
+                    document.getElementById("message_pgb").classList.add("is-hidden");
+                    const messageDiv = document.getElementById("message");
+                    messageDiv.classList.remove("is-hidden");
+                    messageDiv.classList.add("is-danger");
+                    messageDiv.textContent = {{ _('Error:')|tojson }} + " " + error.message;
+                    element.classList.remove("is-hidden");
+                });
+        };
+
+        // Read the file as a Data URL
+        reader.readAsDataURL(file);
+    };
+
+    function postDataValidated() {
+        var fileInput = document.getElementById('file_' + idDriverInspect);
+        if (fileInput.files.length === 0) {
+            alert({{ _('Please select a file')|tojson }});
+            return;
+        }
+        document.getElementById("message2_pgb").classList.remove("is-hidden")
+        var file = fileInput.files[0];
+        var DataSname = file.name;
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            // The result is a Data URL (like "data:text/csv;base64,...")
+            var dataUrl = e.target.result;
+            // Extract only the Base64 part
+            var base64String = dataUrl.split(',')[1];
+
+            // Send the encoded file via a JSON POST request to the Flask API
+            fetch('{{ request.script_root }}/ogc-processes/processes/dataDriverPostToSTA/execution', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    rawFile64: base64String,
+                    name: DataSname,
+                    driver: driverInspect,
+                    overlap: document.getElementById('overlap_choice').value
+                })
+            })
+                .then(response => {
+                    document.getElementById("message2_pgb").classList.add("is-hidden");
+                    if (!response.ok) {
+                        // Check the response contains JSON before trying to read it
+                        return response.json().then(err => {
+                            console.log(err)
+                            const errorMessage = err['error'];
+                            throw new Error(errorMessage);
+                        })
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const messageDiv = document.getElementById("message2");
+                    messageDiv.classList.remove("is-hidden");
+                    messageDiv.classList.remove("is-danger");
+                    messageDiv.classList.add("is-success");
+                    messageDiv.innerHTML = {{ _('✅ The data is saved, ')|tojson }}
+                    messageDiv.innerHTML += {{ _('if you want to check data:')|tojson }}
+                    messageDiv.innerHTML += '<br>'
+                    
+                    data.id.forEach(idp => {
+                        messageDiv.innerHTML += `<a href="{{ request.script_root }}/{{ observatoire }}/espace/simple-plot/?id=${idp}&config={{ request.script_root }}/{{ observatoire }}/config/{{ observatoire }}-archive.json" target="_blank">Datastream ${idp}</a><br>`
+                    });
+                    document.getElementById("archive_controls").classList.add("is-hidden")
+
+                })
+                .catch(error => {
+                    document.getElementById("message2_pgb").classList.add("is-hidden");
+                    const messageDiv = document.getElementById("message2");
+                    messageDiv.classList.remove("is-hidden");
+                    messageDiv.classList.add("is-danger");
+                    messageDiv.textContent = {{ _('Error:')|tojson }} + " " + error.message;
+
+                });
+        };
+        // Read the file as a Data URL
+        reader.readAsDataURL(file);
+    };
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        document.querySelectorAll('.input').forEach(el => {
+
+            el.value = '';
+        });
+
+        // Functions to open and close a modal
+        function openModal($el) {
+            $el.classList.add('is-active');
+        }
+
+        function closeModal($el) {
+            $el.classList.remove('is-active');
+        }
+
+        function closeAllModals() {
+            (document.querySelectorAll('.modal') || []).forEach(($modal) => {
+                closeModal($modal);
+            });
+        }
+
+        // Add a click event on buttons to open a specific modal
+        (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
+            const modal = $trigger.dataset.target;
+            const $target = document.getElementById(modal);
+
+            $trigger.addEventListener('click', () => {
+                openModal($target);
+            });
+        });
+
+        // Add a click event on various child elements to close the parent modal
+        (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
+            const $target = $close.closest('.modal');
+
+            $close.addEventListener('click', () => {
+                closeModal($target);
+            });
+        });
+
+        // Add a keyboard event to close all modals
+        document.addEventListener('keydown', (event) => {
+            if (event.key === "Escape") {
+                closeAllModals();
+            }
+        });
+    });
+</script>
+{% endblock %}
+

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ process.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma2.min.css') }}">
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <h1 class="title is-1">{{ process.title }}</h1>
+            <p class="subtitle is-4 mt-4">{{ process.description }}</p>
+
+            {% if process.keywords %}
+            <div class="tags mt-4">
+                {% for kw in process.keywords %}
+                <span class="tag is-info">{{ kw }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="columns mt-6">
+                <div class="column">
+                    <div class="box">
+                        <h2 class="title is-3">Information</h2>
+                        <table class="table is-fullwidth">
+                            <tbody>
+                                <tr>
+                                    <td><strong>ID</strong></td>
+                                    <td>{{ process.id }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Version</strong></td>
+                                    <td>{{ process.version }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Job control</strong></td>
+                                    <td>
+                                        {% for option in process.jobControlOptions %}
+                                        <span class="tag ">{{ option }}</span>
+                                        {% endfor %}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            {% if process.inputs %}
+            <div class="box mt-5">
+                <h2 class="title is-3">Inputs</h2>
+                <table class="table is-fullwidth is-striped is-hoverable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Occurrences</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for input_id, input_data in process.inputs.items() %}
+                        <tr>
+                            <td>{{ input_id }}</td>
+                            <td>{{ input_data.title }}</td>
+                            <td>{{ input_data.schema.type }}</td>
+                            <td>
+                                {% if input_data.schema.minOccurs > 0 %}
+                                <span class="tag is-danger">Yes</span>
+                                {% else %}
+                                <span class="tag is-success">No</span>
+                                {% endif %}
+                            </td>
+                            <td>min: {{ input_data.schema.minOccurs }}, max: {{ input_data.schema.maxOccurs }}</td>
+                            <td>{{ input_data.description }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+            {% if process.outputs %}
+            <div class="box mt-5">
+                <h2 class="title is-3">Outputs</h2>
+                <table class="table is-fullwidth is-striped is-hoverable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Occurrences</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for output_id, output_data in process.outputs.items() %}
+                        <tr>
+                            <td>{{ output_id }}</td>
+                            <td>{{ output_data.title }}</td>
+                            <td>{{ output_data.schema.type }}</td>
+                            <td>min: {{ output_data.schema.minOccurs }}, max: {{ output_data.schema.maxOccurs }}</td>
+                            <td>{{ output_data.description }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+
+            {% if process.links %}
+            <div class="box mt-5">
+                <h2 class="title is-3">Links</h2>
+                <ul class="is-size-5">
+                    {% for link in process.links %}
+                    <li class="mb-2">
+                        <a href="{{ link.href }}" target="_blank" hreflang="{{ link.hreflang }}">
+                            {{ link.title }}
+                        </a>
+                        <span class="tag is-light ml-2">{{ link.rel }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="mt-6">
+                <a href="{{ url_for('.get_processes') }}" class="button is-light">
+                    ← Back to the process list
+                </a>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

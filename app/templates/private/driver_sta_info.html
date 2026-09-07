@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    .driver-mono {
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-size: .8rem;
+        background: rgba(128, 128, 128, .10);
+        padding: .5rem .75rem;
+        border-radius: 4px;
+        margin-bottom: .75rem;
+    }
+    .driver-preview { overflow-x: auto; }
+</style>
+
+<div class="container mt-5">
+    <h3 class="title is-3">{{ _('VeloProcessing sensors management') }}</h3>
+
+    <!-- Collapsible help: adding a driver (under the title, to stay visible) -->
+    <div class="mb-5">
+        <button class="button is-light" type="button"
+            onclick="document.getElementById('addDriverHelp').classList.toggle('is-hidden')">
+            🛠️ {{ _('To add a Driver') }}
+        </button>
+        <div id="addDriverHelp" class="notification is-hidden mt-2 content">
+            <p>
+                {{ _('Prepare a python script containing a run function whose arguments are: the in-memory file and [observedProperty] (take inspiration from the existing drivers). The goal is for the function output to be a pandas dataframe with a "phenomenonTime" (str) column in UTC format = %%Y-%%m-%%dT%%H:%%M:%%SZ; each of the following columns must be named exactly as a value passed in observedProperties.') }}
+            </p>
+            <p>{{ _('The driver script name must be a single word taken from the archive service Sensors.name, e.g. "OTT" for "Orphéus mini OTT".') }}</p>
+            <p>{{ _('Finally add the script in the driver directory') }}</p>
+            <a class="button is-link is-small" href="{{ url_for('private.driver_template') }}">
+                ⬇ {{ _('Download an empty script') }}
+            </a>
+        </div>
+    </div>
+
+    <div class="columns is-multiline">
+        {% for i in driver %}
+        {% set name = i['driver'] %}
+        <div class="column is-6-tablet is-4-desktop">
+            <div class="card" style="height:100%;">
+                <header class="card-header">
+                    <span class="card-header-title">
+                        <span class="title is-4 mb-0 {% if i.get('error') %}has-text-danger{% else %}has-text-success{% endif %}">{{ name }}</span>
+                        {% if i.get('error') %}
+                        <span class="tag is-danger ml-2">⚠ {{ _('Load error') }}</span>
+                        {% endif %}
+                    </span>
+                </header>
+
+                <div class="card-content">
+                    {% if i.get('error') %}
+                    <div class="notification is-danger is-light">{{ i['description'] | safe }}</div>
+                    {% else %}
+                    <p class="mb-3">{{ i['description'] | safe }}</p>
+
+                    {% if i['Args'] %}
+                    <p class="is-size-7 has-text-weight-semibold has-text-grey">{{ _('Arguments') }}</p>
+                    <div class="driver-mono">{{ i['Args'] | safe }}</div>
+                    {% endif %}
+                    {% if i['Returns'] %}
+                    <p class="is-size-7 has-text-weight-semibold has-text-grey">{{ _('Output') }}</p>
+                    <div class="driver-mono">{{ i['Returns'] | safe }}</div>
+                    {% endif %}
+
+                    <hr class="my-3">
+
+                    <!-- Live test: file upload + driver execution -->
+                    <button class="button is-primary is-small" type="button"
+                        onclick="toggleTest('{{ name }}')">⚙️ {{ _('Test the driver') }}</button>
+
+                    <div id="test_{{ name }}" class="is-hidden mt-3">
+                        <div class="field">
+                            <label class="label is-small">{{ _('Sensor file to test') }}</label>
+                            <div class="control">
+                                <input class="input is-small" type="file" id="testfile_{{ name }}">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="control">
+                                <input class="input is-small" type="text" id="testobs_{{ name }}"
+                                    placeholder="{{ _('Observed properties (comma-separated, optional)') }}">
+                            </div>
+                        </div>
+                        <button class="button is-link is-small" type="button"
+                            onclick="runTest('{{ name }}')">▶ {{ _('Run the test') }}</button>
+                        <progress id="testpgb_{{ name }}" class="progress is-small is-primary is-hidden mt-2"
+                            max="100">30%</progress>
+                        <div id="testresult_{{ name }}" class="mt-2"></div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, c =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function toggleTest(name) {
+        document.getElementById("test_" + name).classList.toggle("is-hidden");
+    }
+
+    function runTest(name) {
+        const fileInput = document.getElementById("testfile_" + name);
+        const result = document.getElementById("testresult_" + name);
+        const pgb = document.getElementById("testpgb_" + name);
+
+        if (!fileInput.files.length) {
+            result.innerHTML = '<p class="has-text-danger is-size-7">' +
+                escapeHtml({{ _('Please choose a file.')|tojson }}) + '</p>';
+            return;
+        }
+
+        const fd = new FormData();
+        fd.append("test_file", fileInput.files[0]);
+        fd.append("observedProperties", document.getElementById("testobs_" + name).value);
+
+        pgb.classList.remove("is-hidden");
+        result.innerHTML = "";
+
+        fetch("{{ request.script_root }}/private/testDriver/" + encodeURIComponent(name), {
+            method: "POST",
+            headers: { "X-CSRF-TOKEN": getCookie("csrf_access_token") },
+            body: fd,
+            credentials: "same-origin",
+        })
+            .then(response => response.json().then(data => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                pgb.classList.add("is-hidden");
+                if (!ok) {
+                    let msg = escapeHtml(data.error || {{ _('Error while testing.')|tojson }});
+                    if (data.exception) msg += ", " + escapeHtml(data.exception);
+                    result.innerHTML = '<div class="notification is-danger is-light is-size-7">' + msg + "</div>";
+                    return;
+                }
+                // DataFrame preview (values escaped: they come from the user's file)
+                let html = '<div class="notification is-success is-light is-size-7">' +
+                    escapeHtml({{ _('Driver ran successfully!')|tojson }}) + " " +
+                    escapeHtml({{ _('Rows:')|tojson }}) + " " + data.nrows + "</div>";
+                html += '<div class="driver-preview"><table class="table is-narrow is-bordered is-size-7"><thead><tr>';
+                data.columns.forEach(c => { html += "<th>" + escapeHtml(c) + "</th>"; });
+                html += "</tr></thead><tbody>";
+                data.rows.forEach(row => {
+                    html += "<tr>";
+                    row.forEach(v => { html += "<td>" + escapeHtml(v) + "</td>"; });
+                    html += "</tr>";
+                });
+                html += "</tbody></table></div>";
+                result.innerHTML = html;
+            })
+            .catch(() => {
+                pgb.classList.add("is-hidden");
+                result.innerHTML = '<div class="notification is-danger is-light is-size-7">' +
+                    escapeHtml({{ _('An unexpected error occurred')|tojson }}) + "</div>";
+            });
+    }
+</script>
+{% endblock %}
+
+

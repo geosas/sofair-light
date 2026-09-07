@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="{{ current_locale or 'fr' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ _('Signing you in…') }}</title>
+    <!-- Bounce page (SameSite=Strict workaround): the ORCID callback cannot issue
+         a server-side 302 (the JWT cookie would be withheld, as this is a
+         cross-site navigation). We redirect client-side -> same-site navigation
+         -> the Strict cookie is sent. meta-refresh as a fallback if JS is off. -->
+    <meta http-equiv="refresh" content="0; url={{ next_url }}">
+    <script>window.location.replace({{ next_url|tojson }});</script>
+</head>
+<body>
+    <p style="font-family:sans-serif;text-align:center;margin-top:3rem;">
+        {{ _('Signing you in…') }}
+        <a href="{{ next_url }}">{{ _('Continue') }}</a>
+    </p>
+</body>
+</html>

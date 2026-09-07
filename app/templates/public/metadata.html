@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        {% if metadata %}
+
+        <!-- Header: observatory name + summary -->
+        <h1 class="title is-2">{{ metadata.get('name') }}</h1>
+        {% if metadata.get('resume') %}
+        <p class="subtitle is-5 has-text-grey">{{ metadata.get('resume') }}</p>
+        {% endif %}
+
+        <figure class="image my-5">
+            <img src="{{ url_for('static', filename='img/news/preview/observatoire_resize.png') }}"
+                alt="{{ _('Observatory preview') }}"
+                style="display:inline-block;max-width:200px;width:100%;height:auto;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,.15);">
+        </figure>
+
+        <!-- Metadata details (name / summary first, contact hidden) -->
+        <div class="has-text-left">
+            <h2 class="title is-5 has-text-grey mb-3">{{ _('Observatory metadata') }}</h2>
+            <table class="table is-fullwidth is-bordered is-striped">
+                <tbody>
+                    {% for key, value in metadata.items() %}
+                    {% if key not in ['name', 'resume', 'contact'] %}
+                    <tr>
+                        <td><strong>{{ key | capitalize }}</strong></td>
+                        <td>{{ value }}</td>
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="notification is-danger">
+            <p>{{ _('No metadata found. If this is your first use, please log in and it will be generated
+                automatically.') }}</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

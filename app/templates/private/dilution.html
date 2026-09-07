@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block content %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/lib/dygraph.min.js') }}"></script>
+<link rel=" stylesheet" type="text/css" src="{{ url_for('static', filename='css/dygraph.min.css') }}" />
+
+<section class="section">
+    <h1 class="title">Calcul débit par dilution</h1>
+    <div class="">
+        <div class="columns">
+            <div class="column is-one-fifth ">
+                <div>
+                    <label class="label">1. Choisir un éxutoire:</label>
+                    <div class="select">
+                        <select id="thingID">
+                            <option value="">--</option>
+                            {% for i in exutoire %}
+                            <option value="{{i['@iot.id']}}"> {{i['name']}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <form id="metadataForm" class="is-hidden">
+                    <table class="table is-fullwidth">
+                        <tr>
+                            <td><label class="label">Conductivité initiale (mS/m):</label></td>
+                            <td><input class="input" type="number" id="conductiviteInit" step="0.001" placeholder="1000"
+                                    required>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label class="label">Masse de sel injecté (kg):</label></td>
+                            <td><input class="input" type="number" id="masseSel" step="0.01" required>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><label class="label">Intervalle des mesures (s)</label></td>
+                            <td><input class="input" type="number" id="intervalle" step="0.1" required>
+                            </td>
+                        </tr>
+                    </table>
+                    <label class="label">Import d'un fichier csv mesure 1 (date,conductivité) :
+                        <input class="input" type="file" id="input_data1" accept=".csv,.txt" required>
+                    </label>
+                    <label class="label">Import d'un fichier csv mesure 2 (date,conductivité) :
+                        <input class="input" type="file" id="input_data2" accept=".csv,.txt" required>
+                    </label>
+                    <label class="label">Import d'un fichier csv mesure 3 (date,conductivité) :
+                        <input class="input" type="file" id="input_data3" accept=".csv,.txt" required>
+                    </label>
+
+                    <button class="button is-primary" type="submit">📤 Calculer débit</button>
+                </form>
+
+                <progress id="message_pgb" class="progress is-small is-primary is-hidden" max="100">30%</progress>
+            </div>
+            <div class="column">
+                <div id="message" class="notification is-hidden"></div>
+                <h1 class="title" id="debit_calcul"></h1>
+                <p id="debit_src"></p>
+                <div class="block">
+                    <div id="graphdiv" class="block is-pulled-right" style="width:80%;height:300px"></div>
+                    <div id="customLegend"></div>
+                </div>
+                <div class="block">
+                    <button class="button is-primary is-hidden" id="btn_validation" type="submit">📤 Voulez vous
+                        valider cette mesure</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script type="text/javascript" src="{{ url_for('static', filename='js/script/dilution.js') }}"></script>
+
+{% endblock %}

@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="has-text-left">
+  <h1 class="title">{{ _('Configure SoftSensors') }}</h1>
+  <p class="subtitle is-6">
+    {{ _('Associate each derived datastream (observationProcedure = SoftSensor) with a computation method and its source datastream. On qualification of the source, the derived series is recomputed and published.') }}
+  </p>
+
+  <div id="ssMsg"></div>
+
+  {% if not targets %}
+  <div class="notification is-warning">
+    {{ _('No derived datastream found (none tagged observationProcedure = SoftSensor). Add them in the config spreadsheet first.') }}
+  </div>
+  {% endif %}
+
+  <div class="columns is-multiline">
+    {% for m in methods %}
+    <div class="column is-half">
+      <div class="card">
+        <header class="card-header">
+          <p class="card-header-title">
+            {{ m.label }}
+            {% if m.error %}<span class="tag is-danger ml-2">{{ _('load error') }}</span>{% endif %}
+          </p>
+        </header>
+        <div class="card-content">
+          <p class="mb-3 has-text-grey-dark">{{ m.description }}</p>
+          {% if not m.error %}
+          <form onsubmit="saveAssoc(event, '{{ m.id }}')" data-method="{{ m.id }}">
+            <div class="field">
+              <label class="label is-small">{{ _('Derived datastream (target)') }}</label>
+              <div class="control"><div class="select is-fullwidth is-small">
+                <select name="target" required>
+                  <option value="">{{ _('- choose, ') }}</option>
+                  {% for t in targets %}<option value="{{ t.name }}">{{ t.name }}</option>{% endfor %}
+                </select>
+              </div></div>
+            </div>
+            <div class="field">
+              <label class="label is-small">{{ _('Source datastream') }}</label>
+              <div class="control"><div class="select is-fullwidth is-small">
+                <select name="source" required>
+                  <option value="">{{ _('- choose, ') }}</option>
+                  {% for s in sources %}<option value="{{ s['@iot.id'] }}">{{ s.name }}</option>{% endfor %}
+                </select>
+              </div></div>
+            </div>
+            {% for p in m.params %}
+            <div class="field">
+              <label class="label is-small">{{ p.label }}</label>
+              <div class="control">
+                <input class="input is-small" type="number" step="any" name="param_{{ p.key }}" required>
+              </div>
+            </div>
+            {% endfor %}
+            <button type="submit" class="button is-primary is-small">{{ _('Save association') }}</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <h2 class="title is-5 mt-5">{{ _('Existing associations') }}</h2>
+  {% if associations %}
+  <table class="table is-striped is-fullwidth">
+    <thead><tr>
+      <th>{{ _('Source') }}</th><th>{{ _('Method') }}</th>
+      <th>{{ _('Derived (target)') }}</th><th>{{ _('Params') }}</th><th></th>
+    </tr></thead>
+    <tbody>
+      {% for a in associations %}
+      <tr>
+        <td>{{ a.source }}</td><td>{{ a.method }}</td><td>{{ a.target }}</td>
+        <td>{{ a.params|tojson }}</td>
+        <td><button class="button is-danger is-small is-light"
+              onclick="removeAssoc('{{ a.source_id }}')">{{ _('Remove') }}</button></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="has-text-grey">{{ _('No association yet.') }}</p>
+  {% endif %}
+</div>
+
+<script>
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+
+  async function postSoftSensor(payload) {
+    const r = await fetch('{{ request.script_root }}/private/configure-softsensor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': getCookie('csrf_access_token') },
+      credentials: 'same-origin',
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json().catch(() => ({}));
+    const msg = document.getElementById('ssMsg');
+    if (r.ok) { location.reload(); }
+    else {
+      msg.innerHTML = `<div class="notification is-danger">${(data && data.error) || {{ _('Error while saving.')|tojson }}}</div>`;
+    }
+  }
+
+  function saveAssoc(event, method) {
+    event.preventDefault();
+    const form = event.target;
+    const params = {};
+    form.querySelectorAll('[name^="param_"]').forEach((el) => {
+      params[el.name.replace('param_', '')] = el.value;
+    });
+    postSoftSensor({
+      source_id: form.source.value,
+      target: form.target.value,
+      method: method,
+      params: params,
+    });
+  }
+
+  function removeAssoc(sourceId) {
+    if (!confirm({{ _('Remove this association?')|tojson }})) return;
+    postSoftSensor({ source_id: sourceId, remove: true });
+  }
+</script>
+{% endblock %}

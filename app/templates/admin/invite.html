@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="section">
+    <div class="box has-text-left" style="max-width:640px;margin:0 auto;">
+        <h3 class="title is-4">{{ _('Invite a user') }}</h3>
+        <p class="subtitle is-6 has-text-grey">
+            {{ _('Generate a single-use link (valid 24 h) so the user can set their own password.') }}
+        </p>
+
+        <div id="error-messages" class="notification is-danger is-hidden"></div>
+
+        <div class="field">
+            <label class="label">{{ _('Email') }}</label>
+            <div class="control">
+                <input id="id_email" class="input" type="email"
+                    placeholder="{{ _('user@example.org') }}" autocomplete="off" required>
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">{{ _('Role') }}</label>
+            <div class="control">
+                <div class="select is-fullwidth" id="role-container">
+                    <select id="id_role" required>
+                        <option value="metrologue" selected>{{ _('Metrologist') }}</option>
+                        <option value="thematicien">{{ _('Thematician') }}</option>
+                        <option value="data engineer">{{ _('Data Engineer') }}</option>
+                        <option value="test">{{ _('Test') }}</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">{{ _('Authentication method') }}</label>
+            <div class="control">
+                <label class="radio">
+                    <input type="radio" name="auth_provider" value="local" checked>
+                    {{ _('Local password') }}
+                </label>
+                <label class="radio">
+                    <input type="radio" name="auth_provider" value="orcid">
+                    {{ _('ORCID (SSO)') }}
+                </label>
+            </div>
+        </div>
+
+        <div class="field" id="orcid-field" style="display:none;">
+            <label class="label">{{ _('ORCID iD') }}</label>
+            <div class="control">
+                <input id="id_orcid" class="input" type="text"
+                    placeholder="0000-0002-1825-0097" autocomplete="off">
+            </div>
+            <p class="help">{{ _('Required for ORCID: the invitee can sign in only with this ORCID iD.') }}</p>
+        </div>
+
+        <button id="btn_invite" class="button is-link">{{ _('Create invitation') }}</button>
+
+        <!-- Result: generated link -->
+        <div id="invite-result" class="box has-background-success-light mt-5 is-hidden">
+            <p class="has-text-weight-semibold">{{ _('Invitation created') }}</p>
+            <p class="is-size-7 has-text-grey mb-2" id="invite-meta"></p>
+            <div id="invite-url-wrapper" class="is-hidden">
+                <div class="field has-addons">
+                    <div class="control is-expanded">
+                        <input id="invite-url" class="input is-small" type="text" readonly>
+                    </div>
+                    <div class="control">
+                        <button id="btn-copy" class="button is-small">{{ _('Copy') }}</button>
+                    </div>
+                </div>
+                <p class="is-size-7 has-text-grey">
+                    {{ _('Send this link to the user. It can be used only once and expires in 24 h.') }}
+                </p>
+            </div>
+            <p id="invite-orcid-msg" class="is-size-7 has-text-grey is-hidden">
+                {{ _('The user can now sign in with ORCID. No link to send, access is granted only to the registered ORCID iD.') }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function getCookie(name) {
+        return (document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)') || [])[2];
+    }
+
+    const inviteButton = document.querySelector('#btn_invite');
+    const errorMessagesDiv = document.querySelector('#error-messages');
+    const resultBox = document.querySelector('#invite-result');
+    const orcidField = document.querySelector('#orcid-field');
+
+    // Show the ORCID iD field only when the ORCID method is selected.
+    function currentProvider() {
+        return document.querySelector('input[name="auth_provider"]:checked').value;
+    }
+    document.querySelectorAll('input[name="auth_provider"]').forEach(function (r) {
+        r.addEventListener('change', function () {
+            orcidField.style.display = currentProvider() === 'orcid' ? 'block' : 'none';
+        });
+    });
+
+    inviteButton.addEventListener('click', async function () {
+        errorMessagesDiv.classList.add('is-hidden');
+        const email = document.querySelector('#id_email').value;
+        const role = document.querySelector('#id_role').value;
+        const authProvider = currentProvider();
+        const orcidId = document.querySelector('#id_orcid').value.trim();
+
+        if (!email) {
+            alert({{ _('Email is required')|tojson }});
+            return;
+        }
+        if (authProvider === 'orcid' && !orcidId) {
+            alert({{ _('An ORCID iD is required for an ORCID invitation.')|tojson }});
+            return;
+        }
+
+        const payload = { email: email, role: role, auth_provider: authProvider };
+        if (authProvider === 'orcid') { payload.orcid_id = orcidId; }
+
+        try {
+            const response = await fetch('{{ request.script_root }}/auth/admin/invitations', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+
+            if (response.ok) {
+                document.querySelector('#invite-meta').textContent =
+                    data.email + ', ' + data.role;
+                const urlWrapper = document.querySelector('#invite-url-wrapper');
+                const orcidMsg = document.querySelector('#invite-orcid-msg');
+                if (data.auth_provider === 'orcid') {
+                    // No link: the user signs in with ORCID directly.
+                    urlWrapper.classList.add('is-hidden');
+                    orcidMsg.classList.remove('is-hidden');
+                } else {
+                    document.querySelector('#invite-url').value = data.invite_url;
+                    urlWrapper.classList.remove('is-hidden');
+                    orcidMsg.classList.add('is-hidden');
+                }
+                resultBox.classList.remove('is-hidden');
+            } else if (data.errors && data.errors.length) {
+                let html = '<ul>';
+                data.errors.forEach(e => { html += '<li>' + e.message + '</li>'; });
+                html += '</ul>';
+                errorMessagesDiv.innerHTML = html;
+                errorMessagesDiv.classList.remove('is-hidden');
+            } else {
+                errorMessagesDiv.textContent = data.msg || {{ _('An error occurred')|tojson }};
+                errorMessagesDiv.classList.remove('is-hidden');
+            }
+        } catch (err) {
+            console.error(err);
+            errorMessagesDiv.textContent = {{ _('An unexpected error occurred')|tojson }};
+            errorMessagesDiv.classList.remove('is-hidden');
+        }
+    });
+
+    document.querySelector('#btn-copy').addEventListener('click', function () {
+        const input = document.querySelector('#invite-url');
+        input.select();
+        navigator.clipboard.writeText(input.value);
+        this.textContent = {{ _('Copied!')|tojson }};
+    });
+</script>
+{% endblock %}

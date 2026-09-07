@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/leaflet.css') }}" />
+<script src="{{ url_for('static', filename='js/lib/leaflet.js') }}"></script>
+<div class="container mt-5">
+    <div class="columns">
+
+        <div class="column">
+            <h2 class="title is-4">{{ _('Measurement point') }}</h2>
+            <div class="content">
+                <div class="image-container" style="text-align: center; margin-bottom: 20px;">
+                    {% if thing['properties'].get('url_photo') %}
+                    <img src="{{ thing['properties']['url_photo'] }}" alt="{{ _('Measurement point preview') }}"
+                        style="max-width: 100%; height: auto; border-radius: 8px;">
+                    {% else %}
+                    <p style="font-style: italic; color: gray;">{{ _('No image available.') }}</p>
+                    {% endif %}
+                </div>
+                {% if not thing['properties'].get('url_photo') %}
+                <form id="uploadPhotoThing_{{ thing['@iot.id'] }}" class="uploadPhotoThing" style="margin-top: 20px;">
+                    <div class="field">
+                        <label class="label">{{ _('Upload an image to illustrate the measurement point') }}</label>
+                        <div class="control">
+                            <input class="input" type="file" id="photo_thing_{{ thing['@iot.id'] }}"
+                                accept="image/png, image/jpeg, image/jpg" required>
+                        </div>
+                    </div>
+                    <div class="control">
+                        <button class="button is-link" type="submit">📤 {{ _('Send') }}</button>
+                    </div>
+                    <div id="message_{{ thing['@iot.id'] }}" class="notification is-hidden"></div>
+                    <progress id="message_{{ thing['@iot.id'] }}_pgb" class="progress is-small is-primary is-hidden"
+                        max="100">30%</progress>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        <div class="column">
+            <h2 class="title is-4">{{ _('Location') }}</h2>
+            <div class="block">
+                <div id="map" style="height:400px"></div>
+            </div>
+            <div class="block">
+                <h3 class="title is-5">{{ thing['name'] }}</h3>
+                <p>{{ thing['description'] }}</p>
+            </div>
+            <div class="block">
+                <h3 class="title is-5">{{ _('Data streams:') }}</h3>
+                <table class="table is-striped is-hoverable is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>{{ _('Stream name') }}</th>
+                            <th>{{ _('Description') }}</th>
+                            <th>{{ _('Sensor') }}</th>
+                            <th>{{ _('Observed parameter') }}</th>
+                            <th>{{ _('Time range') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in thing['Datastreams'] %}
+                        <tr>
+                            <td>{{ i['name'] }}</td>
+                            <td>{{ i['description'] }}</td>
+                            <td>
+                                <a href="{{ i['Sensor']['metadata'] }}" target="_blank" class="has-text-link">
+                                    {{ i['Sensor']['name'] }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{{ i['ObservedProperty']['definition'] }}" target="_blank"
+                                    class="has-text-link">
+                                    {{ i['ObservedProperty']['name'] }}
+                                </a>
+                            </td>
+                            <td> {% if 'phenomenonTime' in i %}
+                                {{ i['phenomenonTime'].split('/')[0] }}<br>
+                                {{ i['phenomenonTime'].split('/')[1] }}
+                                {% else %}
+                                N/A
+                                {% endif %}
+
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const myIcon = L.icon({
+        iconUrl: "{{ url_for('static', filename='img/markerB.svg') }}",
+        iconSize: [40, 40],
+        iconAnchor: [20, 40]
+    });
+
+    y = "{{ thing['Locations'][0]['location']['geometry']['coordinates'][1] }}"
+    x = "{{ thing['Locations'][0]['location']['geometry']['coordinates'][0] }}"
+    var map = L.map('map').setView([y, x], 15);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    L.marker(
+        [y, x], { icon: myIcon }
+    ).addTo(map)
+</script>
+{% endblock %}

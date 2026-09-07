@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>{{ api.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma2.min.css') }}">
+
+</head>
+
+<body class="is-flex is-flex-direction-column" style="min-height: 100vh;">
+    <section class="section is-flex-grow-1">
+        <div class="container">
+            <h1 class="title is-1">{{ api.title }}</h1>
+            <p class="subtitle is-4 mt-4">{{ api.description }}</p>
+            {% if api.keywords %}
+            <div class="tags mt-4">
+                {% for kw in api.keywords %}
+                <span class="tag is-info">{{ kw }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <div class="mt-6">
+                <h2 class="title is-3">Resources</h2>
+                <ul class="is-size-5">
+                    <li class="mb-2"><a href="{{ url_for('.get_processes') }}">Process list</a></li>
+                    <li class="mb-2"><a href="{{ url_for('.get_jobs') }}">Job list (history of
+                            computations launched by the API)</a>
+                    </li>
+                    <li class="mb-2"><a href="{{ url_for('.get_api') }}?f=html">Swagger (Try the API)</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="container">
+            <div class="box" style="display: inline-block; max-width: fit-content;">
+                <h2 class="subtitle is-4">Provider</h2>
+                <p><strong>{{ api.provider.name }}</strong></p>
+                <p>{{ api.provider.address.streetAddress }}, {{ api.provider.address.postalCode }} {{
+                    api.provider.address.addressLocality }}, {{ api.provider.address.addressCountry }}</p>
+                <p>Email: <a href="mailto:{{ api.provider.contactPoint.email }}">{{ api.provider.contactPoint.email
+                        }}</a></p>
+                <p>Website: <a href="{{ api.provider.url }}" target="_blank">{{ api.provider.url }}</a></p>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

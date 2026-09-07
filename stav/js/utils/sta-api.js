@@ -1,0 +1,359 @@
+/**
+ * SensorThings API Utility Module
+ * Provides buildQuery (URL construction) and fetch (unified download
+ * for differents formats) for SensorThings API
+ */
+
+const MISSING = "CHAMP OBLIGATOIRE MANQUANT";
+
+const MANDATORY_FIELDS = {
+  Things: ["name", "description"],
+  Locations: ["name", "description", "encodingType", "location"],
+  Sensors: ["name", "description", "encodingType", "metadata"],
+  ObservedProperties: ["name", "definition", "description"],
+  Datastreams: ["name", "description", "unitOfMeasurement", "observationType"],
+  Observations: ["phenomenonTime", "result"],
+  FeaturesOfInterest: ["name", "description", "encodingType", "feature"],
+};
+
+// --- Archive : lire les MultiDatastreams (champs pluriels, RESULT_JSON) avec le
+//     code générique Datastream. Flag posé au chargement config (voir app-init). ---
+let ARCHIVE = false;
+export function setArchiveMode(on) {
+  ARCHIVE = !!on;
+}
+export function isArchive() {
+  return ARCHIVE;
+}
+
+// Requête : Datastream -> MultiDatastream (path + $expand/$select/$filter).
+function _archiveRewrite(s) {
+  if (typeof s !== "string") return s;
+  return s
+    .replace(/(?<!Multi)Datastreams/g, "MultiDatastreams")
+    .replace(/ObservedProperty(?!\w)/g, "ObservedProperties")
+    .replace(/unitOfMeasurement(?!s)/g, "unitOfMeasurements")
+    .replace(/observationType(?!\w)/g, "multiObservationDataTypes");
+}
+
+// Réponse : expose un MultiDatastream façon Datastream (unitOfMeasurement /
+// ObservedProperty singuliers, thing.Datastreams) — AJOUTE les alias sans retirer
+// le pluriel, donc les sites qui lisent l'un OU l'autre marchent tous.
+function _aliasArchiveDs(ds) {
+  if (!ds || typeof ds !== "object") return;
+  if (ds.unitOfMeasurements && ds.unitOfMeasurement === undefined)
+    ds.unitOfMeasurement = ds.unitOfMeasurements[0];
+  if (ds.ObservedProperties && ds.ObservedProperty === undefined)
+    ds.ObservedProperty = ds.ObservedProperties[0];
+  if (ds.multiObservationDataTypes && ds.observationType === undefined)
+    ds.observationType = ds.multiObservationDataTypes[0];
+}
+function _adaptArchiveMeta(data) {
+  const items = Array.isArray(data) ? data : [data];
+  for (const it of items) {
+    if (!it || typeof it !== "object") continue;
+    if (it.MultiDatastreams && it.Datastreams === undefined)
+      it.Datastreams = it.MultiDatastreams; // Thing.MultiDatastreams -> .Datastreams
+    if (Array.isArray(it.Datastreams)) it.Datastreams.forEach(_aliasArchiveDs);
+    _aliasArchiveDs(it); // l'item peut être un (Multi)Datastream
+  }
+  return data;
+}
+
+/**
+ * Detects the SensorThings entity type from a URL path
+ * @param {string} url
+ * @returns {string|null}
+ */
+function _detectEntityType(url) {
+  const path = url.split("?")[0];
+  let lastMatch = null;
+  let lastIndex = -1;
+  for (const name of Object.keys(MANDATORY_FIELDS)) {
+    const idx = path.lastIndexOf(`/${name}`);
+    if (idx > lastIndex) {
+      lastIndex = idx;
+      lastMatch = name;
+    }
+  }
+  return lastMatch;
+}
+
+/**
+ * Parses $select fields from a URL. Returns null if no $select present (= all fields requested).
+ * @param {string} url
+ * @returns {Set<string>|null}
+ */
+function _parseSelectFields(url) {
+
+  const match = url.match(/[?&](?:\$|%24)select=([^&]*)/i);
+  if (!match) return null;
+  return new Set(decodeURIComponent(match[1]).split(",").map((f) => f.trim()));
+
+}
+
+/**
+ * Fills missing mandatory STA fields with a placeholder value.
+ * Only checks fields that were actually requested (respects $select).
+ * @param {Array|Object} data
+ * @param {string|null} entityType
+ * @param {Set<string>|null} selectedFields - null means all fields were requested
+ * @returns {Array|Object}
+ */
+function _normalizeMandatoryFields(data, entityType, selectedFields) {
+  if (!entityType) return data;
+  const fields = MANDATORY_FIELDS[entityType];
+  if (!fields) return data;
+
+  const fieldsToCheck = selectedFields
+    ? fields.filter((f) => selectedFields.has(f))
+    : fields;
+
+  if (fieldsToCheck.length === 0) return data;
+
+  const normalize = (entity) => {
+    if (typeof entity !== "object" || entity === null) return entity;
+    for (const field of fieldsToCheck) {
+      if (!(field in entity)) {
+        console.warn(`[STA] ${entityType}: champ obligatoire manquant — "${field}"`, entity["@iot.id"] ?? "");
+        entity[field] = MISSING;
+      }
+    }
+    return entity;
+  };
+
+  return Array.isArray(data) ? data.map(normalize) : normalize(data);
+}
+
+/**
+ * Builds a SensorThings API query URL with parameters
+ * @param {string} baseUrl - Base URL of the service
+ * @param {string} entity - Entity path (e.g., 'Things', 'Datastreams(1)/Observations', 'Things(5)')
+ * @param {Object} [options] - Query options (STA)
+ * @param {string} [options.select] - Fields to select
+ * @param {string} [options.expand] - Related entities to expand (supports nested syntax)
+ * @param {string} [options.filter] - OData filter expression
+ * @param {string} [options.orderby] - Order by clause
+ * @param {number} [options.top] - Limit results
+ * @param {number} [options.skip] - Skip results
+ * @param {boolean} [options.count] - Include count
+ * @param {string} [options.resultFormat] - Result format ('dataArray', 'csv')
+ * @param {string} [options.groupby] - Aggregation grouping ('day', 'hour', 'day,SUM', 'hour,SUM')
+ * @returns {string} Complete query URL
+ */
+function buildQuery(baseUrl, entity, options = {}) {
+  // Archive : réécrit Datastream -> MultiDatastream (entité + $expand/$select/$filter)
+  if (ARCHIVE) {
+    entity = _archiveRewrite(entity);
+    options = {
+      ...options,
+      expand: _archiveRewrite(options.expand),
+      select: _archiveRewrite(options.select),
+      filter: _archiveRewrite(options.filter),
+    };
+  }
+
+  // Non-integer IDs (UUIDs, strings) must be single-quoted in STA URLs: Datastreams('uuid')
+  entity = entity.replace(/\(([^)]+)\)/g, (match, id) => {
+    if (/^\d+$/.test(id) || id.startsWith("'")) return match;
+    return `('${id}')`;
+  });
+
+  const params = new URLSearchParams();
+
+  if (options.select) params.append("$select", options.select);
+  if (options.expand) params.append("$expand", options.expand);
+  if (options.filter) params.append("$filter", options.filter);
+  if (options.orderby) params.append("$orderby", options.orderby);
+  //careful 0 is false
+  if (options.top !== undefined) params.append("$top", options.top.toString());
+  if (options.skip) params.append("$skip", options.skip.toString());
+  if (options.count) params.append("$count", "true");
+  if (options.resultFormat)
+    params.append("$resultFormat", options.resultFormat);
+  if (options.groupby) params.append("$groupby", options.groupby);
+  const queryString = params.toString().replace(/\+/g, "%20");
+
+  // baseUrl peut se terminer par "/" (ex: .../v1.1/) : on le retire pour éviter
+  // un "//" que FROST rejette ("Path is not valid").
+  return `${baseUrl.replace(/\/+$/, "")}/${entity}${queryString ? "?" + queryString : ""}`;
+}
+
+/**
+ * Fetches DataArray format responses with optional record limit
+ * @param {string} url - Full URL to the DataArray endpoint
+ * @param {number|null} maxRecords - Maximum records to fetch (null = unlimited)
+ * @returns {Promise<{dataArray: Array, components: Array, limitReached: boolean}>}
+ */
+async function _fetchDataArray(url, maxRecords = null) {
+  const allDataArrays = [];
+  let components = null;
+  let nextLink = url;
+  let limitReached = false;
+
+  try {
+    while (
+      nextLink &&
+      (maxRecords === null || allDataArrays.length < maxRecords)
+    ) {
+      const response = await fetch(nextLink);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (!components && data.value && data.value.length > 0) {
+        components = data.value[0].components || [];
+      }
+
+      if (data.value && Array.isArray(data.value)) {
+        data.value.forEach((item) => {
+          if (item.dataArray && Array.isArray(item.dataArray)) {
+            if (maxRecords !== null) {
+              const remaining = maxRecords - allDataArrays.length;
+              if (remaining > 0) {
+                allDataArrays.push(...item.dataArray.slice(0, remaining));
+              }
+            } else {
+              allDataArrays.push(...item.dataArray);
+            }
+          }
+        });
+      }
+
+      if (maxRecords !== null && allDataArrays.length >= maxRecords) {
+        limitReached = true;
+        break;
+      }
+
+      nextLink = data["@iot.nextLink"] || null;
+    }
+
+    return {
+      dataArray: allDataArrays,
+      components: components || [],
+      limitReached,
+    };
+  } catch (error) {
+    console.error("Failed to fetch DataArray:", error);
+    return {
+      dataArray: [],
+      components: [],
+      limitReached: false,
+    };
+  }
+}
+
+/**
+ * Unified fetch function for SensorThings API
+ * Auto-detects response format from URL:
+ *   - $resultFormat=dataArray → {dataArray, components, limitReached}
+ *   - $resultFormat=csv → text string
+ *   - Response with 'value' array → paginated entity array
+ *   - No 'value' array → single entity object
+ *
+ * @param {string} url - Full URL (from buildQuery)
+ * @param {{paginate?: boolean, maxRecords?: number|null}=} options - Fetch options
+ *   - `paginate` (default `true`) - Follow @iot.nextLink
+ *   - `maxRecords` (default `null`) - Stop after N records, DataArray only
+ * @returns {Promise<Array|Object|string|{dataArray: any[], components: any, limitReached: boolean}>}
+ */
+async function fetchSTA(url, options = {}) {
+  const { paginate = true, maxRecords = null } = options;
+
+  if (
+    url.includes("$resultFormat=dataArray") ||
+    url.includes("%24resultFormat=dataArray")
+  ) {
+    return _fetchDataArray(url, maxRecords);
+  }
+
+  if (
+    url.includes("$resultFormat=csv") ||
+    url.includes("%24resultFormat=csv")
+  ) {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      return await response.text();
+    } catch (error) {
+      console.error("Failed to fetch CSV:", error);
+      throw error;
+    }
+  }
+
+  const allData = [];
+  let currentUrl = url;
+  const entityType = _detectEntityType(url);
+  const shouldNormalize = entityType !== "Observations";
+  const selectedFields = _parseSelectFields(url);
+
+  // Archive : normalise les MultiDatastreams (pluriel -> alias singuliers) sur les
+  // réponses d'entités (pas les Observations, gérées par la couche graphe).
+  const _adapt = (d) =>
+    ARCHIVE && url.includes("MultiDatastreams") && !url.includes("/Observations")
+      ? _adaptArchiveMeta(d)
+      : d;
+
+  try {
+    do {
+      const response = await fetch(currentUrl);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      if (data.value && Array.isArray(data.value)) {
+        allData.push(...data.value);
+        currentUrl = paginate ? data["@iot.nextLink"] || null : null;
+      } else {
+        return _adapt(shouldNormalize ? _normalizeMandatoryFields(data, entityType, selectedFields) : data);
+      }
+    } while (currentUrl);
+
+    return _adapt(shouldNormalize ? _normalizeMandatoryFields(allData, entityType, selectedFields) : allData);
+  } catch (error) {
+    console.error(`Failed to fetch from SensorThings API:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Gets the count of entities (convenience wrapper)
+ * @param {string} baseUrl - Base URL of the SensorThings service
+ * @param {string} entity - Entity path (e.g., 'Things', 'Datastreams(1)/Observations')
+ * @param {string} filter - Optional $filter expression
+ * @returns {Promise<number>} Count of entities (0 on error)
+ */
+async function getCount(baseUrl, entity, filter = "") {
+  if (!baseUrl) {
+    throw new Error("SensorThings API base URL is not configured");
+  }
+
+  const url = buildQuery(baseUrl, entity, {
+    count: true,
+    top: 0,
+    filter: filter || undefined,
+  });
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data["@iot.count"] || 0;
+  } catch (error) {
+    console.error(`Failed to get count for ${entity}:`, error);
+    return 0;
+  }
+}
+
+export { buildQuery, fetchSTA, getCount };

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Job list</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma2.min.css') }}">
+</head>
+
+<body>
+    <section class="section">
+        <div class="container">
+            <h1 class="title is-1">Jobs</h1>
+            <p class="subtitle is-4 mt-4">Processing status</p>
+
+            <table class="table is-fullwidth is-striped is-hoverable mt-6">
+                <thead>
+                    <tr>
+                        <th>Job ID</th>
+                        <th>Process ID</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                        <th>Progress</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td>
+                            <a href="{{ url_for('.get_job_status', job_id=job['jobID']) }}">
+                                {{ job['jobID'][:8] }}...
+                            </a>
+                        </td>
+                        <td>{{ job['processID'] }}</td>
+                        <td>
+                            <span class="
+                                {% if job['status'] == 'successful' %}
+                                    has-text-success
+                                {% elif job['status'] == 'failed' %}
+                                    has-text-danger
+                                {% elif job['status'] == 'running' %}
+                                    has-text-info
+                                {% else %}
+                                    has-text-warning
+                                {% endif %}
+                            ">
+                                {{ job['status'] }}
+                            </span>
+                        </td>
+                        <td>{{ job['created'] }}</td>
+                        <td>{{ job['updated'] }}</td>
+                        <td>
+                            <progress class="progress is-primary" value="{{ job['progress'] }}" max="100">
+                                {{ job['progress'] }}%
+                            </progress>
+                            {{ job['progress'] }} %
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="mt-6">
+                <a href="{{ url_for('.landing') }}" class="button is-light">
+                    ← Back to home
+                </a>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

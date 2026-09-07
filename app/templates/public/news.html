@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="columns is-multiline">
+        {% for article_id, article in json_article.items() %}
+        <div class="column is-6-tablet is-4-desktop">
+            <div class="card">
+                <div class="card-image">
+
+                    <img src="{{ url_for('static', filename='img/news/preview/' + article['image_preview']) }}"
+                        alt="{{ _('Preview of %(title)s', title=article['titre']) }}">
+
+                </div>
+                <div class="card-content">
+                    <p class="title is-6">
+                        <a href="{{ url_for('public.news_article', news_id=article_id) }}">{{ article['titre'] }}</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}

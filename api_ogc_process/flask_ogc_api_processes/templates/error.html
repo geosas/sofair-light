@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="title is-1">Sorry something gone wrong</h1>
+    <h3 class="title is-3">{{error}}</h3>
+    <img src="{{ url_for('static', filename='img/sorry.jpg') }}" width="500">
+    <img src="{{ url_for('static', filename='img/A_Flood_on_Java_1865-1876_Raden_Saleh.jpg') }}" width="500">
+</div>
+{% endblock %}

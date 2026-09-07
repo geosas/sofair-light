@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<section class="section has-text-left">
+    <div class="container">
+        <h1 class="title">{{ _('Service metadata (ISO 19119)') }}</h1>
+        <p class="subtitle is-6">
+            {{ _('Mandatory first step: describe the observation service. The fields are inspired by ISO 19119 geographic service metadata.') | safe }}
+        </p>
+
+        <form id="metadataForm">
+
+            <!-- 1. Service identification (SV_ServiceIdentification) -->
+            <fieldset class="box">
+                <legend class="label is-medium">{{ _('1. Service identification') }}</legend>
+
+                <div class="field">
+                    <label class="label">{{ _('Service name') }} <span class="has-text-danger">*</span></label>
+                    <div class="control">
+                        <input class="input" type="text" id="name" required
+                            placeholder="{{ _('e.g. Rennes urban site') }}">
+                    </div>
+                    <p class="help">ISO&nbsp;: citation.title</p>
+                </div>
+
+                <div class="field">
+                    <label class="label">{{ _('Summary') }} <span class="has-text-danger">*</span></label>
+                    <div class="control">
+                        <textarea class="textarea" id="resume" required
+                            placeholder="{{ _('Role and content of the observation service') }}"></textarea>
+                    </div>
+                    <p class="help">ISO&nbsp;: abstract</p>
+                </div>
+
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">{{ _('Service type') }}</label>
+                            <div class="control">
+                                <input class="input" type="text" id="serviceType" value="SensorThings" readonly>
+                            </div>
+                            <p class="help">ISO&nbsp;: serviceType</p>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">{{ _('Version') }}</label>
+                            <div class="control">
+                                <input class="input" type="text" id="serviceTypeVersion" value="1.1" readonly>
+                            </div>
+                            <p class="help">ISO&nbsp;: serviceTypeVersion</p>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">{{ _('Status') }}</label>
+                            <div class="control">
+                                <div class="select is-fullwidth">
+                                    <select id="status">
+                                        <option value="onGoing" selected>{{ _('In operation') }}</option>
+                                        <option value="planned">{{ _('Planned') }}</option>
+                                        <option value="underDevelopment">{{ _('Under development') }}</option>
+                                        <option value="completed">{{ _('Completed') }}</option>
+                                        <option value="historicalArchive">{{ _('Archive') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <p class="help">ISO&nbsp;: MD_ProgressCode</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">{{ _('Service creation date') }} <span class="has-text-danger">*</span></label>
+                    <div class="control">
+                        <input class="input" type="date" id="date_creation" value="{{ today }}" required>
+                    </div>
+                    <p class="help">ISO&nbsp;: citation.date (creation)</p>
+                </div>
+            </fieldset>
+
+            <!-- 2. Responsible party (CI_ResponsibleParty) -->
+            <fieldset class="box">
+                <legend class="label is-medium">{{ _('2. Service responsible party') }}</legend>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">{{ _('Organization') }} <span class="has-text-danger">*</span></label>
+                            <div class="control">
+                                <input class="input" type="text" id="organization" required placeholder="{{ _('e.g. INRAE') }}">
+                            </div>
+                            <p class="help">ISO&nbsp;: organisationName</p>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">{{ _('Responsible person') }} <span class="has-text-danger">*</span></label>
+                            <div class="control">
+                                <input class="input" type="text" id="owner" required
+                                    placeholder="{{ _('Full name') }}">
+                            </div>
+                            <p class="help">ISO&nbsp;: individualName</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">{{ _('Email') }} <span class="has-text-danger">*</span></label>
+                            <div class="control">
+                                <input class="input" type="email" id="contact" required>
+                            </div>
+                            <p class="help">ISO&nbsp;: electronicMailAddress</p>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- 3. Extent (EX_Extent) -->
+            <fieldset class="box">
+                <legend class="label is-medium">{{ _('3. Service extent') }}</legend>
+                <label class="label">{{ _('Covered period (EX_TemporalExtent)') }}</label>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label class="label is-small">{{ _('Start') }}</label>
+                            <input class="input" type="date" id="temporal_start">
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <label class="label is-small">{{ _('End (empty = ongoing)') }}</label>
+                            <input class="input" type="date" id="temporal_end">
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- 4. Topic & keywords -->
+            <fieldset class="box">
+                <legend class="label is-medium">{{ _('4. Topic &amp; keywords') | safe }}</legend>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">{{ _('Topic category') }}</label>
+                            <div class="control">
+                                <div class="select is-fullwidth">
+                                    <select id="topicCategory">
+                                        <option value="inlandWaters" selected>{{ _('Inland waters') }}</option>
+                                        <option value="environment">{{ _('Environment') }}</option>
+                                        <option value="climatologyMeteorologyAtmosphere">{{ _('Climatology / Meteorology / Atmosphere') }}</option>
+                                        <option value="oceans">{{ _('Oceans') }}</option>
+                                        <option value="geoscientificInformation">{{ _('Geoscientific information') }}</option>
+                                        <option value="elevation">{{ _('Elevation') }}</option>
+                                        <option value="biota">{{ _('Biota') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <p class="help">ISO&nbsp;: MD_TopicCategoryCode</p>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">{{ _('Keywords (comma-separated)') }}</label>
+                            <div class="control">
+                                <input class="input" type="text" id="keywords"
+                                    placeholder="{{ _('e.g. piezometry, LoRaWAN, urban area') }}">
+                            </div>
+                            <p class="help">ISO&nbsp;: MD_Keywords</p>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- 5. Constraints / License (MD_Constraints) -->
+            <fieldset class="box">
+                <legend class="label is-medium">5. {{ _('Usage license') }}</legend>
+                <div class="columns">
+                    <div class="column">
+                        <div class="field">
+                            <label class="label">{{ _('Usage license') }}</label>
+                            <div class="control">
+                                <div class="select is-fullwidth">
+                                    <select id="license">
+                                        <option value="Licence Ouverte / Etalab 2.0" selected>Licence Ouverte / Etalab 2.0</option>
+                                        <option value="CC-BY 4.0">CC-BY 4.0</option>
+                                        <option value="CC-BY-SA 4.0">CC-BY-SA 4.0</option>
+                                        <option value="CC0 1.0">CC0 1.0</option>
+                                        <option value="ODbL 1.0">ODbL 1.0</option>
+                                        <option value="Tous droits réservés">{{ _('All rights reserved') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <p class="help">ISO&nbsp;: MD_LegalConstraints (useConstraints)</p>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- 6. Access point & record (CI_OnlineResource) -->
+            <fieldset class="box">
+                <legend class="label is-medium">{{ _('6. Access point &amp; external record') | safe }}</legend>
+                <div class="field">
+                    <label class="label">{{ _('Access point URL (connectPoint)') }}</label>
+                    <div class="control">
+                        <input class="input" type="url" id="connectPoint" readonly
+                            value="{{ url_service }}"
+                            placeholder="{{ _('generated from the server configuration') }}">
+                    </div>
+                    <p class="help">{{ _('Derived from the configuration (STA "partage" proxy).') }} ISO&nbsp;: connectPoint / linkage</p>
+                </div>
+                <div class="field">
+                    <label class="label">{{ _('External metadata record URL (optional)') }}</label>
+                    <div class="control">
+                        <input class="input" type="url" id="metadata_url"
+                            placeholder="https://.../geonetwork/srv/api/records/<id>">
+                    </div>
+                    <p class="help">ISO&nbsp;: CI_OnlineResource (GeoNetwork record)</p>
+                </div>
+            </fieldset>
+
+            <!-- 7. Display configuration (STAV) -->
+            <fieldset class="box">
+                <legend class="label is-medium">{{ _('7. Display configuration (STAV viewer)') }}</legend>
+                <div class="field">
+                    <label class="label">{{ _('Observatory image') }} <span class="has-text-danger">*</span></label>
+                    <div class="control">
+                        <input class="input" type="file" id="image_obs" accept="image/png, image/jpeg" required>
+                    </div>
+                </div>
+            </fieldset>
+
+            <button class="button is-primary is-medium" type="submit">📤 {{ _('Save the service metadata') }}</button>
+        </form>
+
+        <div id="message" class="notification is-hidden"></div>
+    </div>
+</section>
+
+<script>
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    document.getElementById("metadataForm").addEventListener("submit", function (event) {
+        event.preventDefault();  // Prevent the page from reloading
+
+        const val = id => document.getElementById(id).value;
+
+        let formData = new FormData();
+        // 1. Identification (serviceType/version are fixed server-side)
+        formData.append("name", val("name"));
+        formData.append("resume", val("resume"));
+        formData.append("status", val("status"));
+        formData.append("date_creation", val("date_creation"));
+        // 2. Responsible party
+        formData.append("organization", val("organization"));
+        formData.append("owner", val("owner"));
+        formData.append("contact", val("contact"));
+        // 3. Extent (temporal only)
+        formData.append("temporal_start", val("temporal_start"));
+        formData.append("temporal_end", val("temporal_end"));
+        // 4. Topic
+        formData.append("topicCategory", val("topicCategory"));
+        formData.append("keywords", val("keywords"));
+        // 5. License
+        formData.append("license", val("license"));
+        // 6. Access point
+        formData.append("metadata_url", val("metadata_url"));
+        // 7. STAV config (image only; metrology/interventionTerrain/bar set manually later)
+        formData.append("image_obs", document.getElementById("image_obs").files[0]);
+
+        fetch("{{ request.script_root }}/private/createMetadata", {
+            method: "POST",
+            headers: {
+                'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+            },
+            body: formData,
+            credentials: 'same-origin',
+        })
+            .then(response => response.json().then(data => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                const messageDiv = document.getElementById("message");
+                // Server error (e.g. 409: metadata already exists) -> error message.
+                if (!ok) {
+                    messageDiv.classList.remove("is-hidden", "is-success");
+                    messageDiv.classList.add("is-danger");
+                    messageDiv.textContent = data.error || {{ _('Error while submitting the form.')|tojson }};
+                    return;
+                }
+                messageDiv.classList.remove("is-hidden", "is-danger");
+                messageDiv.classList.add("is-success");
+                messageDiv.textContent = {{ _('Service metadata saved successfully!')|tojson }};
+
+                const link = document.createElement("a");
+                link.href = data['url'];
+                link.textContent = {{ _(' Click here to view the created metadata.')|tojson }};
+                messageDiv.appendChild(link);
+            })
+            .catch(error => {
+                const messageDiv = document.getElementById("message");
+                messageDiv.classList.remove("is-hidden", "is-success");
+                messageDiv.classList.add("is-danger");
+                messageDiv.textContent = {{ _('Error while submitting the form.')|tojson }};
+            });
+    });
+</script>
+
+{% endblock %}
+

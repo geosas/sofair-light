@@ -1,0 +1,18 @@
+flask
+Flask-SQLAlchemy
+flask_jwt_extended
+Flask-Limiter
+pydantic[email]
+pandas
+requests
+chardet
+pillow
+openpyxl
+# [binary] is required
+psycopg[binary]
+orjson
+duckdb
+apiflask>=3.1.0
+Flask-Babel
+Authlib
+-e ./api_ogc_process

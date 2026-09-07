@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+    /* Card image: fixed height + clean cropping (theme-neutral) */
+    .thing-img {
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: rgba(128, 128, 128, .12);
+    }
+    /* contain = whole image scaled down (never cropped/squashed); the gutters
+       of a portrait picture are filled by .thing-img's translucent background */
+    .thing-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+    /* Description truncated to 3 lines */
+    .thing-desc {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+</style>
+
+<div class="container mt-5">
+    <div class="columns is-multiline" id="formContainer">
+        {% for i in things %}
+        {% set tid = i['@iot.id'] %}
+        <div class="column is-6-tablet is-4-desktop">
+            <div class="card">
+                <div class="card-image">
+                    <div class="thing-img card-image_{{ tid }}">
+                        {% if i['properties'].get('url_photo') %}
+                        <img src="{{ i['properties']['url_photo'] }}" alt="{{ _('Measurement point preview') }}">
+                        {% else %}
+                        <span class="has-text-grey">{{ _('No image available.') }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <p class="title is-6 mb-2">
+                        <a href="{{ url_for('private.thing_info_id', idThing=tid) }}">{{ i['name'] }}</a>
+                        <span class="tag is-pulled-right">#{{ tid }}</span>
+                    </p>
+
+                    <!-- Description (affichage) -->
+                    <p id="desc_{{ tid }}" class="thing-desc has-text-grey">{{ i['description'] }}</p>
+
+                    <!-- Description (inline editing, hidden by default) -->
+                    <div id="editor_{{ tid }}" class="is-hidden">
+                        <textarea id="desc_input_{{ tid }}" class="textarea" rows="3">{{ i['description'] }}</textarea>
+                        <div class="buttons are-small mt-2">
+                            <button class="button is-link" type="button" onclick="saveDesc('{{ tid }}')">{{ _('Save') }}</button>
+                            <button class="button" type="button" onclick="cancelDesc('{{ tid }}')">{{ _('Cancel') }}</button>
+                        </div>
+                        <p id="desc_msg_{{ tid }}" class="help is-hidden"></p>
+                    </div>
+
+                    {% if not i['properties'].get('url_photo') %}
+                    <form id="uploadPhotoThing_{{ tid }}" class="uploadPhotoThing mt-3">
+                        <div class="field">
+                            <label class="label is-small">{{ _('Upload an image to illustrate the measurement point') }}</label>
+                            <div class="control">
+                                <input class="input is-small" type="file" id="photo_thing_{{ tid }}"
+                                    accept="image/png, image/jpeg, image/jpg" required>
+                            </div>
+                        </div>
+                        <div class="control">
+                            <button class="button is-link is-small" type="submit">📤 {{ _('Send') }}</button>
+                        </div>
+                        <div id="message_{{ tid }}" class="notification is-hidden"></div>
+                        <progress id="message_{{ tid }}_pgb" class="progress is-small is-primary is-hidden"
+                            max="100">30%</progress>
+                    </form>
+                    {% endif %}
+                </div>
+
+                <footer class="card-footer">
+                    <a href="#" class="card-footer-item" onclick="editDesc('{{ tid }}'); return false;">
+                        ✎ {{ _('Edit') }}
+                    </a>
+                </footer>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+    // --- Inline editing of the description (PATCH STA partage) ---
+    function editDesc(id) {
+        document.getElementById("desc_" + id).classList.add("is-hidden");
+        document.getElementById("editor_" + id).classList.remove("is-hidden");
+    }
+
+    function cancelDesc(id) {
+        document.getElementById("editor_" + id).classList.add("is-hidden");
+        document.getElementById("desc_" + id).classList.remove("is-hidden");
+        // resync the textarea with the displayed description
+        document.getElementById("desc_input_" + id).value =
+            document.getElementById("desc_" + id).textContent.trim();
+        const msg = document.getElementById("desc_msg_" + id);
+        msg.classList.add("is-hidden");
+        msg.textContent = "";
+    }
+
+    function saveDesc(id) {
+        const description = document.getElementById("desc_input_" + id).value;
+        const msg = document.getElementById("desc_msg_" + id);
+        msg.classList.add("is-hidden");
+
+        fetch("{{ request.script_root }}/private/patchThingDescription", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": getCookie("csrf_access_token"),
+            },
+            credentials: "same-origin",
+            body: JSON.stringify({ id: id, description: description }),
+        })
+            .then(response => response.json().then(data => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                if (!ok) {
+                    msg.classList.remove("is-hidden");
+                    msg.classList.add("has-text-danger");
+                    msg.textContent = data.error || {{ _('Error while saving.')|tojson }};
+                    return;
+                }
+                document.getElementById("desc_" + id).textContent = data.description;
+                cancelDesc(id);
+            })
+            .catch(() => {
+                msg.classList.remove("is-hidden");
+                msg.classList.add("has-text-danger");
+                msg.textContent = {{ _('An unexpected error occurred')|tojson }};
+            });
+    }
+
+    // --- Photo upload (unchanged) ---
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("formContainer").addEventListener("submit", function (event) {
+            if (event.target && event.target.matches("form.uploadPhotoThing")) {
+                event.preventDefault();
+
+                const id = event.target.id.split('_')[1];
+                document.getElementById("message_" + id + "_pgb").classList.remove("is-hidden");
+
+                let formData = new FormData();
+                formData.append("id", id);
+                formData.append("thing_photo", document.getElementById("photo_thing_" + id).files[0]);
+
+                fetch("{{ request.script_root }}/private/postThingInfo", {
+                    method: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+                    },
+                    body: formData,
+                    credentials: 'same-origin',
+                })
+                    .then(response => {
+                        document.getElementById("message_" + id + "_pgb").classList.add("is-hidden");
+                        if (!response.ok) {
+                            return response.json().then(err => {
+                                throw new Error(err['error']);
+                            })
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById("message_" + id + "_pgb").classList.add("is-hidden");
+                        const messageDiv = document.getElementById("message_" + id);
+                        messageDiv.classList.remove("is-hidden");
+                        messageDiv.classList.add("is-success");
+                        messageDiv.textContent = {{ _('Photo sent successfully!')|tojson }};
+
+                        const cardImageDiv = document.querySelector(".card-image_" + id);
+                        if (cardImageDiv) {
+                            const noImageText = cardImageDiv.querySelector("span");
+                            if (noImageText) { noImageText.remove(); }
+                            const imgElement = document.createElement("img");
+                            imgElement.src = data['url_photo'];
+                            imgElement.alt = {{ _('Measurement point preview')|tojson }};
+                            cardImageDiv.appendChild(imgElement);
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById("message_" + id + "_pgb").classList.add("is-hidden");
+                        const messageDiv = document.getElementById("message_" + id);
+                        messageDiv.classList.remove("is-hidden");
+                        messageDiv.classList.add("is-danger");
+                        messageDiv.textContent = {{ _('Error while sending the photo. ')|tojson }} + error;
+                    });
+            }
+        });
+    });
+</script>
+{% endblock %}

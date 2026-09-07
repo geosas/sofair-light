@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h3 class="title is-3">{{ _('LoRaWAN sensor management') }}</h3>
+    <div class="columns is-multiline" id="formContainer">
+        {% if driver | length > 0 %}
+        {% for i in datastreams %}
+        <div class="column is-6-tablet is-4-desktop">
+            <div class="card">
+                <div class="card-content">
+                    <div class="block">
+                        <p class="title is-6">
+                            {{ i['name']}}
+                        </p>
+                        <p><b>{{ i['Sensor']['name']}}</b></p>
+                    </div>
+                    <div class="block">
+                        <p>
+                            {{ i['description']}}
+                        </p>
+                    </div>
+                    {% if i.properties.LoRaWAN is defined %}
+                    <div class="block">
+                        <p>{{ _('Configuration:') }}</p>
+                        <table class="table is-fullwidth" id="configTable_{{ i['@iot.id'] }}">
+                            <tr>
+                                <td><label class="label">DevEUI :</label></td>
+                                <td class="editable" data-field="DevEUI">{{ i['properties']['LoRaWAN']['DevEUI'] }}</td>
+                            </tr>
+                            <tr>
+                                <td><label class="label">driver</label></td>
+                                <td class="editable" data-field="driver">{{ i['properties']['LoRaWAN']['driver'] }}</td>
+                            </tr>
+                            <tr>
+                                <td><label class="label">identifier :</label></td>
+                                <td class="editable" data-field="identifier">{{ i['properties']['LoRaWAN']['identifier']
+                                    }}</td>
+                            </tr>
+                        </table>
+                        <div>
+                            <button class="button is-primary" id="editBtn_{{ i['@iot.id'] }}"
+                                onclick="editConfig('{{ i['@iot.id'] }}')">{{ _('🖉 Edit') }}</button>
+                        </div>
+                        <br>
+                        <div class="field">
+                            <label class="label is-small">{{ _('Payload to decode (hex)') }}</label>
+                            <div class="control">
+                                <input class="input is-small" type="text" id="payload_{{ i['@iot.id'] }}"
+                                    value="{{ examples.get(i['properties']['LoRaWAN']['driver'], '') }}"
+                                    placeholder="{{ _('e.g. 0e0a000000000002ffffffff') }}">
+                            </div>
+                        </div>
+                        <div>
+                            <button class="button is-primary" id="testBtn_{{ i['@iot.id'] }}"
+                                onclick="test_driver('{{ i['properties']['LoRaWAN']['driver'] | escape }}', '{{ i['properties']['LoRaWAN']['identifier'] | escape }}','{{ i['@iot.id'] | escape }}')">
+                                {{ _('⚙️ Test the decoding (driver + identifier pair)') }}
+                            </button>
+                        </div>
+                        <div id="message_{{ i['@iot.id'] }}" class="notification is-hidden"></div>
+                        <progress id="message_{{ i['@iot.id'] }}_pgb" class="progress is-small is-primary is-hidden"
+                            max="100">30%</progress>
+                    </div>
+                    {% else %}
+                    <div class="block">
+                        <hr style="border: 2px solid #000; margin: 10px 0;">
+
+                        <p>
+                            {{ _('This sensor is not configured, please fill in these fields:') }}
+                        </p>
+                        <form id="uploadLoraWAN_{{ i['@iot.id'] }}" class="uploadLoraWAN">
+                            <table class="table is-fullwidth">
+                                <tr>
+                                    <td><label class="label">DevEUI :</label></td>
+                                    <td><input class=" input is-fullwidth" type="text" id="DevEUI_{{ i['@iot.id'] }}"
+                                            required placeholder="{{ _('unique sensor identifier') }}">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label class="label">driver</label></td>
+                                    <td><select class="input" id="driver_{{ i['@iot.id'] }}" required
+                                            onchange="update_identifier(this,'{{ i['@iot.id'] }}')">
+                                            <option value="">{{ _('--Please choose a driver--') }}</option>
+                                            {% for j in driver %}
+                                            <option value="{{j}}">{{j}}</option>
+                                            {% endfor%}
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><label class="label">identifier :</label></td>
+                                    <td>
+                                        <select class="input" id="identifier_{{ i['@iot.id'] }}" required>
+                                            <option value="">{{ _('--Please choose an identifier--') }}</option>
+                                        </select>
+                                    </td>
+                                </tr>
+
+                            </table>
+
+                            <button class="button is-primary" id="btn_{{ i['@iot.id'] }}" type="submit">{{ _('📤 Send') }}</button>
+
+                            <div id="message_{{ i['@iot.id'] }}" class="notification is-hidden"></div>
+                            <progress id="message_{{ i['@iot.id'] }}_pgb" class="progress is-small is-primary is-hidden"
+                                max="100">30%</progress>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="column is-6-tablet is-4-desktop">
+            <div class="card">
+                <div class="card-content">
+                    <div class="block">
+                        <p class="title is-6">
+                            {{ _('No sensor uses LoRaWAN') }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+<script>
+    var identifiers = {{ identifiers  | tojson }};
+    var examples = {{ examples | tojson }};
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("formContainer").addEventListener("submit", function (event) {
+            // Check that the event really comes from an intended form
+            if (event.target && event.target.matches("form.uploadLoraWAN")) {
+                event.preventDefault();
+
+                const id = event.target.id.split('_')[1];
+                document.getElementById("message_" + id + "_pgb").classList.remove("is-hidden");
+
+                var data_post = {
+                    "DevEUI": document.getElementById("DevEUI_" + id).value,
+                    "identifier": document.getElementById("identifier_" + id).value,
+                    "driver": document.getElementById("driver_" + id).value,
+                    "id": id
+
+                };
+
+                // Send the data as JSON via a POST
+                fetch("{{ request.script_root }}/private/lorawanInfo", {
+                    method: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data_post),
+                    credentials: 'same-origin',
+                })
+                    .then(response => {
+                        document.getElementById("message_" + id + "_pgb").classList.add("is-hidden");
+                        if (!response.ok) {
+                            // Check whether the response contains JSON before trying to read it
+                            return response.json().then(err => {
+                                console.log(err)
+                                const errorMessage = err['error'];
+                                throw new Error(errorMessage);
+                            })
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById("message_" + id + "_pgb").classList.add("is-hidden");
+                        const messageDiv = document.getElementById("message_" + id);
+                        messageDiv.classList.remove("is-hidden");
+                        messageDiv.classList.add("is-success");
+                        messageDiv.textContent = {{ _('LoRaWAN config sent successfully!')|tojson }};
+
+                        for (const [key, value] of Object.entries(data_post)) {
+                            if (key == 'id') {
+                                continue
+                            }
+                            console.log(key, value);
+                            input = document.getElementById(key + "_" + id)
+                            const textElement = document.createElement('span');
+                            textElement.textContent = value;
+                            textElement.classList.add('text-display');
+                            input.parentNode.replaceChild(textElement, input);
+                        }
+                        //document.getElementById("btn_" + id).classList.add("is-hidden")
+
+
+                        var targetElement = document.getElementById("uploadLoraWAN_" + data_post['id']);
+
+                        // Payload field for the decode test (same as for sensors
+                        // already configured when the page loads).
+                        if (targetElement && !document.getElementById("payload_" + data_post['id'])) {
+                            var payloadInput = document.createElement('input');
+                            payloadInput.type = 'text';
+                            payloadInput.id = 'payload_' + data_post['id'];
+                            payloadInput.className = 'input is-small mb-2';
+                            payloadInput.value = examples[data_post['driver']] || '';
+                            payloadInput.placeholder = {{ _('e.g. 0e0a000000000002ffffffff')|tojson }};
+                            targetElement.appendChild(payloadInput);
+                        }
+
+                        var button = document.getElementById("btn_" + data_post['id']);
+                        button.innerHTML = {{ _('⚙️ Test the decoding (driver + identifier pair)')|tojson }};
+                        button.onclick = function () {
+                            test_driver(data_post['driver'], data_post['identifier'], data_post['id']);
+                        };
+                        if (targetElement) {
+                            targetElement.appendChild(button);
+                        }
+
+
+                    })
+                    .catch(error => {
+                        console.log(error)
+                        document.getElementById("message_" + id + "_pgb").classList.add("is-hidden");
+                        const messageDiv = document.getElementById("message_" + id);
+                        messageDiv.classList.remove("is-hidden");
+                        messageDiv.classList.add("is-danger");
+                        messageDiv.textContent = {{ _('Error while sending the config. ')|tojson }} + error;
+
+                    });
+            }
+        });
+    });
+
+    function test_driver(driver, identifier, id) {
+        // Null-safe: the payload input only exists for configured sensors; a
+        // freshly-configured one (dynamic button) has none -> empty -> the
+        // backend falls back to the driver's built-in example.
+        const payloadEl = document.getElementById("payload_" + id);
+        const payload = payloadEl ? payloadEl.value.trim() : "";
+        if (!payload) {
+            const messageDiv = document.getElementById("message_" + id);
+            messageDiv.classList.remove("is-hidden", "is-success");
+            messageDiv.classList.add("is-danger");
+            messageDiv.textContent = {{ _('Please enter a payload to test.')|tojson }};
+            return;
+        }
+        data_post = {
+            "driver": driver,
+            "identifier": identifier,
+            "payload": payload
+        }
+        // Send the data as JSON via a POST
+        fetch("{{ request.script_root }}/private/lorawanDriver", {
+            method: "POST",
+            headers: {
+                'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data_post),
+            credentials: 'same-origin',
+        })
+            .then(response => {
+                document.getElementById("message_" + id + "_pgb").classList.add("is-hidden");
+                if (!response.ok) {
+                    // Check whether the response contains JSON before trying to read it
+                    return response.json().then(err => {
+                        console.log(err)
+                        const errorMessage = err['error'];
+                        throw new Error(errorMessage);
+                    })
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById("message_" + id + "_pgb").classList.add("is-hidden");
+                const messageDiv = document.getElementById("message_" + id);
+                messageDiv.classList.remove("is-hidden");
+                messageDiv.classList.add("is-success");
+                messageDiv.classList.remove("is-danger");
+                // With a payload -> show the decoded value; otherwise the plain OK.
+                if (data.decoded !== undefined) {
+                    messageDiv.textContent = {{ _('Decoded value:')|tojson }} + " " + data.decoded;
+                } else {
+                    messageDiv.textContent = {{ _('Test completed successfully!')|tojson }};
+                }
+
+                //document.getElementById("testBtn_" + id).classList.add("is-hidden")
+            })
+            .catch(error => {
+                console.log(error)
+                document.getElementById("message_" + id + "_pgb").classList.add("is-hidden");
+                const messageDiv = document.getElementById("message_" + id);
+                messageDiv.classList.remove("is-hidden");
+                messageDiv.classList.add("is-danger");
+                messageDiv.textContent = {{ _('Error during the test. ')|tojson }} + error;
+
+            });
+    }
+
+    function update_identifier(sourceSelect, id) {
+        const selectedValue = sourceSelect.value;
+        const targetSelect = document.getElementById("identifier_" + id);
+
+        targetSelect.innerHTML = '';
+        let option = document.createElement('option');
+        option.value = '';
+        option.textContent = {{ _('--Please choose an identifier--')|tojson }};
+        targetSelect.appendChild(option)
+
+
+        identifiers_driver = identifiers[selectedValue]
+        // For example: if the selection is "show", fill the select
+        for (const [value, label] of Object.entries(identifiers_driver)) {
+            const option = document.createElement('option');
+            option.value = value;
+            option.textContent = label;
+            targetSelect.appendChild(option);
+        }
+    }
+
+    function editConfig(id) {
+        const table = document.getElementById("configTable_" + id);
+        const editButton = document.getElementById("editBtn_" + id);
+
+        // Check whether we are in edit mode
+        if (editButton.textContent === {{ _('🖉 Edit')|tojson }}) {
+            // Make the cells editable
+            const cells = table.querySelectorAll("td.editable");
+            cells.forEach(cell => {
+                const field = cell.getAttribute("data-field");
+                if (field === "driver") {
+                    cell.innerHTML = `<select id="${field}_${id}" class="input is-fullwidth" required onchange="update_identifier(this, '${id}')">
+                                <option value="">{{ _('--Please choose a driver--') }}</option>
+                                {% for j in driver %}
+                                <option value="{{ j }}">{{ j }}</option>
+                                {% endfor %}
+                              </select>`;
+                } else if (field === "identifier") {
+                    cell.innerHTML = `<select id="${field}_${id}" class="input is-fullwidth" required>
+                                <option value="">{{ _('--Please choose an identifier--') }}</option>
+                              </select>`;
+                } else {
+                    // For the other fields, use a text input
+                    cell.innerHTML = `<input type="text" id="${field}_${id}" value="${cell.textContent}" class="input is-fullwidth" required>`;
+                }
+            });
+            editButton.textContent = {{ _('📤 Send')|tojson }};
+        } else {
+
+            const devEUI = document.getElementById("DevEUI_" + id).value;
+            const identifier = document.getElementById("identifier_" + id).value;
+            const driver = document.getElementById("driver_" + id).value;
+
+            if (devEUI === "" || identifier === "" || driver === "") {
+                const messageDiv = document.getElementById("message_" + id);
+                messageDiv.classList.remove("is-hidden");
+                messageDiv.classList.add("is-danger");
+                messageDiv.textContent = {{ _('All fields (DevEUI, identifier, driver) must be filled in.')|tojson }};
+                return; // Exit the function if a field is empty
+            }
+
+
+            // Get the new values
+            const data_post = {
+                "DevEUI": devEUI,
+                "identifier": identifier,
+                "driver": driver,
+                "id": id
+            };
+
+            // Send the data to the API
+            fetch("{{ request.script_root }}/private/lorawanInfo", {
+                method: "POST",
+                headers: {
+                    'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data_post),
+                credentials: 'same-origin',
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            const errorMessage = err['error'];
+                            throw new Error(errorMessage);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Handle the API response
+                    const messageDiv = document.getElementById("message_" + id);
+                    messageDiv.classList.remove("is-hidden");
+                    messageDiv.classList.remove("is-danger");
+                    messageDiv.classList.add("is-success");
+                    messageDiv.textContent = {{ _('Configuration updated successfully!')|tojson }};
+
+                    // Put the values back into the cells
+                    const cells = table.querySelectorAll("td.editable");
+                    cells.forEach(cell => {
+                        const field = cell.getAttribute("data-field");
+                        cell.innerHTML = data_post[field]; // Update the cell with the new value
+                    });
+
+                    // Reset the edit button
+                    editButton.textContent = {{ _('🖉 Edit')|tojson }};
+                    var button = document.getElementById("testBtn_" + id)
+                    button.classList.remove("is-hidden")
+                    button.onclick = function () {
+                        test_driver(data_post['driver'], data_post['identifier'], data_post['id']);
+                    };
+
+
+
+
+                })
+                .catch(error => {
+                    console.log(error);
+                    const messageDiv = document.getElementById("message_" + id);
+                    messageDiv.classList.remove("is-hidden");
+                    messageDiv.classList.add("is-danger");
+                    messageDiv.textContent = {{ _('Error while updating the configuration. ')|tojson }} + error;
+                });
+        }
+    }
+
+
+
+
+</script>
+{% endblock %}

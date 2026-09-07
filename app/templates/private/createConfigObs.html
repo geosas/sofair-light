@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        <h1 class="title">{{ _('Observatory configuration') }}</h1>
+        {% if configObs %}
+        <div class="notification is-info">
+            <p>{{ _('A config has already been generated; you can update it or download it.') }}</p>
+        </div>
+
+        <div class="columns is-centered">
+            <div class="column is-half">
+                <div class="box has-text-centered">
+                    <p class="title is-5">{{ _('Download the active service config') }}</p>
+                    <a href="{{ url_for('static', filename='xlsx/'+name_obs+'_config_service.xlsx') }}"
+                        class="button is-link is-light" download>
+                        📥 {{ _('Download') }}
+                    </a>
+                </div>
+                <div class="box has-text-centered">
+                    <p class="title is-5">🤔 {{ _('How to fill in the file?') }}</p>
+                    <a href="" class="button is-link is-light" download>
+                        {{ _('See the guide') }}
+                    </a>
+                </div>
+            </div>
+            <div class="column is-half">
+
+                <div class="box has-text-centered">
+                    <form id="uploadConfBase">
+                        <div class="block">
+                            <p class="title is-5">{{ _('1. Upload a template to generate new Datastreams') }}
+                            </p>
+                        </div>
+                        <div class="block">
+                            <label class="label">{{ _('Config file:') }}
+                                <input class="input" type="file" id="config_file"
+                                    accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet "
+                                    required>
+                            </label>
+                            <button class="button is-primary" type="submit">📤 {{ _('Upload') }}</button>
+                            <div id="message1" class="notification is-hidden"></div>
+                            <progress id="message1_pgb" class="progress is-small is-primary is-hidden"
+                                max="100">30%</progress>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="box has-text-centered">
+                    <form id="uploadConfDatastream">
+                        <div class="block">
+                            <p class="title is-5">{{ _('2. Upload a template to add Datastreams') }}
+                            </p>
+                        </div>
+                        <div class="block">
+                            <label class="label">{{ _('Completed config file:') }}
+                                <input class="input" type="file" id="config_file_datastream"
+                                    accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet "
+                                    required>
+                            </label>
+                            <button class="button is-primary" type="submit">📤 {{ _('Upload') }}</button>
+                            <div id="message2" class="notification is-hidden"></div>
+                            <progress id="message2_pgb" class="progress is-small is-primary is-hidden"
+                                max="100">30%</progress>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <div class="notification is-info">
+            <p>{{ _('No config found. If this is your first use, please download the empty template, fill it in and upload it.') }}</p>
+        </div>
+
+        <div class="columns is-centered">
+            <div class="column is-half">
+                <div class="box has-text-centered">
+                    <p class="title is-5">{{ _('Download an empty template') }}</p>
+                    <a href="{{ url_for('static', filename='xlsx/src/template_config.xlsx') }}"
+                        class="button is-link is-light" download>
+                        📥 {{ _('Download') }}
+                    </a>
+                </div>
+                <div class="box has-text-centered">
+                    <p class="title is-5">🤔 {{ _('How to fill in the file?') }}</p>
+                    <a href="" class="button is-link is-light" download>
+                        {{ _('See the guide') }}
+                    </a>
+
+                </div>
+            </div>
+            <div class="column is-half">
+
+                <div class="box has-text-centered">
+                    <form id="uploadConfBase">
+                        <div class="block">
+                            <p class="title is-5">{{ _('1. Upload the template (.xlsx file) & generate the Datastreams in the template.') }}
+                            </p>
+                            <p>
+                                {{ _('If you already have a file with Datastreams you can skip this step.') }}
+                            </p>
+                        </div>
+                        <div class="block">
+                            <label class="label">{{ _('Config file:') }}
+                                <input class="input" type="file" id="config_file"
+                                    accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet "
+                                    required>
+                            </label>
+                            <button class="button is-primary" type="submit">📤 {{ _('Upload') }}</button>
+                            <div id="message1" class="notification is-hidden"></div>
+                            <progress id="message1_pgb" class="progress is-small is-primary is-hidden"
+                                max="100">30%</progress>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="box has-text-centered">
+                    <form id="uploadConfDatastream">
+                        <div class="block">
+                            <p class="title is-5">{{ _('2. Upload the completed template & generate the SensorThings objects') }}
+                            </p>
+                        </div>
+                        <div class="block">
+                            <label class="label">{{ _('Completed config file:') }}
+                                <input class="input" type="file" id="config_file_datastream"
+                                    accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet "
+                                    required>
+                            </label>
+                            <button class="button is-primary" type="submit">📤 {{ _('Upload') }}</button>
+                            <div id="message2" class="notification is-hidden"></div>
+                            <progress id="message2_pgb" class="progress is-small is-primary is-hidden"
+                                max="100">30%</progress>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% endif %}
+    </div>
+</section>
+<script>
+
+    function handleFile(id_input) {
+        return new Promise((resolve, reject) => {
+            const input = document.getElementById(id_input);
+            const file = input.files[0];
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = function () {
+                const base64String = reader.result.split(',')[1];
+                const jsonData = JSON.stringify({
+                    "configFile": base64String
+                }, null, 2);
+                resolve(jsonData)
+            };
+            reader.onerror = function (error) {
+                reject(error);
+            };
+        });
+    }
+
+    document.getElementById("uploadConfBase").addEventListener("submit", function (event) {
+        event.preventDefault();  // Prevent the page from reloading
+
+        document.getElementById("message1_pgb").classList.remove("is-hidden");
+        handleFile('config_file').then(jsonData => {
+            fetch("{{ request.script_root }}/ogc-processes/processes/configCreateDatastream/execution", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': (document.cookie.match(/csrf_access_token=([^;]+)/) || [])[1]
+                },
+                body: jsonData,
+                credentials: 'same-origin',
+            })
+                .then(response => {
+                    document.getElementById("message1_pgb").classList.add("is-hidden");
+                    if (!response.ok) {
+                        // Check the response contains JSON before trying to read it
+                        return response.json().then(err => {
+                            console.log(err)
+                            const errorMessage = err['error'];
+                            throw new Error(errorMessage);
+                        })
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const messageDiv = document.getElementById("message1");
+                    messageDiv.classList.remove("is-hidden");
+                    messageDiv.classList.remove("is-danger");
+                    messageDiv.classList.add("is-success");
+                    messageDiv.textContent = {{ _('Config sent successfully and Datastreams generated, ')|tojson }};
+
+                    const link = document.createElement("a");
+                    link.href = "{{ url_for('public.home') }}" + data['configFileUrl'];
+                    link.textContent = {{ _('click here to download the generated config file')|tojson }};
+                    messageDiv.appendChild(link);
+
+                })
+                .catch(error => {
+                    document.getElementById("message1_pgb").classList.add("is-hidden");
+                    const messageDiv = document.getElementById("message1");
+                    messageDiv.classList.remove("is-hidden");
+                    messageDiv.classList.add("is-danger");
+                    messageDiv.textContent = {{ _('Error:')|tojson }} + " " + error.message;
+
+                });
+        })
+    });
+
+    document.getElementById("uploadConfDatastream").addEventListener("submit", function (event) {
+        event.preventDefault();  // Prevent the page from reloading
+
+        document.getElementById("message2_pgb").classList.remove("is-hidden");
+        handleFile('config_file_datastream').then(jsonData => {
+            fetch("{{ request.script_root }}/ogc-processes/processes/configPostToSTA/execution", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': (document.cookie.match(/csrf_access_token=([^;]+)/) || [])[1]
+                },
+                body: jsonData,
+                credentials: 'same-origin',
+            })
+                .then(response => {
+                    document.getElementById("message2_pgb").classList.add("is-hidden");
+                    if (!response.ok) {
+                        // Check the response contains JSON before trying to read it
+                        return response.json().then(err => {
+                            console.log(err)
+                            const errorMessage = err['error'];
+                            throw new Error(errorMessage);
+                        })
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const messageDiv = document.getElementById("message2");
+                    messageDiv.classList.remove("is-hidden");
+                    messageDiv.classList.remove("is-danger");
+                    messageDiv.classList.add("is-success");
+                    messageDiv.textContent = {{ _('Config sent successfully and SensorThings (archive and partage) generated, ')|tojson }};
+
+                    const link = document.createElement("a");
+                    link.href = '{{ request.script_root }}/{{ observatoire }}/espace/decouverte/';
+                    link.target = "_blank"
+                    link.textContent = {{ _('click here to view the observatory')|tojson }};
+                    messageDiv.appendChild(link);
+
+                })
+                .catch(error => {
+                    document.getElementById("message2_pgb").classList.add("is-hidden");
+                    const messageDiv = document.getElementById("message2");
+                    messageDiv.classList.remove("is-hidden");
+                    messageDiv.classList.add("is-danger");
+                    messageDiv.textContent = {{ _('Error:')|tojson }} + " " + error.message;
+
+                });
+        })
+    });
+
+</script>
+{% endblock %}

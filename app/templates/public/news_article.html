@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="columns is-multiline is-variable is-8">
+        <div class="column is-12-mobile is-6-tablet is-6-desktop">
+            <h1 class="title">{{ article['titre'] }}</h1>
+            <p class="subtitle">{{ _('By') }} {{ article['auteur'] }} - {{ article['date'] }}</p>
+            <div class="content">
+                <p><strong>{{ _('Summary:') }}</strong> {{ article['resume'] }}</p>
+                <p>{{ article['corps article'] }}</p>
+            </div>
+        </div>
+        <div class="column is-12-mobile is-6-tablet is-6-desktop">
+            <figure class="image">
+                <img src="{{ url_for('static', filename='img/news/' + article['image']) }}"
+                    alt="{{ _('Image of %(title)s', title=article['titre']) }}">
+            </figure>
+        </div>
+    </div>
+</div>
+{% endblock %}

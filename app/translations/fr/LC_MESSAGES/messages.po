@@ -1,0 +1,1320 @@
+# French translations for SOFAIR Light.
+# This file is distributed under the same license as the SOFAIR Light
+# project.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: SOFAIR Light\n"
+"Report-Msgid-Bugs-To: geosas_adm@framalistes.org\n"
+"POT-Creation-Date: 2026-07-06 12:12+0200\n"
+"PO-Revision-Date: 2026-07-05 21:27+0200\n"
+"Last-Translator: \n"
+"Language: fr\n"
+"Language-Team: fr <LL@li.org>\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.17.0\n"
+
+#: app/les_forms/forms.py:43
+msgid "Password must contain at least one uppercase letter."
+msgstr "Le mot de passe doit contenir au moins une majuscule."
+
+#: app/les_forms/forms.py:47
+msgid "Password must contain at least one lowercase letter."
+msgstr "Le mot de passe doit contenir au moins une minuscule."
+
+#: app/les_forms/forms.py:50
+msgid "Password must contain at least one digit."
+msgstr "Le mot de passe doit contenir au moins un chiffre."
+
+#: app/les_forms/forms.py:55
+msgid "Password must contain at least one special character."
+msgstr "Le mot de passe doit contenir au moins un caractère spécial."
+
+#: app/routes/private_routes.py:104 app/routes/private_routes.py:170
+#: app/routes/private_routes.py:232
+msgid "No image sent"
+msgstr "Aucune image envoyée"
+
+#: app/routes/private_routes.py:108 app/routes/private_routes.py:175
+#: app/routes/private_routes.py:237
+msgid "Invalid file name"
+msgstr "Nom de fichier invalide"
+
+#: app/routes/private_routes.py:202 app/routes/private_routes.py:204
+#: app/routes/private_routes.py:286 app/routes/private_routes.py:288
+#: app/routes/private_routes.py:317 app/routes/private_routes.py:319
+#: app/routes/private_routes.py:391 app/routes/private_routes.py:393
+msgid "SensorThings service not active or unreachable"
+msgstr "Service SensorThings non actif ou injoignable"
+
+#: app/routes/private_routes.py:220
+msgid "SensorThings service active but something gone wrong"
+msgstr "Service SensorThings actif mais une erreur est survenue"
+
+#: app/routes/private_routes.py:431
+msgid "invalid idData"
+msgstr "idData invalide"
+
+#: app/routes/private_routes.py:480
+#, python-format
+msgid ""
+"foiId missing on the partage Datastream '%(name)s': rerun the "
+"configuration"
+msgstr ""
+"foiId manquant sur le Datastream partage '%(name)s' : relancer la "
+"configuration"
+
+#: app/templates/base.html:50
+msgid "Home"
+msgstr "Accueil"
+
+#: app/templates/base.html:54
+msgid "Discover"
+msgstr "Découverte"
+
+#: app/templates/base.html:59
+msgid "Configuration"
+msgstr "Configuration"
+
+#: app/templates/base.html:63
+msgid "Create, add sensors (SensorThings)"
+msgstr "Créer, ajouter des capteurs (SensorThings)"
+
+#: app/templates/base.html:66
+msgid "Measurement points (photos, edits)"
+msgstr "Points de mesure (photos, modifications)"
+
+#: app/templates/base.html:69
+msgid "Available drivers description"
+msgstr "Description des drivers disponibles"
+
+#: app/templates/base.html:72
+msgid "Configure LoRaWAN sensors"
+msgstr "Configurer les capteurs LoRaWAN"
+
+#: app/templates/base.html:79
+msgid "Management"
+msgstr "Gestion"
+
+#: app/templates/base.html:83
+msgid "Import data"
+msgstr "Importer des données"
+
+#: app/templates/base.html:86
+msgid "Qualify data"
+msgstr "Qualifier les données"
+
+#: app/templates/base.html:89
+msgid "Alerts and monitoring"
+msgstr "Alerte et Monitoring"
+
+#: app/templates/base.html:92
+msgid "Field intervention"
+msgstr "Intervention terrain"
+
+#: app/templates/base.html:95
+msgid "Sensor comparison (Datastreams)"
+msgstr "Comparaison capteur (Datastreams)"
+
+#: app/templates/base.html:98
+msgid "Derived variable computation"
+msgstr "Calcul variable dérivée"
+
+#: app/templates/base.html:101
+msgid "Rating curve"
+msgstr "Courbe tarage"
+
+#: app/templates/base.html:109 app/templates/base.html:113
+#: app/templates/base.html:122
+msgid "Newsletter"
+msgstr "Newsletter"
+
+#: app/templates/base.html:116
+msgid "Create article"
+msgstr "Création d'article"
+
+#: app/templates/base.html:127 app/templates/private/createMetadata.html:47
+msgid "Other"
+msgstr "Autres"
+
+#: app/templates/base.html:131
+msgid "GeoNetwork metadata"
+msgstr "Métadonnées GeoNetwork"
+
+#: app/templates/base.html:134
+msgid "Contact"
+msgstr "Contact"
+
+#: app/templates/base.html:138
+msgid "Report an issue"
+msgstr "Signaler un problème"
+
+#: app/templates/auth/login.html:6 app/templates/auth/login.html:26
+#: app/templates/base.html:154
+msgid "Login"
+msgstr "Connexion"
+
+#: app/templates/base.html:158
+msgid "Logout"
+msgstr "Déconnexion"
+
+#: app/templates/error.html:5
+msgid "Sorry, something went wrong"
+msgstr "Désolé, une erreur est survenue"
+
+#: app/templates/auth/login.html:14 app/templates/auth/register.html:15
+msgid "Your Email"
+msgstr "Votre email"
+
+#: app/templates/auth/login.html:21 app/templates/auth/register.html:29
+msgid "Your Password"
+msgstr "Votre mot de passe"
+
+#: app/templates/auth/login.html:66 app/templates/auth/register.html:104
+msgid "All fields are required"
+msgstr "Tous les champs sont obligatoires"
+
+#: app/templates/auth/login.html:113 app/templates/auth/register.html:150
+msgid "An error occurred"
+msgstr "Une erreur est survenue"
+
+#: app/templates/auth/login.html:118 app/templates/auth/register.html:155
+msgid "An unexpected error occurred"
+msgstr "Une erreur inattendue est survenue"
+
+#: app/templates/auth/register.html:6 app/templates/auth/register.html:48
+msgid "Register"
+msgstr "Inscription"
+
+#: app/templates/auth/register.html:38
+msgid "Select a role"
+msgstr "Sélectionnez un rôle"
+
+#: app/templates/auth/register.html:39
+msgid "Metrologist"
+msgstr "Métrologue"
+
+#: app/templates/auth/register.html:40
+msgid "Thematician"
+msgstr "Thématicien"
+
+#: app/templates/auth/register.html:41
+msgid "Data Engineer"
+msgstr "Data Engineer"
+
+#: app/templates/auth/register.html:42
+msgid "Test"
+msgstr "Test"
+
+#: app/templates/auth/register.html:131
+msgid "Registration successful!"
+msgstr "Inscription réussie !"
+
+#: app/templates/private/createConfigObs.html:6
+msgid "Observatory configuration"
+msgstr "Configuration de l'observatoire"
+
+#: app/templates/private/createConfigObs.html:9
+msgid "A config has already been generated; you can update it or download it."
+msgstr ""
+"Une config a déjà été générée, vous pouvez la mettre à jour ou la "
+"télécharger."
+
+#: app/templates/private/createConfigObs.html:15
+msgid "Download the active service config"
+msgstr "Télécharger la config du service actif"
+
+#: app/templates/private/createConfigObs.html:18
+#: app/templates/private/createConfigObs.html:83
+msgid "Download"
+msgstr "Télécharger"
+
+#: app/templates/private/createConfigObs.html:22
+#: app/templates/private/createConfigObs.html:87
+msgid "How to fill in the file?"
+msgstr "Comment remplir le fichier ?"
+
+#: app/templates/private/createConfigObs.html:24
+#: app/templates/private/createConfigObs.html:89
+msgid "See the guide"
+msgstr "Voir le guide"
+
+#: app/templates/private/createConfigObs.html:33
+msgid "1. Upload a template to generate new Datastreams"
+msgstr "1. Uploader un template pour générer de nouveaux Datastreams"
+
+#: app/templates/private/createConfigObs.html:37
+#: app/templates/private/createConfigObs.html:106
+msgid "Config file:"
+msgstr "Fichier config :"
+
+#: app/templates/private/createConfigObs.html:42
+#: app/templates/private/createConfigObs.html:62
+#: app/templates/private/createConfigObs.html:111
+#: app/templates/private/createConfigObs.html:131
+msgid "Upload"
+msgstr "Uploader"
+
+#: app/templates/private/createConfigObs.html:53
+msgid "2. Upload a template to add Datastreams"
+msgstr "2. Uploader un template pour ajouter des Datastreams"
+
+#: app/templates/private/createConfigObs.html:57
+#: app/templates/private/createConfigObs.html:126
+msgid "Completed config file:"
+msgstr "Fichier config complété :"
+
+#: app/templates/private/createConfigObs.html:74
+msgid ""
+"No config found. If this is your first use, please download the empty "
+"template, fill it in and upload it."
+msgstr ""
+"Aucune config trouvée. Si c'est votre première utilisation, téléchargez "
+"le template vide, complétez-le et uploadez-le."
+
+#: app/templates/private/createConfigObs.html:80
+msgid "Download an empty template"
+msgstr "Télécharger un template vide"
+
+#: app/templates/private/createConfigObs.html:99
+msgid ""
+"1. Upload the template (.xlsx file) & generate the Datastreams in the "
+"template."
+msgstr ""
+"1. Uploader le template (fichier .xlsx) & générer les Datastreams dans le"
+" template."
+
+#: app/templates/private/createConfigObs.html:102
+msgid "If you already have a file with Datastreams you can skip this step."
+msgstr ""
+"Si vous avez déjà un fichier avec des Datastreams, vous pouvez sauter "
+"cette étape."
+
+#: app/templates/private/createConfigObs.html:122
+msgid "2. Upload the completed template & generate the SensorThings objects"
+msgstr "2. Uploader le template complété & générer les objets SensorThings"
+
+#: app/templates/private/createConfigObs.html:197
+msgid "Config sent successfully and Datastreams generated, "
+msgstr "Config envoyée avec succès et Datastreams générés, "
+
+#: app/templates/private/createConfigObs.html:201
+msgid "click here to download the generated config file"
+msgstr "cliquez ici pour télécharger le fichier de config généré"
+
+#: app/templates/private/createConfigObs.html:210
+#: app/templates/private/createConfigObs.html:261
+#: app/templates/private/import_data.html:277
+#: app/templates/private/import_data.html:345
+msgid "Error:"
+msgstr "Erreur :"
+
+#: app/templates/private/createConfigObs.html:247
+msgid ""
+"Config sent successfully and SensorThings (archive and partage) "
+"generated, "
+msgstr "Config envoyée avec succès et SensorThings (archive et partage) générés, "
+
+#: app/templates/private/createConfigObs.html:252
+msgid "click here to view the observatory"
+msgstr "cliquez ici pour visualiser l'observatoire"
+
+#: app/templates/private/createMetadata.html:7
+msgid "Service metadata (ISO 19119)"
+msgstr "Métadonnées de service (ISO 19119)"
+
+#: app/templates/private/createMetadata.html:9
+msgid ""
+"Mandatory first step: describe the observation service. The fields follow"
+" the ISO 19119 / <em>SV_ServiceIdentification</em> model (geographic "
+"service metadata)."
+msgstr ""
+"Première étape obligatoire : décrire le service d'observation. Les champs"
+" suivent le modèle ISO 19119 / <em>SV_ServiceIdentification</em> "
+"(métadonnées de service géographique)."
+
+#: app/templates/private/createMetadata.html:16
+msgid "1. Service identification"
+msgstr "1. Identification du service"
+
+#: app/templates/private/createMetadata.html:19
+msgid "Service name"
+msgstr "Nom du flux"
+
+#: app/templates/private/createMetadata.html:22
+msgid "e.g. Rennes urban site"
+msgstr "ex. site urbain rennais"
+
+#: app/templates/private/createMetadata.html:28
+msgid "Summary"
+msgstr "Résumé :"
+
+#: app/templates/private/createMetadata.html:31
+msgid "Role and content of the observation service"
+msgstr "Rôle et contenu du service d'observation"
+
+#: app/templates/private/createMetadata.html:39
+msgid "Service type"
+msgstr "Type de service"
+
+#: app/templates/private/createMetadata.html:56
+msgid "Version"
+msgstr "Version"
+
+#: app/templates/private/createMetadata.html:65
+msgid "Coupling type"
+msgstr "Type de couplage"
+
+#: app/templates/private/createMetadata.html:69
+msgid "tight (coupled to the data)"
+msgstr "tight (couplé aux données)"
+
+#: app/templates/private/createMetadata.html:80
+msgid "Status"
+msgstr "Statut"
+
+#: app/templates/private/createMetadata.html:84
+msgid "In operation"
+msgstr "Localisation"
+
+#: app/templates/private/createMetadata.html:85
+msgid "Planned"
+msgstr "Uploader"
+
+#: app/templates/private/createMetadata.html:86
+msgid "Under development"
+msgstr "En cours de développement"
+
+#: app/templates/private/createMetadata.html:87
+msgid "Completed"
+msgstr "Terminé"
+
+#: app/templates/private/createMetadata.html:88
+msgid "Archive"
+msgstr "Archive"
+
+#: app/templates/private/createMetadata.html:98
+msgid "Service creation date"
+msgstr "Date de création du service"
+
+#: app/templates/private/createMetadata.html:108
+msgid "2. Service responsible party"
+msgstr "2. Responsable du service"
+
+#: app/templates/private/createMetadata.html:112
+msgid "Organization"
+msgstr "Configuration"
+
+#: app/templates/private/createMetadata.html:114
+msgid "e.g. INRAE"
+msgstr "ex. INRAE"
+
+#: app/templates/private/createMetadata.html:121
+msgid "Responsible person"
+msgstr "Personne responsable"
+
+#: app/templates/private/createMetadata.html:124
+msgid "Full name"
+msgstr "Nom complet"
+
+#: app/templates/private/createMetadata.html:133
+msgid "Email"
+msgstr "Email"
+
+#: app/templates/private/createMetadata.html:142
+msgid "Role"
+msgstr "Rôle"
+
+#: app/templates/private/createMetadata.html:146
+msgid "Point of contact"
+msgstr "Point de contact"
+
+#: app/templates/private/createMetadata.html:147
+msgid "Owner"
+msgstr "Propriétaire"
+
+#: app/templates/private/createMetadata.html:148
+msgid "Custodian"
+msgstr "Gestionnaire"
+
+#: app/templates/private/createMetadata.html:149
+msgid "Publisher"
+msgstr "Éditeur"
+
+#: app/templates/private/createMetadata.html:150
+msgid "Author"
+msgstr "Auteur"
+
+#: app/templates/private/createMetadata.html:162
+msgid "3. Service extent"
+msgstr "3. Emprise du service"
+
+#: app/templates/private/createMetadata.html:163
+msgid "Geographic extent (decimal degrees)"
+msgstr "Emprise géographique (degrés décimaux)"
+
+#: app/templates/private/createMetadata.html:167
+msgid "West (W)"
+msgstr "Ouest (O)"
+
+#: app/templates/private/createMetadata.html:173
+msgid "East (E)"
+msgstr "Est (E)"
+
+#: app/templates/private/createMetadata.html:179
+msgid "South (S)"
+msgstr "Sud (S)"
+
+#: app/templates/private/createMetadata.html:185
+msgid "North (N)"
+msgstr "Nord (N)"
+
+#: app/templates/private/createMetadata.html:198
+msgid "Covered period (EX_TemporalExtent)"
+msgstr "Période couverte (EX_TemporalExtent)"
+
+#: app/templates/private/createMetadata.html:202
+msgid "Start"
+msgstr "Début"
+
+#: app/templates/private/createMetadata.html:208
+msgid "End (empty = ongoing)"
+msgstr "Fin (vide = en cours)"
+
+#: app/templates/private/createMetadata.html:217
+msgid "4. Topic &amp; keywords"
+msgstr "4. Thème &amp; mots-clés"
+
+#: app/templates/private/createMetadata.html:221
+msgid "Topic category"
+msgstr "Catégorie thématique"
+
+#: app/templates/private/createMetadata.html:225
+msgid "Inland waters"
+msgstr "Eaux intérieures"
+
+#: app/templates/private/createMetadata.html:226
+msgid "Environment"
+msgstr "Environnement"
+
+#: app/templates/private/createMetadata.html:227
+msgid "Climatology / Meteorology / Atmosphere"
+msgstr "Climatologie / Météorologie / Atmosphère"
+
+#: app/templates/private/createMetadata.html:228
+msgid "Oceans"
+msgstr "Océans"
+
+#: app/templates/private/createMetadata.html:229
+msgid "Geoscientific information"
+msgstr "Information géoscientifique"
+
+#: app/templates/private/createMetadata.html:230
+msgid "Elevation"
+msgstr "Altitude"
+
+#: app/templates/private/createMetadata.html:231
+msgid "Biota"
+msgstr "Biote"
+
+#: app/templates/private/createMetadata.html:240
+msgid "Keywords (comma-separated)"
+msgstr "Mots-clés (séparés par des virgules)"
+
+#: app/templates/private/createMetadata.html:243
+msgid "e.g. piezometry, LoRaWAN, urban area"
+msgstr "ex. piézométrie, LoRaWAN, zone urbaine"
+
+#: app/templates/private/createMetadata.html:253
+msgid "5. Access constraints &amp; license"
+msgstr "5. Contraintes d'accès &amp; licence"
+
+#: app/templates/private/createMetadata.html:257
+msgid "Access constraints"
+msgstr "Contraintes d'accès"
+
+#: app/templates/private/createMetadata.html:261
+msgid "No restriction"
+msgstr "Description"
+
+#: app/templates/private/createMetadata.html:262
+msgid "Restricted"
+msgstr "Restreint"
+
+#: app/templates/private/createMetadata.html:263
+msgid "Confidential"
+msgstr "Confidentiel"
+
+#: app/templates/private/createMetadata.html:272
+msgid "Usage license"
+msgstr "Licence d'utilisation"
+
+#: app/templates/private/createMetadata.html:281
+msgid "All rights reserved"
+msgstr "Tous droits réservés"
+
+#: app/templates/private/createMetadata.html:293
+msgid "6. Access point &amp; external record"
+msgstr "6. Point d'accès &amp; fiche externe"
+
+#: app/templates/private/createMetadata.html:295
+msgid "Access point URL (connectPoint)"
+msgstr "URL du point d'accès (connectPoint)"
+
+#: app/templates/private/createMetadata.html:299
+msgid "generated from the server configuration"
+msgstr "généré à partir de la configuration du serveur"
+
+#: app/templates/private/createMetadata.html:301
+msgid "Derived from the configuration (STA \"partage\" proxy)."
+msgstr "Dérivé de la configuration (proxy STA « partage »)."
+
+#: app/templates/private/createMetadata.html:304
+msgid "External metadata record URL (optional)"
+msgstr "URL de la fiche de métadonnées externe (optionnel)"
+
+#: app/templates/private/createMetadata.html:315
+msgid "7. Display configuration (STAV viewer)"
+msgstr "7. Configuration d'affichage (visualiseur STAV)"
+
+#: app/templates/private/createMetadata.html:317
+msgid "Observatory image"
+msgstr "Métadonnées de l'observatoire"
+
+#: app/templates/private/createMetadata.html:324
+msgid "Enable the metrology space (logged in)"
+msgstr "Activer l'espace métrologie (connecté)"
+
+#: app/templates/private/createMetadata.html:330
+msgid "\"Field intervention\" Datastream (id, optional)"
+msgstr "Datastream « intervention terrain » (id, optionnel)"
+
+#: app/templates/private/createMetadata.html:331
+msgid "e.g. 122"
+msgstr "ex. 122"
+
+#: app/templates/private/createMetadata.html:336
+msgid "Bar properties (comma-separated names)"
+msgstr "Propriétés en barres (noms séparés par des virgules)"
+
+#: app/templates/private/createMetadata.html:338
+msgid "e.g. Precipitation amount"
+msgstr "ex. Hauteur de précipitation"
+
+#: app/templates/private/createMetadata.html:344
+msgid "Save the service metadata"
+msgstr "Enregistrer les métadonnées de service"
+
+#: app/templates/private/createMetadata.html:412
+msgid "Service metadata saved successfully!"
+msgstr "Article envoyé avec succès !"
+
+#: app/templates/private/createMetadata.html:416
+msgid " Click here to view the created metadata."
+msgstr " Cliquez ici pour voir l'article créé."
+
+#: app/templates/private/createMetadata.html:423
+#: app/templates/private/createNews.html:78
+msgid "Error while submitting the form."
+msgstr "Erreur lors de l'envoi du formulaire."
+
+#: app/templates/private/createNews.html:6
+msgid "Create an information article"
+msgstr "Création d'un article d'information"
+
+#: app/templates/private/createNews.html:11
+msgid "Article title:"
+msgstr "Titre de l'article :"
+
+#: app/templates/private/createNews.html:16
+#: app/templates/public/news_article.html:10
+msgid "Summary:"
+msgstr "Résumé :"
+
+#: app/templates/private/createNews.html:20
+msgid "Article body:"
+msgstr "Corps de l'article :"
+
+#: app/templates/private/createNews.html:24
+msgid "Illustration image:"
+msgstr "Image pour illustrer :"
+
+#: app/templates/private/createNews.html:29
+#: app/templates/private/thing_info.html:41
+#: app/templates/private/thing_info_id.html:30
+msgid "Send"
+msgstr "Envoyer"
+
+#: app/templates/private/createNews.html:66
+msgid "Article sent successfully!"
+msgstr "Article envoyé avec succès !"
+
+#: app/templates/private/createNews.html:70
+msgid " Click here to view the created article."
+msgstr " Cliquez ici pour voir l'article créé."
+
+#: app/templates/private/driver_sta_info.html:5
+msgid "VeloProcessing sensors management"
+msgstr "Gestion des capteurs VeloProcessing"
+
+#: app/templates/private/driver_sta_info.html:22
+msgid "Arguments"
+msgstr "Arguments"
+
+#: app/templates/private/driver_sta_info.html:29
+msgid "Output"
+msgstr "Sortie"
+
+#: app/templates/private/driver_sta_info.html:37
+msgid "Download a sample data file"
+msgstr "Télécharger un fichier de donnée exemple"
+
+#: app/templates/private/driver_sta_info.html:41
+msgid "Test the driver"
+msgstr "Tester le driver"
+
+#: app/templates/private/driver_sta_info.html:57
+msgid "To add a Driver"
+msgstr "Pour ajouter un Driver"
+
+#: app/templates/private/driver_sta_info.html:62
+#, python-format
+msgid ""
+"Prepare a python script containing a run function whose arguments are: "
+"the in-memory file and [observedProperty] (take inspiration from the "
+"existing drivers). The goal is for the function output to be a pandas "
+"dataframe with a \"phenomenonTime\" (str) column in UTC format = "
+"%Y-%m-%dT%H:%M:%SZ; the following columns will be the datastream.name."
+msgstr ""
+"Préparer un script python contenant une fonction run, avec comme "
+"arguments : le fichier en mémoire et [observedProperty] (s'inspirer des "
+"drivers déjà existants). L'objectif est que la sortie de la fonction soit"
+" une dataframe pandas avec une colonne \"phenomenonTime\" (str) en UTC "
+"format = %Y-%m-%dT%H:%M:%SZ ; les colonnes suivantes seront les "
+"datastream.name."
+
+#: app/templates/private/driver_sta_info.html:64
+msgid ""
+"The driver script name must be a single word taken from the archive "
+"service Sensors.name, e.g. \"OTT\" for \"Orphéus mini OTT\"."
+msgstr ""
+"Le nom du script pour le driver doit être un mot unique issu des "
+"Sensors.name du service archive, exemple : \"OTT\" pour \"Orphéus mini "
+"OTT\"."
+
+#: app/templates/private/driver_sta_info.html:68
+msgid "Download a sample script file"
+msgstr "Télécharger un fichier script exemple"
+
+#: app/templates/private/import_data.html:10
+msgid "VeloProcessing data import"
+msgstr "Import de données VeloProcessing"
+
+#: app/templates/private/import_data.html:15
+msgid "Measurement points"
+msgstr "Point de mesure"
+
+#: app/templates/private/import_data.html:22
+msgid "Name"
+msgstr "Nom"
+
+#: app/templates/private/import_data.html:23
+#: app/templates/private/thing_info_id.html:54
+msgid "Description"
+msgstr "Description"
+
+#: app/templates/private/import_data.html:24
+msgid "Sensors"
+msgstr "Capteur"
+
+#: app/templates/private/import_data.html:46
+msgid "Information"
+msgstr "Configuration"
+
+#: app/templates/private/import_data.html:49
+msgid ""
+"To name a file, <b>use the measurement-point name</b>: for example "
+"EAMQ.csv, PZ2.1.txt"
+msgstr ""
+"Pour nommer un fichier, <b>utilisez le nom du point de mesure</b> : par "
+"exemple EAMQ.csv, PZ2.1.txt"
+
+#: app/templates/private/import_data.html:52
+msgid ""
+"For your own organization, you may add the sensor name and the date "
+"(separated by an underscore \"_\"), for example: EAMQ_OTT_20250101.csv"
+msgstr ""
+"Pour votre propre organisation, vous pouvez ajouter le nom du capteur et "
+"la date (séparés par un underscore « _ »), par exemple : "
+"EAMQ_OTT_20250101.csv"
+
+#: app/templates/private/import_data.html:55
+msgid "List of measurement points"
+msgstr "Point de mesure"
+
+#: app/templates/private/import_data.html:70
+#, python-format
+msgid "Import a raw %(driver)s file:"
+msgstr "Importer un fichier brut %(driver)s :"
+
+#: app/templates/private/import_data.html:75
+msgid "Inspection"
+msgstr "Inspection"
+
+#: app/templates/private/import_data.html:92
+msgid "Archive the data"
+msgstr "Archiver les données"
+
+#: app/templates/private/import_data.html:129
+#: app/templates/private/import_data.html:289
+msgid "Please select a file"
+msgstr "Sélectionnez un rôle"
+
+#: app/templates/private/import_data.html:175
+msgid "✅ Data decoded; you must now inspect it before validating the import. <br>"
+msgstr ""
+"✅ Données décodées ; vous devez maintenant les inspecter avant de valider"
+" l'import. <br>"
+
+#: app/templates/private/import_data.html:176
+msgid ""
+"The inspection is about checking you did not pick the wrong measurement "
+"point, and that there is no gap between the already stored data (archive)"
+" and the upcoming import.<br>"
+msgstr ""
+"L'inspection consiste à vérifier que vous n'avez pas choisi le mauvais "
+"point de mesure, et qu'il n'y a pas de trou entre les données déjà "
+"stockées (archive) et l'import à venir.<br>"
+
+#: app/templates/private/import_data.html:177
+msgid ""
+"⚠️ <b>Do not modify the data</b> (except for manual data, e.g. the light "
+"probe, if there was a typo in your spreadsheet).<br>"
+msgstr ""
+"⚠️ <b>Ne modifiez pas les données</b> (sauf pour les données manuelles, "
+"ex. la sonde lumineuse, s'il y avait une faute de frappe dans votre "
+"tableur).<br>"
+
+#: app/templates/private/import_data.html:178
+msgid ""
+"If this is not the right file, re-import another file and rerun the "
+"inspection"
+msgstr ""
+"Si ce n'est pas le bon fichier, réimportez un autre fichier et relancez "
+"l'inspection"
+
+#: app/templates/private/import_data.html:191
+msgid "First record:"
+msgstr "Premier enregistrement :"
+
+#: app/templates/private/import_data.html:191
+msgid "Last record:"
+msgstr "Dernier enregistrement :"
+
+#: app/templates/private/import_data.html:193
+msgid "⚠️ The data already exists"
+msgstr "⚠️ Les données existent déjà"
+
+#: app/templates/private/import_data.html:195
+#, python-brace-format
+msgid ""
+"⚠️ There is an overlap ({dup}/{total} records) between the last date and "
+"the stored data; the overlap will not be used."
+msgstr ""
+"⚠️ Il y a un recouvrement ({dup}/{total} enregistrements) entre la "
+"dernière date et les données stockées ; le recouvrement ne sera pas "
+"utilisé."
+
+#: app/templates/private/import_data.html:334
+msgid "✅ The data is saved, "
+msgstr "✅ Les données sont enregistrées, "
+
+#: app/templates/private/import_data.html:335
+msgid ""
+"if you want to check: <a href=\"/metrologie/visualisation(id1,id2,id3)\" "
+"target=\"_blank\">link to visualization</a>"
+msgstr ""
+"si vous voulez vérifier : <a "
+"href=\"/metrologie/visualisation(id1,id2,id3)\" target=\"_blank\">lien "
+"vers la visualisation</a>"
+
+#: app/templates/private/lorawan_sta_info.html:5
+msgid "LoRaWAN sensor management"
+msgstr "Gestion des capteurs LoRaWAN"
+
+#: app/templates/private/lorawan_sta_info.html:25
+msgid "Configuration:"
+msgstr "Configuration :"
+
+#: app/templates/private/lorawan_sta_info.html:43
+#: app/templates/private/lorawan_sta_info.html:287
+#: app/templates/private/lorawan_sta_info.html:367
+msgid "🖉 Edit"
+msgstr "🖉 Éditer"
+
+#: app/templates/private/lorawan_sta_info.html:49
+#: app/templates/private/lorawan_sta_info.html:189
+msgid "⚙️ Test the decoding (driver + identifier pair)"
+msgstr "⚙️ Tester le décodage (couple driver + identifier)"
+
+#: app/templates/private/lorawan_sta_info.html:61
+msgid "This sensor is not configured, please fill in these fields:"
+msgstr "Ce capteur n'est pas configuré, veuillez remplir ces champs :"
+
+#: app/templates/private/lorawan_sta_info.html:68
+msgid "unique sensor identifier"
+msgstr "identifiant unique du capteur"
+
+#: app/templates/private/lorawan_sta_info.html:75
+#: app/templates/private/lorawan_sta_info.html:294
+msgid "--Please choose a driver--"
+msgstr "-- Veuillez choisir un driver --"
+
+#: app/templates/private/lorawan_sta_info.html:86
+#: app/templates/private/lorawan_sta_info.html:268
+#: app/templates/private/lorawan_sta_info.html:301
+msgid "--Please choose an identifier--"
+msgstr "-- Veuillez choisir un identifier --"
+
+#: app/templates/private/lorawan_sta_info.html:93
+#: app/templates/private/lorawan_sta_info.html:308
+msgid "📤 Send"
+msgstr "📤 Envoyer"
+
+#: app/templates/private/lorawan_sta_info.html:112
+msgid "No sensor uses LoRaWAN"
+msgstr "Aucun capteur n'utilise le LoRaWAN"
+
+#: app/templates/private/lorawan_sta_info.html:172
+msgid "LoRaWAN config sent successfully!"
+msgstr "Config LoRaWAN envoyée avec succès !"
+
+#: app/templates/private/lorawan_sta_info.html:206
+msgid "Error while sending the config. "
+msgstr "Erreur lors de l'envoi de la config. "
+
+#: app/templates/private/lorawan_sta_info.html:246
+msgid "Test completed successfully!"
+msgstr "Test effectué avec succès !"
+
+#: app/templates/private/lorawan_sta_info.html:256
+msgid "Error during the test. "
+msgstr "Erreur lors du test. "
+
+#: app/templates/private/lorawan_sta_info.html:319
+msgid "All fields (DevEUI, identifier, driver) must be filled in."
+msgstr "Tous les champs (DevEUI, identifier, driver) doivent être remplis."
+
+#: app/templates/private/lorawan_sta_info.html:357
+msgid "Configuration updated successfully!"
+msgstr "Configuration mise à jour avec succès !"
+
+#: app/templates/private/lorawan_sta_info.html:383
+msgid "Error while updating the configuration. "
+msgstr "Erreur lors de la mise à jour de la configuration. "
+
+#: app/templates/private/qualification2.html:28
+msgid "Overview, daily summary (min / mean / max)"
+msgstr "Vue d'ensemble, synthèse journalière (min / moyenne / max)"
+
+#: app/templates/private/qualification2.html:31
+msgid ""
+"Each day is colored by its most severe qualification (white = to "
+"qualify). Click a start day then an end day to load that period for "
+"qualification."
+msgstr ""
+"Chaque jour est coloré par sa qualification la plus grave (blanc = à "
+"qualifier). Cliquez un jour de début puis un jour de fin pour charger "
+"cette période à qualifier."
+
+#: app/templates/private/qualification2.html:40
+#: app/templates/private/qualification2.html:150
+msgid "Qualification"
+msgstr "Qualification"
+
+#: app/templates/private/qualification2.html:41
+msgid ""
+"Click the start then the end of an interval (drag to zoom, double-click "
+"to zoom out), choose its type, then send."
+msgstr ""
+"Cliquez le début puis la fin d'un intervalle (glissez pour zoomer, "
+"double-clic pour dézoomer), choisissez son type, puis envoyez."
+
+#: app/templates/private/qualification2.html:44
+#: app/templates/private/thing_info_id.html:10
+msgid "Measurement point"
+msgstr "Point de mesure"
+
+#: app/templates/private/qualification2.html:46
+msgid "Select a Thing"
+msgstr "Sélectionnez une Thing"
+
+#: app/templates/private/qualification2.html:52
+#: app/templates/private/qualification2.html:203
+msgid "Select a Datastream"
+msgstr "Sélectionnez un Datastream"
+
+#: app/templates/private/qualification2.html:59
+msgid "Displayed window"
+msgstr "Fenêtre affichée"
+
+#: app/templates/private/qualification2.html:68
+msgid "Marked ranges"
+msgstr "Plages marquées"
+
+#: app/templates/private/qualification2.html:69
+#: app/templates/private/qualification2.html:434
+msgid "No range marked.<br>Sending will validate the whole window."
+msgstr "Aucune plage marquée.<br>L'envoi validera toute la fenêtre."
+
+#: app/templates/private/qualification2.html:72
+msgid "Send the qualification"
+msgstr "Envoyer la qualification"
+
+#: app/templates/private/qualification2.html:74
+msgid "Validates the whole displayed window, except the marked ranges."
+msgstr "Valide toute la fenêtre affichée, sauf les plages marquées."
+
+#: app/templates/private/qualification2.html:82
+msgid "Select a datastream"
+msgstr "Sélectionnez un datastream"
+
+#: app/templates/private/qualification2.html:86
+msgid "Already qualified:"
+msgstr "Déjà qualifié :"
+
+#: app/templates/private/qualification2.html:87
+#: app/templates/private/qualification2.html:179
+#: app/templates/private/qualification2.html:181
+msgid "Validated"
+msgstr "Validée"
+
+#: app/templates/private/qualification2.html:88
+#: app/templates/private/qualification2.html:99
+#: app/templates/private/qualification2.html:179
+#: app/templates/private/qualification2.html:181
+#: app/templates/private/qualification2.html:186
+msgid "Doubtful"
+msgstr "Douteuse"
+
+#: app/templates/private/qualification2.html:89
+#: app/templates/private/qualification2.html:100
+#: app/templates/private/qualification2.html:179
+#: app/templates/private/qualification2.html:181
+#: app/templates/private/qualification2.html:186
+msgid "Wrong"
+msgstr "Fausse"
+
+#: app/templates/private/qualification2.html:90
+#: app/templates/private/qualification2.html:101
+#: app/templates/private/qualification2.html:179
+#: app/templates/private/qualification2.html:181
+#: app/templates/private/qualification2.html:186
+msgid "Missing"
+msgstr "Manquante"
+
+#: app/templates/private/qualification2.html:91
+#: app/templates/private/qualification2.html:102
+#: app/templates/private/qualification2.html:179
+#: app/templates/private/qualification2.html:181
+#: app/templates/private/qualification2.html:186
+msgid "Calibration"
+msgstr "Calibration"
+
+#: app/templates/private/qualification2.html:92
+#: app/templates/private/qualification2.html:103
+#: app/templates/private/qualification2.html:179
+#: app/templates/private/qualification2.html:181
+#: app/templates/private/qualification2.html:186
+msgid "Interpolation"
+msgstr "Interpolation"
+
+#: app/templates/private/qualification2.html:97
+msgid "Selected range:"
+msgstr "Plage sélectionnée :"
+
+#: app/templates/private/qualification2.html:104
+msgid "Cancel"
+msgstr "Annuler"
+
+#: app/templates/private/qualification2.html:117
+msgid "Period table, manual editing"
+msgstr "Tableau de la période, édition manuelle"
+
+#: app/templates/private/qualification2.html:120
+msgid "📋 Show the table (editing, 100/page)"
+msgstr "📋 Afficher le tableau (édition, 100/page)"
+
+#: app/templates/private/qualification2.html:124
+msgid "⬇ Export CSV (whole period)"
+msgstr "⬇ Exporter CSV (toute la période)"
+
+#: app/templates/private/qualification2.html:125
+msgid "⬆ Import CSV"
+msgstr "⬆ Importer CSV"
+
+#: app/templates/private/qualification2.html:130
+msgid "Send the changes"
+msgstr "Envoyer les modifications"
+
+#: app/templates/private/qualification2.html:132
+msgid "✖ Close"
+msgstr "✖ Fermer"
+
+#: app/templates/private/qualification2.html:135
+msgid ""
+"Editing the “Correction” switches the row to the corrected flag. Only "
+"modified rows are sent. CSV export/import covers <strong>the whole "
+"period</strong>."
+msgstr ""
+"Éditer la « Correction » passe la ligne en valeur corrigée. Seules les "
+"lignes modifiées sont envoyées. L'export/import CSV couvre <strong>toute la "
+"période</strong>."
+
+#: app/templates/private/qualification2.html:148
+msgid "Result (raw)"
+msgstr "Résultat (brut)"
+
+#: app/templates/private/qualification2.html:149
+msgid "Correction"
+msgstr "Correction"
+
+#: app/templates/private/qualification2.html:181
+msgid "Corrected value"
+msgstr "Valeur corrigée"
+
+#: app/templates/private/qualification2.html:199
+msgid "Error loading Things."
+msgstr "Erreur de chargement des Things."
+
+#: app/templates/private/qualification2.html:223
+msgid "Sensor:"
+msgstr "Capteur :"
+
+#: app/templates/private/qualification2.html:228
+msgid "This datastream has no data period."
+msgstr "Ce datastream n'a pas de période de données."
+
+#: app/templates/private/qualification2.html:253
+#: app/templates/private/qualification2.html:336
+msgid "Loading…"
+msgstr "Chargement…"
+
+#: app/templates/private/qualification2.html:256
+msgid "No data."
+msgstr "Aucune donnée."
+
+#: app/templates/private/qualification2.html:262
+#: app/templates/private/qualification2.html:346
+msgid "Value"
+msgstr "Valeur"
+
+#: app/templates/private/qualification2.html:266
+msgid "Loading error."
+msgstr "Erreur de chargement."
+
+#: app/templates/private/qualification2.html:342
+msgid "No data in this window."
+msgstr "Aucune donnée sur cette fenêtre."
+
+#: app/templates/private/qualification2.html:444
+msgid "Remove"
+msgstr "Retirer"
+
+#: app/templates/private/qualification2.html:473
+msgid "Qualification sent. Reloading the window…"
+msgstr "Qualification envoyée. Rechargement de la fenêtre…"
+
+#: app/templates/private/qualification2.html:477
+#: app/templates/private/qualification2.html:708
+msgid "Error while sending."
+msgstr "Erreur lors de l'envoi."
+
+#: app/templates/private/qualification2.html:521
+msgid "Reload the table for the new period? Unsent changes will be lost."
+msgstr ""
+"Recharger le tableau sur la nouvelle période ? Les modifications non "
+"envoyées seront perdues."
+
+#: app/templates/private/qualification2.html:527
+msgid "Close the table? Unsent changes will be lost."
+msgstr "Fermer le tableau ? Les modifications non envoyées seront perdues."
+
+#: app/templates/private/qualification2.html:566
+msgid "(other)"
+msgstr "(autre)"
+
+#: app/templates/private/qualification2.html:591
+msgid "No data in this period."
+msgstr "Aucune donnée sur cette période."
+
+#: app/templates/private/qualification2.html:660
+msgid "Invalid CSV: \"id\" column missing."
+msgstr "CSV invalide : colonne « id » absente."
+
+#: app/templates/private/qualification2.html:674
+#, python-brace-format
+msgid "{n} row(s) imported, {m} modified."
+msgstr "{n} ligne(s) importée(s), {m} modifiée(s)."
+
+#: app/templates/private/qualification2.html:675
+#, python-brace-format
+msgid " ⚠️ {k} correction(s) without the corrected flag."
+msgstr " ⚠️ {k} correction(s) sans le flag corrigé."
+
+#: app/templates/private/qualification2.html:677
+#, python-brace-format
+msgid ""
+"⚠️ {k} row(s) have a correction different from the raw value but a QF ≠ 4"
+" (corrected value)."
+msgstr ""
+"⚠️ {k} ligne(s) ont une correction différente de la valeur brute mais un "
+"QF ≠ 4 (valeur corrigée)."
+
+#: app/templates/private/qualification2.html:678
+msgid "ids: "
+msgstr "ids : "
+
+#: app/templates/private/qualification2.html:685
+#, python-brace-format
+msgid ""
+"⚠️ {k} row(s) have a correction ≠ raw value without the corrected flag. "
+"Send anyway?"
+msgstr ""
+"⚠️ {k} ligne(s) ont une correction ≠ valeur brute sans le flag corrigé. "
+"Envoyer quand même ?"
+
+#: app/templates/private/qualification2.html:703
+msgid "Changes sent: "
+msgstr "Modifications envoyées : "
+
+#: app/templates/private/qualification2.html:703
+msgid " point(s)."
+msgstr " point(s)."
+
+#: app/templates/private/thing_info.html:12
+#: app/templates/private/thing_info.html:109
+#: app/templates/private/thing_info_id.html:14
+msgid "Measurement point preview"
+msgstr "Aperçu du point de mesure"
+
+#: app/templates/private/thing_info.html:14
+#: app/templates/private/thing_info.html:104
+#: app/templates/private/thing_info_id.html:17
+msgid "No image available."
+msgstr "Aucune image disponible."
+
+#: app/templates/private/thing_info.html:27
+msgid "Save"
+msgstr "Enregistrer"
+
+#: app/templates/private/thing_info.html:28
+msgid "Edit"
+msgstr "Modifier"
+
+#: app/templates/private/thing_info.html:29
+msgid "Delete"
+msgstr "Supprimer"
+
+#: app/templates/private/thing_info.html:34
+#: app/templates/private/thing_info_id.html:23
+msgid "Upload an image to illustrate the measurement point"
+msgstr "Télécharger une image pour illustrer le point de mesure"
+
+#: app/templates/private/thing_info.html:99
+msgid "Photo sent successfully!"
+msgstr "Photo envoyée avec succès !"
+
+#: app/templates/private/thing_info.html:119
+msgid "Error while sending the photo. "
+msgstr "Erreur lors de l'envoi de la photo. "
+
+#: app/templates/private/thing_info_id.html:40
+msgid "Location"
+msgstr "Localisation"
+
+#: app/templates/private/thing_info_id.html:49
+msgid "Data streams:"
+msgstr "Flux de données :"
+
+#: app/templates/private/thing_info_id.html:53
+msgid "Stream name"
+msgstr "Nom du flux"
+
+#: app/templates/private/thing_info_id.html:55
+msgid "Sensor"
+msgstr "Capteur"
+
+#: app/templates/private/thing_info_id.html:56
+msgid "Observed parameter"
+msgstr "Paramètre observé"
+
+#: app/templates/private/thing_info_id.html:57
+msgid "Time range"
+msgstr "Plage temporelle"
+
+#: app/templates/public/metadata.html:6
+msgid "Observatory metadata"
+msgstr "Métadonnées de l'observatoire"
+
+#: app/templates/public/metadata.html:11
+msgid "Observatory preview"
+msgstr "Aperçu de l'observatoire"
+
+#: app/templates/public/metadata.html:28
+msgid ""
+"No metadata found. If this is your first use, please log in and it will "
+"be generated automatically."
+msgstr ""
+"Aucune métadonnée trouvée. Si c'est votre première utilisation, "
+"connectez-vous et elle sera générée automatiquement."
+
+#: app/templates/public/news.html:12
+#, python-format
+msgid "Preview of %(title)s"
+msgstr "Aperçu de %(title)s"
+
+#: app/templates/public/news_article.html:8
+msgid "By"
+msgstr "Par"
+
+#: app/templates/public/news_article.html:17
+#, python-format
+msgid "Image of %(title)s"
+msgstr "Image de %(title)s"
+
+#: app/templates/private/qualification.html
+msgid "✅ Qualification saved ({n} point(s))."
+msgstr "✅ Qualification enregistrée ({n} point(s))."
+
+#: app/templates/private/qualification.html
+msgid "✅ Qualification saved."
+msgstr "✅ Qualification enregistrée."
+
+#: app/templates/private/qualification.html
+msgid "If you want to check the produced data:"
+msgstr "Si vous voulez vérifier les données produites :"
+
+#: app/templates/private/qualification.html
+msgid "Published data"
+msgstr "Données publiées"
+
+#: app/templates/private/qualification.html
+msgid "Raw + corrected data (archive)"
+msgstr "Données brutes + corrigées (archive)"
+
+
+#: app/templates/base.html
+msgid "Free software distributed under the GPL-3.0 licence."
+msgstr "Logiciel libre distribué sous licence GPL-3.0."
+
+#: app/templates/base.html
+msgid "Licence"
+msgstr "Licence"
+
+#: app/templates/base.html
+msgid "Source code"
+msgstr "Code source"

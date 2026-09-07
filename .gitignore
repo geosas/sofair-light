@@ -1,0 +1,42 @@
+# --- Python -----------------------------------------------------------------
+*__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+instance/
+.venv/
+python_stalt/
+
+# --- Secrets ----------------------------------------------------------------
+.env
+.env.api
+.env.sensor
+frost/.env
+
+# --- Runtime state (created by the app on first run) ------------------------
+# SQLite users/jobs/invitations DB (db.create_all() recreates it)
+app/database.db
+# OGC async job results
+app/ogc_process/job_store_data/
+api_ogc_process/flask_ogc_api_processes/job_store_data/
+# Generated config spreadsheets
+app/static/xlsx/tmp/
+!app/static/xlsx/tmp/.gitkeep
+
+# --- Instance content (uploaded / generated per deployment) -----------------
+# The observatory record, news and STA config are written by the app;
+# app/config.py::_load_json recreates them empty on first start.
+app/static/metadata/metadata_iso_19119.json
+app/data/news/news.json
+app/data/configSTA/config_STA.json
+app/static/img/news/*
+!app/static/img/news/preview/
+app/static/img/news/preview/*
+!app/static/img/news/preview/.gitkeep
+app/static/img/things/*
+!app/static/img/things/preview/
+app/static/img/things/preview/*
+!app/static/img/things/preview/.gitkeep
+
+# --- i18n build artefact ----------------------------------------------------
+messages.pot
