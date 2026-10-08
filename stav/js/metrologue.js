@@ -6,8 +6,8 @@ import * as UtilsGraph from "./utils/utils-graph.js";
 
 /**
  * Metrology Page
- * Enter STA worl by sensor
- * Data visualization with Dygraph,  and mini-map
+ * Enter the STA world by sensor
+ * Data visualisation with Dygraph, and mini-map
  */
 
 // Application state
@@ -30,7 +30,7 @@ document.getElementById("searchDescriptionInput").value = "";
 
 /**
  * Checks if the navbar burger menu is visible (mobile/small screen)
- * Mode VeloProcessing For the François
+ * VeloProcessing mode, for François
  * @returns {boolean}
  */
 function isBurgerMode() {
@@ -86,7 +86,7 @@ async function createSensorTable() {
                     <div class="card-content">
                         <div class="content">
                             <p class='has-text-success'>${Utils.escapeHtml(sensor.description)}</p>
-                            <p><b>Flux de données enregistrés :</b></p>
+                            <p><b>Recorded datastreams:</b></p>
                             <table class="table">
                                 <thead>
                                     <tr>
@@ -113,8 +113,8 @@ async function createSensorTable() {
                         <th class='is_info'>${Utils.escapeHtml(datastream.name)}</th>
                         <td>${Utils.escapeHtml(datastream.description)}</td>
                         <td>
-                            Premier enregistrement : <b>${parsedFirstDate}</b><br>
-                            Dernier enregistrement : <b>${parsedLastDate}</b>
+                            First record: <b>${parsedFirstDate}</b><br>
+                            Last record: <b>${parsedLastDate}</b>
                         </td>
                         <td>
                             <button class="button datastreamBTN"
@@ -123,7 +123,7 @@ async function createSensorTable() {
                                 data-name="${Utils.escapeHtml(datastream.name)}"
                                 data-unit="${Utils.escapeHtml(unitLabel)}"
                                 data-graph="${graphType}">
-                                Afficher
+                                Show
                             </button>
                         </td>
                     </tr>`;
@@ -144,7 +144,7 @@ async function createSensorTable() {
 
   } catch (error) {
     console.error("Failed to create sensor table:", error);
-    Utils.showNotification("Erreur lors du chargement des capteurs", "danger");
+    Utils.showNotification("Error while loading the sensors", "danger");
   }
 }
 
@@ -189,7 +189,7 @@ async function plotDatastream(id, title, unit, graphType, btn) {
       const obsResult = await STAApi.fetchSTA(obsUrl, { maxRecords: 9999 });
       const components = obsResult.components;
       let data;
-      // Archive : result = [brut, QF, corrigé] -> on trace la valeur brute [0].
+      // Archive: result = [raw, QF, corrected] -> plot the raw value [0].
       if (components[0] === "phenomenonTime") {
         data = obsResult.dataArray.map((row) => [
           new Date(row[0]),
@@ -207,7 +207,7 @@ async function plotDatastream(id, title, unit, graphType, btn) {
         data: data,
         label: `${title} (${unit}) \n`,
         graph: graphType,
-        // Archive : plages QF de CETTE série (utilisées en mode solo).
+        // Archive: QF ranges of THIS series (used in solo mode).
         qfRanges: STAApi.isArchive() ? UtilsGraph.buildQfRanges(obsResult) : [],
       };
 
@@ -239,7 +239,7 @@ async function plotDatastream(id, title, unit, graphType, btn) {
     } catch (error) {
       console.error(`Failed to load datastream ${dsId}:`, error);
       Utils.showNotification(
-        `Erreur lors du chargement du flux ${title}`,
+        `Error while loading the datastream ${title}`,
         "danger",
       );
       return;
@@ -255,7 +255,7 @@ async function plotDatastream(id, title, unit, graphType, btn) {
       ylabel: unit,
       labels: ["x", `${title} (${unit}) \n`],
       series: state.seriesConfig,
-      // Archive + série unique (solo) : fond coloré par QF.
+      // Archive + single series (solo): background coloured by QF.
       underlayCallback: UtilsGraph.qfUnderlayIfSingle(
         state.dataDict[datastreamId].qfRanges, 1, null),
     });
@@ -279,7 +279,7 @@ async function plotDatastream(id, title, unit, graphType, btn) {
       ylabel: null,
       title: null,
       series: state.seriesConfig,
-      underlayCallback: null, // multi-série : pas de fond QF (voir mode solo)
+      underlayCallback: null, // multi-series: no QF background (see solo mode)
     });
   }
 
@@ -292,7 +292,7 @@ async function plotDatastream(id, title, unit, graphType, btn) {
 
   // Update button for overlay mode
   if (checkboxSuperpose.checked) {
-    btn.innerText = "Masquer";
+    btn.innerText = "Hide";
     btn.dataset.action = "hide";
   }
 
@@ -336,9 +336,9 @@ function hideDatastream(id, btn) {
   const checkboxSuperpose = document.getElementById("checkbox_superpose");
   btn.dataset.action = "plot";
   if (!checkboxSuperpose.checked) {
-    btn.innerText = "Afficher";
+    btn.innerText = "Show";
   } else {
-    btn.innerText = "Superposer";
+    btn.innerText = "Overlay";
   }
 }
 
@@ -348,7 +348,7 @@ function hideDatastream(id, btn) {
 function renameButtons(text) {
   const buttons = document.querySelectorAll(".datastreamBTN");
   buttons.forEach((button) => {
-    if (button.textContent !== "Masquer") {
+    if (button.textContent !== "Hide") {
       button.textContent = text;
     }
   });
@@ -359,13 +359,13 @@ function renameButtons(text) {
  */
 async function downloadAllCSV() {
   if (Object.keys(state.dataDict).length === 0) {
-    Utils.showNotification("Aucune datastream sélectionnée", "warning");
+    Utils.showNotification("No datastream selected", "warning");
     return;
   }
 
   if (
     !confirm(
-      "Vous allez télécharger un ou plusieurs fichiers CSV. Voulez-vous continuer ?",
+      "You are about to download one or more CSV files. Do you want to continue?",
     )
   ) {
     return;
@@ -390,13 +390,13 @@ async function downloadAllCSV() {
       const csvText = await STAApi.fetchSTA(url);
       Utils.downloadFile([csvText], `${dataInfo.label}.csv`);
 
-      console.log(`CSV pour ${dataInfo.label} téléchargé avec succès`);
+      console.log(`CSV for ${dataInfo.label} downloaded successfully`);
     } catch (error) {
       console.error(
-        `Erreur pour ${state.dataDict[datastreamId].label}:`,
+        `Error for ${state.dataDict[datastreamId].label}:`,
         error,
       );
-      Utils.showNotification(`Erreur de téléchargement`, "danger");
+      Utils.showNotification(`Download error`, "danger");
     }
   }
 }
@@ -469,14 +469,14 @@ function toggleFullscreen() {
     }
     graphDiv.style.width = "95%";
     graphDiv.style.height = "400px";
-    document.getElementById("fullscreenBtn").innerText = "Plein écran";
+    document.getElementById("fullscreenBtn").innerText = "Full screen";
   } else {
     // Enter fullscreen
     state.originalWidth = graphColumn.offsetWidth + "px";
     graphColumn.style.width = "100%";
     graphColumn.classList.add("fullscreen");
     graphDiv.style.height = "75%";
-    document.getElementById("fullscreenBtn").innerText = "Retour";
+    document.getElementById("fullscreenBtn").innerText = "Back";
   }
 
   state.graph.resize();
@@ -528,9 +528,9 @@ function setupOverlayCheckbox() {
 
   checkboxSuperpose.addEventListener("change", function () {
     if (checkboxSuperpose.checked) {
-      renameButtons("Superposer");
+      renameButtons("Overlay");
     } else {
-      renameButtons("Afficher");
+      renameButtons("Show");
       state.datastreamIdList = [];
       state.dataDict = {};
     }

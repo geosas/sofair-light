@@ -1,7 +1,7 @@
 /**
- * Point de Mesure by STA thing ID Page
+ * Measurement point (by STA Thing ID) page
  * Displays detailed information about a single Thing datastreams, sensors, location
- * including photo(s) str or list  if present in properties
+ * including photo(s) (str or list) if present in properties
  */
 
 import { waitForAppReady } from "./utils/app-init.js";
@@ -18,7 +18,7 @@ async function loadThing() {
 
   if (!thingId) {
     Utils.showNotification(
-      "Aucun ID de point de mesure fourni dans l'URL",
+      "No measurement point ID provided in the URL",
       "danger",
     );
     return;
@@ -39,7 +39,7 @@ async function loadThing() {
   } catch (error) {
     console.error("Error loading Thing details:", error);
     Utils.showNotification(
-      "Erreur lors du chargement des données du point de mesure",
+      "Error while loading the measurement point data",
       "danger",
     );
   }
@@ -56,7 +56,7 @@ function renderThingDetails(thing) {
   const descEl = document.getElementById("thingDesc");
 
   // Render name and description
-  if (nameEl) nameEl.textContent = thing.name || "Sans nom";
+  if (nameEl) nameEl.textContent = thing.name || "Unnamed";
   if (descEl) descEl.textContent = thing.description || "";
 
   // Render photo(s)
@@ -71,7 +71,7 @@ function renderThingDetails(thing) {
         (src, index) => `
             <img
                 src="${Utils.escapeHtml(src)}"
-                alt="Aperçu du point ${thing.name} - image ${index + 1}"
+                alt="Preview of point ${thing.name} - image ${index + 1}"
                 style="max-width: 100%; height: auto; border-radius: 8px; margin: 4px 0;"
                 loading="lazy"
             >
@@ -83,7 +83,7 @@ function renderThingDetails(thing) {
     photoContainer.innerHTML = `
             <img
                 src="${Utils.escapeHtml(photos)}"
-                alt="Aperçu du point ${thing.name}"
+                alt="Preview of point ${thing.name}"
                 style="max-width: 100%; height: auto; border-radius: 8px;"
                 loading="lazy"
             >
@@ -91,7 +91,7 @@ function renderThingDetails(thing) {
   } else {
     // No photo
     photoContainer.innerHTML =
-      '<p class="has-text-grey is-italic">Aucune image disponible.</p>';
+      '<p class="has-text-grey is-italic">No image available.</p>';
   }
 }
 

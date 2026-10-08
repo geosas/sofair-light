@@ -1,5 +1,5 @@
 /**
- * Points de Mesure (Things) Page
+ * Measurement points (Things) page
  * Displays all measurement points as bulma cards with images (if in properties)
  *  and descriptions
  */
@@ -37,7 +37,7 @@ async function main() {
     divDownloadInfos.remove()
     if (things.length === 0) {
       container.innerHTML =
-        '<p class="notification is-info">Aucun point de mesure trouvé.</p>';
+        '<p class="notification is-info">No measurement point found.</p>';
       return;
     }
 
@@ -50,7 +50,7 @@ async function main() {
   } catch (error) {
     console.error("Error loading measurement points:", error);
     container.innerHTML =
-      '<p class="notification is-danger">Impossible de charger les données.</p>';
+      '<p class="notification is-danger">Unable to load the data.</p>';
   }
 }
 
@@ -62,7 +62,7 @@ async function main() {
  */
 function createThingCard(thing, configFileName) {
   const id = thing["@iot.id"];
-  const name = thing.name || "Sans nom";
+  const name = thing.name || "Unnamed";
   const description = thing.description || "";
   let photo = thing.properties?.image;
 
@@ -84,14 +84,14 @@ function createThingCard(thing, configFileName) {
                     <img
                         style="max-height: 400px; width: auto; object-fit: contain;"
                         src="${photo}"
-                        alt="Photo du point ${name}"
+                        alt="Photo of point ${name}"
                         loading="lazy"
                     >
                 </div>
             `
       : `
                 <div class="card-content">
-                    <p class="has-text-grey is-italic">Aucune image disponible.</p>
+                    <p class="has-text-grey is-italic">No image available.</p>
                 </div>
             `
     }
@@ -162,11 +162,11 @@ document.getElementById("exportGeoJSON").addEventListener("click", async () => {
     );
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const blob = await response.blob();
-    Utils.downloadFile([blob], "points-de-mesure.geojson");
+    Utils.downloadFile([blob], "measurement-points.geojson");
   } catch (error) {
     console.error("GeoJSON export error:", error);
     Utils.showNotification(
-      "Erreur lors du téléchargement du GeoJSON",
+      "Error while downloading the GeoJSON",
       "danger",
     );
   }

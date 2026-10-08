@@ -2,12 +2,12 @@
  * STAV — Styles communs au projet
  */
 
-/* Utilitaire : masquer un élément */
+/* Utility: hide an element */
 .is-hidden {
     display: none;
 }
 
-/* Plein écran (telechargement, metrologue, alerte, dual) */
+/* Full screen (telechargement, metrologue, alerte, dual) */
 .fullscreen {
     position: fixed;
     top: 0;
@@ -18,7 +18,7 @@
     z-index: 1000;
 }
 
-/* Overlay graphique mobile (metrologue) */
+/* Mobile graph overlay (metrologue) */
 .graph-overlay {
     position: fixed;
     top: 0;
@@ -38,13 +38,13 @@
     z-index: 41;
 }
 
-/* Onglets metadata actifs */
+/* Active metadata tabs */
 #tabs li.is-active a {
     background-color: #4a4a4a;
     color: white;
 }
 
-/* Dual : en-têtes de service */
+/* Dual: service headers */
 .service-header {
     background-color: #3273dc;
     color: white;
@@ -59,7 +59,7 @@
     background-color: #23d160;
 }
 
-/* Dual : compacité des cartes */
+/* Dual: compact cards */
 .dual-compact .card-header-title {
     font-size: 0.9rem;
 }
@@ -68,7 +68,7 @@
     padding: 0.75rem;
 }
 
-/* Aide : accordéon FAQ */
+/* Help: FAQ accordion */
 .aide-accordion details {
     margin-bottom: 0.75rem;
     border: 1px solid #dbdbdb;

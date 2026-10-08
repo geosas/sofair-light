@@ -25,7 +25,7 @@ if (!container) {
 
     if (entries.length === 0) {
       container.innerHTML =
-        '<div class="column"><p class="notification is-warning">Aucune configuration trouvée.</p></div>';
+        '<div class="column"><p class="notification is-warning">No configuration found.</p></div>';
     } else {
       // Create cards for each observatory
       for (let i = 0; i < entries.length; i++) {
@@ -57,7 +57,7 @@ if (!container) {
                             <div class="content">
                                 ${description ? `<p>${escapeHtml(description)}</p>` : ""}
                                 <a href="${url}" target="_blank" rel="noopener noreferrer">
-                                    Ouvrir l'observatoire
+                                    Open the observatory
                                 </a>
                             </div>
                         </div>
@@ -72,7 +72,7 @@ if (!container) {
     container.innerHTML = `
             <div class="column">
                 <p class="notification is-danger">
-                    Erreur lors du chargement des configurations : ${escapeHtml(error.message)}
+                    Error while loading the configurations: ${escapeHtml(error.message)}
                 </p>
             </div>
         `;

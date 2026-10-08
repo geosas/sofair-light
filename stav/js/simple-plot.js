@@ -74,7 +74,7 @@ async function updateGraphZoom() {
   if (plotState.config.modeService === "Frost_Geosas") {
     const xRange = plotState.graph.xAxisRange();
     const filter = `phenomenonTime ge ${new Date(xRange[0]).toISOString()} and phenomenonTime le ${new Date(xRange[1]).toISOString()}`;
-    //Need change, double count some case when raw data
+    // Needs a change: counts twice in some raw-data cases
     const count = await STAApi.getCount(
       plotState.config.urlService,
       `Datastreams(${plotState.datastreamId})/Observations`,
@@ -176,7 +176,7 @@ function updateGraphDisplay(
   };
 
   const thresholdCallback = createThresholdCallback({ minValue, maxValue });
-  // Archive : bandes de fond colorées par QF, composées avec les seuils.
+  // Archive: background bands coloured by QF, combined with the thresholds.
   const underlay = STAApi.isArchive()
     ? makeQfUnderlay(plotState.qfRanges, thresholdCallback)
     : thresholdCallback;
@@ -210,7 +210,7 @@ async function plotStean() {
   const { data, name, unitName, unitSymbol } = parseGraphDatas(json[0]);
 
   if (data.length === 0) {
-    showNotification("Aucune observation trouvée", "info");
+    showNotification("No observation found", "info");
     return;
   }
 
@@ -227,7 +227,7 @@ async function plotStean() {
     "line",
     null,
     null,
-    `${name} (données lissées par moyenne mobile)`,
+    `${name} (data smoothed by moving average)`,
   );
 }
 
@@ -251,7 +251,7 @@ async function plotFrostGeosas() {
   });
 
   if (data.length === 0) {
-    showNotification("Aucune observation trouvée", "info");
+    showNotification("No observation found", "info");
     return;
   }
 
@@ -290,7 +290,7 @@ async function plotAll() {
   });
 
   if (data.length === 0) {
-    showNotification("Aucune observation trouvée", "info");
+    showNotification("No observation found", "info");
     return;
   }
 
@@ -359,7 +359,7 @@ async function initPagination(totalCount) {
     }
 
     if (data.length === 0) {
-      showNotification("Aucune donnée pour cette page", "info");
+      showNotification("No data for this page", "info");
       return;
     }
 
@@ -401,7 +401,7 @@ async function main() {
   plotState.datastreamId = getQueryParam("id");
 
   if (!plotState.datastreamId) {
-    showNotification("Aucun ID de datastream fourni dans l'URL", "danger");
+    showNotification("No datastream ID provided in the URL", "danger");
     return;
   }
 
@@ -490,7 +490,7 @@ async function main() {
     }
   } catch (error) {
     console.error("Error loading datastream plot:", error);
-    showNotification("Erreur lors du chargement des données", "danger");
+    showNotification("Error while loading the data", "danger");
   } finally {
     const progressBar = document.getElementById("progressBar");
     if (progressBar) progressBar.style.display = "none";

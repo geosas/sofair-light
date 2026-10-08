@@ -4,7 +4,7 @@
  */
 
 // Use import.meta.url to get the default header path relative to this JS file
-// maybe it possible to do it a different way
+// maybe it is possible to do it a different way
 export const BASE_URL = new URL('../..', import.meta.url).href;
 
 /**
@@ -18,7 +18,7 @@ function getQueryParam(param) {
 }
 
 /**
- * Formats a date in locale  date code with full details
+ * Formats a date (English locale) with full details
  * @param {string|Date} dateInput - Date to format
  * * @param {Object} [options] - Intl.DateTimeFormat options (optional)
  * @returns {string} Formatted date string
@@ -36,52 +36,52 @@ function parseDate(
   },
 ) {
   if (!dateInput) {
-    return "Pas d'enregistrement";
+    return "No record";
   }
 
   const date = new Date(dateInput);
 
   if (isNaN(date.getTime())) {
-    return "Date invalide";
+    return "Invalid date";
   }
-  // undefined  for have the locale date code
-  return date.toLocaleDateString(undefined, options);
+  // English UI for now (was the browser locale)
+  return date.toLocaleDateString("en-GB", options);
 }
 
 /**
- * Formats a time difference between two dates in a human-readable (french) format
+ * Formats a time difference between two dates in a human-readable format
  * @param {Date} endDate - Earlier date
  * @param {Date} nowDate - Current/later date
- * @returns {string} Formatted time difference (e.g., "3 jours", "2 h", "45 min")
+ * @returns {string} Formatted time difference (e.g., "3 days", "2 h", "45 min")
  */
 function formatTimeAgo(endDate, nowDate = new Date()) {
-  const ecartMs = nowDate.getTime() - endDate.getTime();
+  const diffMs = nowDate.getTime() - endDate.getTime();
 
-  if (ecartMs < 0) {
-    return "dans le futur";
+  if (diffMs < 0) {
+    return "in the future";
   }
 
-  if (ecartMs < 60 * 1000) {
+  if (diffMs < 60 * 1000) {
     // Less than 1 minute
-    const seconds = Math.floor(ecartMs / 1000);
+    const seconds = Math.floor(diffMs / 1000);
     return `${seconds} s`;
   }
 
-  if (ecartMs < 60 * 60 * 1000) {
+  if (diffMs < 60 * 60 * 1000) {
     // Less than 1 hour
-    const minutes = Math.floor(ecartMs / (60 * 1000));
+    const minutes = Math.floor(diffMs / (60 * 1000));
     return `${minutes} min`;
   }
 
-  if (ecartMs < 24 * 60 * 60 * 1000) {
+  if (diffMs < 24 * 60 * 60 * 1000) {
     // Less than 24 hours
-    const hours = Math.floor(ecartMs / (60 * 60 * 1000));
+    const hours = Math.floor(diffMs / (60 * 60 * 1000));
     return `${hours} h`;
   }
 
   // More than a day
-  const days = Math.floor(ecartMs / (24 * 60 * 60 * 1000));
-  return `${days} jour${days !== 1 ? "s" : ""}`;
+  const days = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+  return `${days} day${days !== 1 ? "s" : ""}`;
 }
 
 /**
@@ -232,12 +232,12 @@ function showNotification(message, type = "info", duration = 3000) {
 /**
  * Show a Bulma modal with custom content and buttons
  * @param {Object} options
- * @param {string} options.title - Titre du modal
- * @param {string|HTMLElement} options.body - Contenu du modal (texte ou HTML)
- * @param {Array} options.buttons - Liste des boutons [{text:'Continuer', class:'is-success', onClick:()=>{}}]
+ * @param {string} options.title - Modal title
+ * @param {string|HTMLElement} options.body - Modal content (text or HTML)
+ * @param {Array} options.buttons - List of buttons [{text:'Continue', class:'is-success', onClick:()=>{}}]
  */
 function showModal({ title = "Info", body = "", buttons = [] }) {
-  // Créer le modal
+  // Create the modal
   const modal = document.createElement("div");
   modal.className = "modal";
   modal.innerHTML = `
@@ -252,7 +252,7 @@ function showModal({ title = "Info", body = "", buttons = [] }) {
         </div>
     `;
 
-  // Ajouter le contenu
+  // Add the content
   const bodyEl = modal.querySelector(".modal-card-body");
   if (typeof body === "string") {
     bodyEl.textContent = body;
@@ -260,7 +260,7 @@ function showModal({ title = "Info", body = "", buttons = [] }) {
     bodyEl.appendChild(body);
   }
 
-  // Ajouter les boutons
+  // Add the buttons
   const footerEl = modal.querySelector(".modal-card-foot");
   const buttonsWrapper = document.createElement("div");
   buttonsWrapper.className = "buttons";
@@ -270,12 +270,12 @@ function showModal({ title = "Info", body = "", buttons = [] }) {
     b.textContent = btn.text || "OK";
     b.addEventListener("click", () => {
       if (btn.onClick) btn.onClick();
-      document.body.removeChild(modal); // fermer modal
+      document.body.removeChild(modal); // close modal
     });
     buttonsWrapper.appendChild(b);
   });
   footerEl.appendChild(buttonsWrapper);
-  // Fermer avec background ou croix
+  // Close with the background or the cross
   modal
     .querySelector(".modal-background")
     .addEventListener("click", () => document.body.removeChild(modal));
@@ -283,7 +283,7 @@ function showModal({ title = "Info", body = "", buttons = [] }) {
     .querySelector(".delete")
     .addEventListener("click", () => document.body.removeChild(modal));
 
-  // Ajouter au DOM
+  // Add to the DOM
   document.body.appendChild(modal);
   modal.classList.add("is-active");
 }
@@ -357,7 +357,7 @@ async function fetchStreamWithSize(url, refElement, label = "") {
     receivedBytes += value.length;
 
     if (sizeLabel && performance.now() - lastUpdate > 1000) {
-      sizeLabel.textContent = `${prefix}${(receivedBytes / 1048576).toFixed(2)} Mo`;
+      sizeLabel.textContent = `${prefix}${(receivedBytes / 1048576).toFixed(2)} MB`;
       lastUpdate = performance.now();
     }
   }

@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/png" sizes="16x16" href="../../img/icon.png" />
-    <title>STAV - Aide</title>
+    <title>STAV - Help</title>
 
     <link rel="stylesheet" href="../../css/bulma1.min.css" />
     <link rel="stylesheet" href="../../css/stav.css" />
@@ -15,289 +15,283 @@
 
     <section class="section">
       <div class="container">
-        <h1 class="title is-3">Aide</h1>
+        <h1 class="title is-3">Help</h1>
         <p class="subtitle is-5">
-          Guide d'utilisation du STAV : SensorThing API Viewer
+          STAV user guide: SensorThings API Viewer
         </p>
 
         <div class="aide-accordion">
           <details open>
-            <summary>Qu'est-ce que le STAV ?</summary>
+            <summary>What is STAV?</summary>
             <div class="aide-content">
               <p>
-                Le STAV (<strong>SensorThings API Viewer</strong>) permet de
-                visualiser, comprendre et exporter des données environnementales
-                issues de services les diffusants en sensorThing.
+                STAV (<strong>SensorThings API Viewer</strong>) lets you
+                view, understand and export environmental data published by
+                SensorThings services.
               </p>
-              <p>Avec Le STAV vous pouvez :</p>
+              <p>With STAV you can:</p>
               <ul>
                 <li>
-                  <strong>Localiser</strong> les points de mesure sur une carte
-                  interactive
+                  <strong>Locate</strong> the measurement points on an
+                  interactive map
                 </li>
                 <li>
-                  <strong>Visualiser</strong> les observations sous forme de
-                  graphiques
+                  <strong>View</strong> the observations as graphs
                 </li>
                 <li>
-                  <strong>Télécharger</strong> les observations au format CSV
+                  <strong>Download</strong> the observations in CSV format
                 </li>
                 <li>
-                  <strong>Partager</strong> un contexte spécifique avec un lien
+                  <strong>Share</strong> a specific context with a link
                 </li>
                 <li>
-                  <strong>Comparer</strong> plusieurs séries de données sur un
-                  même graphique
+                  <strong>Compare</strong> several data series on the same
+                  graph
                 </li>
               </ul>
               <div class="aide-screenshot">
-                Capture d'écran : vue d'ensemble de l'application
+                Screenshot: overview of the application
               </div>
             </div>
           </details>
 
           <details>
-            <summary>Naviguer dans le STAV</summary>
+            <summary>Navigating STAV</summary>
             <div class="aide-content">
               <p>
-                Le STAV est organisé en plusieurs pages accessibles depuis la
-                barre de navigation :
+                STAV is organised into several pages reachable from the
+                navigation bar:
               </p>
 
               <h4 class="title is-5">
-                Point d'entré (liste des observatoires disponible)
+                Entry point (list of available observatories)
               </h4>
               <p>
-                La page d'accueil affiche la liste de tous les observatoires
-                disponibles.
+                The landing page lists all the available observatories.
               </p>
               <div class="aide-screenshot">
-                Capture d'écran : page d'accueil avec les observatoires
+                Screenshot: landing page with the observatories
               </div>
 
-              <h4 class="title is-5">Page d'accueil</h4>
+              <h4 class="title is-5">Home page</h4>
               <p>
-                Cette page présente un résumé de l'observatoire : emplacement
-                des points de mesure, informations diverses (nombre de capteurs,
-                propriétés observées, plage temporelle).
+                This page gives a summary of the observatory: location of the
+                measurement points and various information (number of sensors,
+                observed properties, time range).
               </p>
               <div class="aide-screenshot">
-                Capture d'écran : page découverte d'un observatoire
+                Screenshot: observatory discovery page
               </div>
 
-              <h4 class="title is-5">Description des points de mesure</h4>
+              <h4 class="title is-5">Measurement points</h4>
               <p>
-                Permet de parcourir la liste des points de mesure (avec
-                éventuellement des photos). Cette page permet d'acceder à un
-                point de mesure et fournir plus d'informations (nombre de
-                capteurs, propriétés observées, plage temporelle, lien de
-                visualisation).
+                Browse the list of measurement points (possibly with photos).
+                From this page you can open a measurement point to get more
+                information (number of sensors, observed properties, time
+                range, visualisation link).
               </p>
               <div class="aide-screenshot">
-                Capture d'écran : page points de mesure
+                Screenshot: measurement points page
               </div>
 
-              <h4 class="title is-5">Accès aux données</h4>
+              <h4 class="title is-5">Data access</h4>
               <p>
-                C'est la page principale de visualisation. Elle permet de
-                sélectionner une ou plusieurs séries de données et de les
-                afficher sous forme de graphique interactif. Vous pouvez zoomer,
-                télécharger les données et partager votre contexte.
+                This is the main visualisation page. It lets you select one or
+                more data series and display them as an interactive graph. You
+                can zoom, download the data and share your context.
               </p>
               <div class="aide-screenshot">
-                Capture d'écran : page accès aux données
+                Screenshot: data access page
               </div>
 
-              <h4 class="title is-5">Métadonnée (optionel)</h4>
-              <p>Ce menu donne accès à une fiche de métadonnée.</p>
+              <h4 class="title is-5">Metadata (optional)</h4>
+              <p>This menu gives access to a metadata record.</p>
               <p>
                 <em
-                  >Note : ce menu n'apparaît que si l'observatoire a fourni une
-                  fiche de métadonnée.</em
+                  >Note: this menu only appears if the observatory provides a
+                  metadata record.</em
                 >
               </p>
 
-              <h4 class="title is-5">Métrologie (optionel)</h4>
+              <h4 class="title is-5">Metrology (optional)</h4>
               <p>
-                Ce menu déroulant donne accès aux outils de suivi technique
-                destinés aux métrologues:
+                This drop-down menu gives access to the technical monitoring
+                tools intended for metrologists:
               </p>
               <ul>
                 <li>
-                  <strong>Suivi des capteurs</strong> : état et historique des
-                  capteurs
+                  <strong>Sensor monitoring</strong>: status and history of the
+                  sensors
                 </li>
                 <li>
-                  <strong>Suivi des interventions terrain</strong> : journal des
+                  <strong>Field interventions log</strong>: journal of the
                   interventions
                 </li>
                 <li>
-                  <strong>Alerte</strong> : mise en évidence des chroniques
-                  avec des données aberrantes ou manquantes
+                  <strong>Alerts</strong>: highlights the time series with
+                  outliers or missing data
                 </li>
               </ul>
               <p>
                 <em
-                  >Note : ce menu n'apparaît que si l'observatoire a activé le
-                  suivi métrologique.</em
+                  >Note: this menu only appears if the observatory has enabled
+                  metrological monitoring.</em
                 >
               </p>
             </div>
           </details>
 
           <details>
-            <summary>Utiliser les graphiques</summary>
+            <summary>Using the graphs</summary>
             <div class="aide-content">
-              <h4 class="title is-5">Zoomer sur une période</h4>
+              <h4 class="title is-5">Zoom on a period</h4>
               <p>
-                <strong>Cliquez et glissez</strong> horizontalement sur le
-                graphique pour zoomer sur une période précise. Le graphique se
-                redessine avec les données de la plage sélectionnée.
+                <strong>Click and drag</strong> horizontally on the graph to
+                zoom on a specific period. The graph is redrawn with the data
+                of the selected range.
               </p>
               <p>
-                Pour certains observatoires, le niveau de détail s'adapte
-                automatiquement au zoom et à la taille de l'écran : les données
-                passent d'une agrégation journalière à horaire, puis aux valeurs
-                brutes lorsque la fenêtre est suffisamment réduite.
-              </p>
-              <div class="aide-screenshot">
-                Capture d'écran : zoom sur un graphique
-              </div>
-
-              <h4 class="title is-5">Revenir à la vue complète</h4>
-              <p>
-                Cliquez sur le bouton <strong>"Dézommer"</strong> pour revenir à
-                l'affichage de l'ensemble des données. Ce bouton apparaît
-                uniquement lorsqu'un zoom est actif.
-              </p>
-
-              <h4 class="title is-5">Superposer plusieurs séries</h4>
-              <p>
-                Sur la page <strong>"Accès aux données"</strong>, cochez
-                plusieurs séries dans la liste de gauche. Les courbes se
-                superposent sur le même graphique avec une légende pour chaque
-                série.
+                For some observatories, the level of detail adapts
+                automatically to the zoom and to the screen size: the data go
+                from a daily to an hourly aggregation, then to the raw values
+                once the window is small enough.
               </p>
               <div class="aide-screenshot">
-                Capture d'écran : graphique avec plusieurs séries superposées
+                Screenshot: zooming on a graph
               </div>
 
-              <h4 class="title is-5">Navigation par pages</h4>
+              <h4 class="title is-5">Back to the full view</h4>
               <p>
-                Lorsqu'un jeu de données est très volumineux et que les
-                aggrégations ne sont pas disponibles, les données sont découpées
-                en pages. Des flèches
-                <strong>&#9664; page &#9654;</strong> apparaissent au dessus du
-                graphique. Cliquez sur les flèches pour naviguer, ou cliquez sur
-                l'indicateur de page pour saisir directement un numéro de page.
+                Click the <strong>"Reset zoom"</strong> button to go back to
+                the display of the whole dataset. This button only appears
+                while a zoom is active.
+              </p>
+
+              <h4 class="title is-5">Overlay several series</h4>
+              <p>
+                On the <strong>"Data access"</strong> page, tick several series
+                in the left-hand list. The curves are overlaid on the same
+                graph, with a legend for each series.
+              </p>
+              <div class="aide-screenshot">
+                Screenshot: graph with several overlaid series
+              </div>
+
+              <h4 class="title is-5">Page navigation</h4>
+              <p>
+                When a dataset is very large and no aggregations are
+                available, the data are split into pages. Arrows
+                <strong>&#9664; page &#9654;</strong> appear above the graph.
+                Click the arrows to navigate, or click the page indicator to
+                type a page number directly.
               </p>
             </div>
           </details>
 
           <details>
-            <summary>Télécharger des données</summary>
+            <summary>Downloading data</summary>
             <div class="aide-content">
               <p>
-                Cliquez sur le bouton <strong>"Téléchargement"</strong> pour
-                ouvrir la fenêtre d'export. Plusieurs options sont disponibles
-                selon le type d'observatoire :
+                Click the <strong>"Download"</strong> button to open the export
+                window. Several options are available depending on the type of
+                observatory:
               </p>
               <ul>
                 <li>
-                  <strong>Toutes les données (CSV brut)</strong> : exporte
-                  l'intégralité des observations
+                  <strong>All data (raw CSV)</strong>: exports all the
+                  observations
                 </li>
                 <li>
-                  <strong>Plage visible (CSV brut)</strong> : exporte uniquement
-                  la période affichée dans le graphique
+                  <strong>Visible range (raw CSV)</strong>: exports only the
+                  period displayed in the graph
                 </li>
                 <li>
-                  <strong>Agrégation horaire</strong> : moyenne des valeurs par
-                  heure (si disponible)
+                  <strong>Hourly aggregation</strong>: hourly mean of the
+                  values (if available)
                 </li>
                 <li>
-                  <strong>Agrégation journalière</strong> : moyenne des valeurs
-                  par jour (si disponible)
+                  <strong>Daily aggregation</strong>: daily mean of the values
+                  (if available)
                 </li>
               </ul>
               <div class="aide-screenshot">
-                Capture d'écran : fenêtre de téléchargement
+                Screenshot: download window
               </div>
             </div>
           </details>
 
           <details>
-            <summary>Partager un contexte</summary>
+            <summary>Sharing a context</summary>
             <div class="aide-content">
               <p>
-                Cliquez sur le bouton <strong>"Partager"</strong> pour copier
-                dans le presse-papier un lien qui reproduit exactement le
-                contexte de visualisation des ou du graphique pour :
+                Click the <strong>"Share"</strong> button to copy to the
+                clipboard a link that reproduces exactly the visualisation
+                context of the graph(s):
               </p>
               <ul>
-                <li>Les séries sélectionnées</li>
-                <li>Le niveau de zoom (si actif)</li>
-                <li>La page en cours (si pagination active)</li>
+                <li>The selected series</li>
+                <li>The zoom level (if active)</li>
+                <li>The current page (if pagination is active)</li>
               </ul>
               <p>
-                Envoyez ce lien à un collègue : en l'ouvrant, il retrouvera la
-                même configuration d'affichage. Le lien est autonome et ne
-                nécessite aucune connexion particulière.
+                Send this link to a colleague: opening it restores the same
+                display configuration. The link is self-contained and does not
+                require any login.
               </p>
             </div>
           </details>
 
           <details>
-            <summary>Glossaire</summary>
+            <summary>Glossary</summary>
             <div class="aide-content">
               <table class="table is-striped is-fullwidth">
                 <thead>
                   <tr>
-                    <th>Terme</th>
-                    <th>Définition</th>
+                    <th>Term</th>
+                    <th>Definition</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td><strong>Observatoire</strong></td>
+                    <td><strong>Observatory</strong></td>
                     <td>
-                      Ensemble de capteurs déployés sur un site géographique
-                      disponible dans un service SensorThing. Un observatoire
-                      regroupe un ou plusieurs points de mesure.
+                      Set of sensors deployed on a geographical site and
+                      available in a SensorThings service. An observatory
+                      groups one or more measurement points.
                     </td>
                   </tr>
                   <tr>
-                    <td><strong>Point de mesure</strong></td>
+                    <td><strong>Measurement point</strong></td>
                     <td>
-                      Emplacement physique où sont installés un ou plusieurs
-                      capteurs ( <em>Thing</em> dans le standard SensorThings).
+                      Physical location where one or more sensors are installed
+                      (<em>Thing</em> in the SensorThings standard).
                     </td>
                   </tr>
                   <tr>
-                    <td><strong>Propriété observée</strong></td>
+                    <td><strong>Observed property</strong></td>
                     <td>
-                      Grandeur physique mesurée par un capteur : température,
-                      débit, pH, conductivité, etc. (<em>ObservedProperty</em>)
+                      Physical quantity measured by a sensor: temperature,
+                      flow, pH, conductivity, etc. (<em>ObservedProperty</em>)
                     </td>
                   </tr>
                   <tr>
-                    <td><strong>Capteur</strong></td>
-                    <td>Instrument de mesure (<em>Sensor</em>)</td>
+                    <td><strong>Sensor</strong></td>
+                    <td>Measuring instrument (<em>Sensor</em>)</td>
                   </tr>
                   <tr>
-                    <td><strong>Série de données</strong></td>
+                    <td><strong>Data series</strong></td>
                     <td>
-                      Chronique (<em>Datastream</em>) pour une propriété
-                      observée (<em>ObservedProperty</em>) sur un point de
-                      mesure par un capteur (<em>Sensor</em>). Exemple :
-                      "Température de l'eau au point A".
+                      Time series (<em>Datastream</em>) of an observed property
+                      (<em>ObservedProperty</em>) at a measurement point, by a
+                      sensor (<em>Sensor</em>). Example: "Water temperature at
+                      point A".
                     </td>
                   </tr>
                   <tr>
                     <td><strong>Observation</strong></td>
                     <td>
-                      Valeur individuelle mesurée à un instant donné. Composée
-                      d'une date et d'un résultat numérique.
+                      Single value measured at a given time. Made of a date and
+                      a numerical result.
                     </td>
                   </tr>
                 </tbody>

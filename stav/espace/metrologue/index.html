@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 
 <head>
   <meta charset="utf-8" />
@@ -28,11 +28,11 @@
       <div class="columns">
         <div class="column">
           <div class="field">
-            <label class="label">1. Filtrer par capteur</label>
+            <label class="label">1. Filter by sensor</label>
             <div class="control">
               <div class="select is-info is-fullwidth" style="margin-bottom: 10px">
                 <select id="searchDescriptionInput">
-                  <option value="" data-i18n="ui.allSensors">Tous les capteurs</option>
+                  <option value="" data-i18n="ui.allSensors">All sensors</option>
                 </select>
               </div>
             </div>
@@ -40,9 +40,9 @@
         </div>
         <div class="column">
           <div class="field">
-            <label class="label">2. Filtrer par point de mesure/variable:</label>
+            <label class="label">2. Filter by measurement point/variable:</label>
             <div class="control">
-              <input type="text" id="searchInput" placeholder="Exemple ST1 ou Humidité...  (colonne Name)"
+              <input type="text" id="searchInput" placeholder="e.g. ST1 or Humidity...  (Name column)"
                 class="input is-info" style="margin-bottom: 10px" />
             </div>
           </div>
@@ -51,22 +51,22 @@
       <div id="table_sensor" style="overflow-y: auto; height: 100pc"></div>
     </div>
     <div class="column fixed-column" id="columnGraph">
-      <button class="delete is-large" id="closeGraphOverlay" style="display: none" aria-label="Fermer"></button>
+      <button class="delete is-large" id="closeGraphOverlay" style="display: none" aria-label="Close"></button>
       <h3 class="title is-3"></h3>
       <div id="graphDiv" style="width: 95%; height: 400px"></div>
       <label class="checkbox" id="label_superpose" style="visibility: hidden">
         <input type="checkbox" id="checkbox_superpose" />
-        <b>Activer la superposition de courbe</b>
+        <b>Enable curve overlay</b>
       </label>
       <div class="box" id="DL_data" style="visibility: hidden">
         <div id="customLegend"></div>
         <br />
         <button id="btn_dl" class="button">
-          Téléchargement des données du graphique
+          Download the graph data
         </button>
-        <button id="fullscreenBtn" class="button">Plein écran</button>
+        <button id="fullscreenBtn" class="button">Full screen</button>
         <button class="button" id="btn_zomm" style="visibility: hidden">
-          Dézommer
+          Reset zoom
         </button>
       </div>
       <div class="box" id="minimap" style="height: 300px; width: 300px; float: right; margin-right: 10px"></div>

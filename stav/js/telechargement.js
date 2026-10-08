@@ -12,7 +12,7 @@ import {
 } from "./utils/plot-controls.js";
 
 /**
- * Téléchargement Page
+ * Data access page (telechargement)
  * Data visualization with filtering, plotting, CSV export, and map integration
  */
 
@@ -104,7 +104,7 @@ async function loadDatastreamsInfo() {
     });
   } catch (error) {
     console.error("Error:", error);
-    Utils.showNotification("Erreur de chargement", "danger");
+    Utils.showNotification("Loading error", "danger");
   } finally {
     //elements.progressBar3.classList.add("is-hidden");
   }
@@ -150,7 +150,7 @@ async function loadThingsInfo() {
     state.thingsLoaded = true;
   } catch (error) {
     console.error("Error:", error);
-    Utils.showNotification("Erreur de chargement", "danger");
+    Utils.showNotification("Loading error", "danger");
   } finally {
     elements.progressBar3.classList.add("is-hidden");
     elements.downloadInfos.classList.add("is-hidden");
@@ -171,7 +171,7 @@ async function populateObservedPropertiesList() {
   const data = await STAApi.fetchSTA(obspUrl);
 
   data.forEach((obsp) => {
-    // "Family" renommé "theme" (config) : on lit theme, repli sur l'ancien famille.
+    // "Family" renamed "theme" (config): read theme, fall back on the legacy famille key.
     if (obsp.properties)
       obsp.properties.famille = obsp.properties.famille ?? obsp.properties.theme;
     state.obspDict[obsp.name] = {
@@ -237,7 +237,7 @@ function updateDatastreamList({ skipMapFit = false } = {}) {
   if (!state.thingsLoaded) {
     const lastChecked = elements.obspList.querySelector('input[type="checkbox"]:checked');
     if (lastChecked) lastChecked.checked = false;
-    Utils.showNotification("Téléchargement en cours... veuillez patienter", "info");
+    Utils.showNotification("Loading in progress... please wait", "info");
     return
   }
   resetPagination();
@@ -535,9 +535,9 @@ function createMetadataTabs() {
     content.id = `tab${index}`;
     content.innerHTML = `
             <div class="box"><b>${Utils.escapeHtml(dictInfo.description)}</b></div>
-            <div class="box">Point de mesure : ${Utils.escapeHtml(dictInfo.thing)}, ${Utils.escapeHtml(state.thingDict[dictInfo.thing].description)}</div>
-            <div class="box">Variable mesurée : ${Utils.escapeHtml(dictInfo.observedproperty)}, ${Utils.escapeHtml(state.obspDict[dictInfo.observedproperty].description)} <a href="${Utils.escapeHtml(state.obspDict[dictInfo.observedproperty].definition)}">Thesaurus</a></div>
-            <div class="box">Capteur : ${Utils.escapeHtml(dictInfo.sensor)}, ${Utils.escapeHtml(state.sensorDict[dictInfo.sensor].description)} <a href="${Utils.escapeHtml(state.sensorDict[dictInfo.sensor].metadata)}">documentation capteur</a></div>
+            <div class="box">Measurement point: ${Utils.escapeHtml(dictInfo.thing)}, ${Utils.escapeHtml(state.thingDict[dictInfo.thing].description)}</div>
+            <div class="box">Measured variable: ${Utils.escapeHtml(dictInfo.observedproperty)}, ${Utils.escapeHtml(state.obspDict[dictInfo.observedproperty].description)} <a href="${Utils.escapeHtml(state.obspDict[dictInfo.observedproperty].definition)}">Thesaurus</a></div>
+            <div class="box">Sensor: ${Utils.escapeHtml(dictInfo.sensor)}, ${Utils.escapeHtml(state.sensorDict[dictInfo.sensor].description)} <a href="${Utils.escapeHtml(state.sensorDict[dictInfo.sensor].metadata)}">sensor documentation</a></div>
         `;
     contentContainer.appendChild(content);
     if (index === 0) {
@@ -595,7 +595,7 @@ async function plotGraphStean() {
 
   for (const name of selectedValues) {
     const ds = state.datastreamDict[name];
-    const unit = `unité : ${ds.unitOfMeasurement.name} (${ds.unitOfMeasurement.symbol})`;
+    const unit = `unit: ${ds.unitOfMeasurement.name} (${ds.unitOfMeasurement.symbol})`;
     const graphType = ds?.properties?.graph === "bar" ? "bar" : "line";
 
     if (!state.seriesData[name]) {
@@ -706,7 +706,7 @@ async function plotGraphBasique() {
     plotToDo[info] = {
       id: dictInfo.id,
       title: info,
-      unit: `unité : ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`,
+      unit: `unit: ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`,
       graph: graph,
     };
   });
@@ -863,7 +863,7 @@ async function downloadAndPlotPage(pageNum) {
   for (const name of selectedValues) {
     const data = pageCache[name] || [];
     const dictInfo = state.datastreamDict[name];
-    const unit = `unité : ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`;
+    const unit = `unit: ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`;
     const graphType = UtilsGraph.getGraphType(dictInfo?.observedproperty, state.config.barObservedProperties);
     mergedData.push(data);
     labels.push(`${name} ${unit}`);
@@ -945,7 +945,7 @@ async function plotGraph() {
       plotToDo[info] = {
         id: dictInfo.id,
         title: info,
-        unit: `unité : ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`,
+        unit: `unit: ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`,
         graph: graph,
       };
     });
@@ -1023,7 +1023,7 @@ async function downloadDataForPlot(id, titre, unit, graph) {
         `Data limit reached for ${titre}: showing first 100,000 records`,
       );
       Utils.showNotification(
-        `Limite de données atteinte pour ${titre}: affichage des 100 000 premiers enregistrements`,
+        `Data limit reached for ${titre}: showing the first 100,000 records`,
         "warning",
       );
     }
@@ -1038,7 +1038,7 @@ async function downloadDataForPlot(id, titre, unit, graph) {
       aggregation,
       isFiltered: isZoomed,
       properties: state.datastreamDict[titre]?.properties,
-      qfRanges, // archive : plages QF de cette série (fond en mode 1 série)
+      qfRanges, // archive: QF ranges of this series (background in single-series mode)
     };
 
     if (isZoomed) {
@@ -1078,7 +1078,7 @@ function plotGraph_internal() {
       labels: labels,
       series: state.seriesConfig,
       dateWindow: xRange, // Preserve zoom range
-      // Archive + 1 seule série : fond QF (recalculé au fetch de la plage zoomée).
+      // Archive + single series: QF background (recomputed when the zoomed range is fetched).
       underlayCallback: UtilsGraph.qfUnderlayIfSingle(
         state.seriesData[selectedValues[0]]?.qfRanges,
         selectedValues.length,
@@ -1119,7 +1119,7 @@ function plotGraph_internal() {
       file: arrayFinal,
       labels: labels,
       series: state.seriesConfig,
-      // Archive + 1 seule série : fond coloré par QF (composé avec les seuils).
+      // Archive + single series: background coloured by QF (combined with the thresholds).
       underlayCallback: UtilsGraph.qfUnderlayIfSingle(
         state.seriesData[selectedValues[0]]?.qfRanges,
         selectedValues.length,
@@ -1168,7 +1168,7 @@ async function unzoomGraph(graph = null) {
     for (const titre of filteredSeries) {
       try {
         const dictInfo = state.datastreamDict[titre];
-        const unit = `unité : ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`;
+        const unit = `unit: ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`;
         const graph = UtilsGraph.getGraphType(dictInfo?.observedproperty, state.config.barObservedProperties);
 
 
@@ -1185,7 +1185,7 @@ async function unzoomGraph(graph = null) {
             `Data limit reached for ${titre}: showing first 100,000 records`,
           );
           Utils.showNotification(
-            `Limite de données atteinte pour ${titre}: affichage des 100 000 premiers enregistrements`,
+            `Data limit reached for ${titre}: showing the first 100,000 records`,
             "warning",
           );
         }
@@ -1203,7 +1203,7 @@ async function unzoomGraph(graph = null) {
       } catch (error) {
         console.error(`Error downloading full dataset for ${titre}:`, error);
         Utils.showNotification(
-          `Erreur lors du téléchargement des données complètes pour ${titre}`,
+          `Error while downloading the full data for ${titre}`,
           "danger",
         );
       }
@@ -1215,7 +1215,7 @@ async function unzoomGraph(graph = null) {
   targetGraph.updateOptions({ dateWindow: null, valueRange: null });
   document.getElementById("btn_zomm").style.display = "none";
   plotGraph_internal();
-  // if listAggregation empty  in mode frost_geosas next get will be with raw data
+  // if listAggregation is empty in Frost_Geosas mode, the next GET will fetch raw data
   state.listAggregation = { ...state.listAggregationResume };
   state.dataZoomDict = {}; // Clear zoom data when unzooming
 }
@@ -1248,7 +1248,7 @@ async function updateGraphZoom() {
       ) {
         count = 1;
       } else {
-        console.log("DL en cours");
+        console.log("Download in progress");
         count = await STAApi.getCount(
           state.config.urlService,
           `Datastreams(${id})/Observations`,
@@ -1453,7 +1453,7 @@ function filterTable() {
     if (!label || !checkbox) return;
 
     const textToSearch = [checkbox.value, label.innerText, label.title]
-      .filter(Boolean) // enlève null / undefined
+      .filter(Boolean) // drop null / undefined
       .join(" ")
       .toUpperCase();
 
@@ -1461,7 +1461,7 @@ function filterTable() {
   });
 }
 /**
- * Wait 300ms before doing a search, for let the user type
+ * Wait 300 ms before searching, to let the user type
  */
 const debouncedFilter = Utils.debounce(filterTable, 300);
 document
@@ -1485,7 +1485,7 @@ function toggleFullscreen() {
     }
     graphDiv.style.width = "95%";
     graphDiv.style.height = "400px";
-    document.getElementById("fullscreenBtn").innerText = "Plein écran";
+    document.getElementById("fullscreenBtn").innerText = "Full screen";
     state.fullScreen = false;
   } else {
     // Enter fullscreen
@@ -1493,7 +1493,7 @@ function toggleFullscreen() {
     graphColumn.style.width = "100%";
     graphColumn.classList.add("fullscreen");
     graphDiv.style.height = "75%";
-    document.getElementById("fullscreenBtn").innerText = "Retour";
+    document.getElementById("fullscreenBtn").innerText = "Back";
     state.fullScreen = true;
   }
 
@@ -1501,18 +1501,18 @@ function toggleFullscreen() {
 }
 
 /**
- * Plot all the datastream by activate input checkbox
+ * Plot all the datastreams by ticking their checkboxes
  */
 function plotAllDatastreams() {
   const divs = document.querySelectorAll("#datastreamList div");
 
   if (divs.length > 6) {
     Utils.showModal({
-      title: "⚠️ Attention",
-      body: "Il y a potentiellement beaucoup de données, êtes-vous sûr de continuer ?",
+      title: "⚠️ Warning",
+      body: "There is potentially a lot of data, are you sure you want to continue?",
       buttons: [
         {
-          text: "Continuer",
+          text: "Continue",
           class: "is-success",
           onClick: () => {
             divs.forEach((div) => {
@@ -1523,16 +1523,16 @@ function plotAllDatastreams() {
           },
         },
         {
-          text: "Annuler",
+          text: "Cancel",
           class: "",
           onClick: () => { },
         },
       ],
     });
-    return; // on attend la décision
+    return; // wait for the user's decision
   }
 
-  // Sinon, cocher directement si moins de 6 divs
+  // Otherwise, tick directly when there are 6 divs or fewer
   divs.forEach((div) => {
     const checkbox = div.querySelector('input[type="checkbox"]');
     checkbox.checked = true;
@@ -1541,7 +1541,7 @@ function plotAllDatastreams() {
 }
 
 /**
- * hide/show the button for  plotAllDatastreams
+ * hide/show the button for plotAllDatastreams
  */
 function togglePlotAllDatastreams() {
   const btn = document.getElementById("plotAll");
@@ -1579,7 +1579,7 @@ async function applyShareState(shareData) {
   }
 
   if (datastreamNames.length === 0) {
-    Utils.showNotification("Aucune chronique trouvée pour ce lien", "warning");
+    Utils.showNotification("No time series found for this link", "warning");
     return;
   }
 
@@ -1694,7 +1694,7 @@ initShareButton("btn_share", {
   getPageSpecificData: () => {
     const sel = getSelectedValues(elements.datastreamList);
     if (sel.length === 0) {
-      Utils.showNotification("Aucune chronique sélectionnée", "warning");
+      Utils.showNotification("No time series selected", "warning");
       return null;
     }
     return { ds: sel.map((n) => state.datastreamDict[n].id) };

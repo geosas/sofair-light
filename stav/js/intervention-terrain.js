@@ -22,7 +22,7 @@ async function main() {
   }
 
   if (!config.interventionTerrain) {
-    showNotification("Aucun datastream d'intervention configuré", "warning");
+    showNotification("No intervention datastream configured", "warning");
     if (progressBar) progressBar.remove();
     return;
   }
@@ -40,7 +40,7 @@ async function main() {
 
     if (observations.length === 0) {
       tbody.innerHTML =
-        '<tr><td colspan="2">Aucune intervention enregistrée.</td></tr>';
+        '<tr><td colspan="2">No intervention recorded.</td></tr>';
       return;
     }
 
@@ -61,7 +61,7 @@ async function main() {
   } catch (error) {
     console.error("Error loading intervention data:", error);
     tbody.innerHTML =
-      '<tr><td colspan="2" class="notification is-danger">Impossible de charger les données.</td></tr>';
+      '<tr><td colspan="2" class="notification is-danger">Unable to load the data.</td></tr>';
   } finally {
     if (progressBar) progressBar.remove();
   }

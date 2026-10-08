@@ -1,10 +1,10 @@
 /**
  * SensorThings API Utility Module
  * Provides buildQuery (URL construction) and fetch (unified download
- * for differents formats) for SensorThings API
+ * for different formats) for SensorThings API
  */
 
-const MISSING = "CHAMP OBLIGATOIRE MANQUANT";
+const MISSING = "MISSING MANDATORY FIELD";
 
 const MANDATORY_FIELDS = {
   Things: ["name", "description"],
@@ -16,8 +16,8 @@ const MANDATORY_FIELDS = {
   FeaturesOfInterest: ["name", "description", "encodingType", "feature"],
 };
 
-// --- Archive : lire les MultiDatastreams (champs pluriels, RESULT_JSON) avec le
-//     code générique Datastream. Flag posé au chargement config (voir app-init). ---
+// --- Archive: read the MultiDatastreams (plural fields, RESULT_JSON) with the
+//     generic Datastream code. Flag set when the config is loaded (see app-init). ---
 let ARCHIVE = false;
 export function setArchiveMode(on) {
   ARCHIVE = !!on;
@@ -26,7 +26,7 @@ export function isArchive() {
   return ARCHIVE;
 }
 
-// Requête : Datastream -> MultiDatastream (path + $expand/$select/$filter).
+// Request: Datastream -> MultiDatastream (path + $expand/$select/$filter).
 function _archiveRewrite(s) {
   if (typeof s !== "string") return s;
   return s
@@ -36,9 +36,9 @@ function _archiveRewrite(s) {
     .replace(/observationType(?!\w)/g, "multiObservationDataTypes");
 }
 
-// Réponse : expose un MultiDatastream façon Datastream (unitOfMeasurement /
-// ObservedProperty singuliers, thing.Datastreams) — AJOUTE les alias sans retirer
-// le pluriel, donc les sites qui lisent l'un OU l'autre marchent tous.
+// Response: exposes a MultiDatastream like a Datastream (singular unitOfMeasurement /
+// ObservedProperty, thing.Datastreams) — ADDS the aliases without removing the
+// plural, so call sites reading either one keep working.
 function _aliasArchiveDs(ds) {
   if (!ds || typeof ds !== "object") return;
   if (ds.unitOfMeasurements && ds.unitOfMeasurement === undefined)
@@ -55,7 +55,7 @@ function _adaptArchiveMeta(data) {
     if (it.MultiDatastreams && it.Datastreams === undefined)
       it.Datastreams = it.MultiDatastreams; // Thing.MultiDatastreams -> .Datastreams
     if (Array.isArray(it.Datastreams)) it.Datastreams.forEach(_aliasArchiveDs);
-    _aliasArchiveDs(it); // l'item peut être un (Multi)Datastream
+    _aliasArchiveDs(it); // the item may itself be a (Multi)Datastream
   }
   return data;
 }
@@ -115,7 +115,7 @@ function _normalizeMandatoryFields(data, entityType, selectedFields) {
     if (typeof entity !== "object" || entity === null) return entity;
     for (const field of fieldsToCheck) {
       if (!(field in entity)) {
-        console.warn(`[STA] ${entityType}: champ obligatoire manquant — "${field}"`, entity["@iot.id"] ?? "");
+        console.warn(`[STA] ${entityType}: missing mandatory field — "${field}"`, entity["@iot.id"] ?? "");
         entity[field] = MISSING;
       }
     }
@@ -142,7 +142,7 @@ function _normalizeMandatoryFields(data, entityType, selectedFields) {
  * @returns {string} Complete query URL
  */
 function buildQuery(baseUrl, entity, options = {}) {
-  // Archive : réécrit Datastream -> MultiDatastream (entité + $expand/$select/$filter)
+  // Archive: rewrites Datastream -> MultiDatastream (entity + $expand/$select/$filter)
   if (ARCHIVE) {
     entity = _archiveRewrite(entity);
     options = {
@@ -174,8 +174,8 @@ function buildQuery(baseUrl, entity, options = {}) {
   if (options.groupby) params.append("$groupby", options.groupby);
   const queryString = params.toString().replace(/\+/g, "%20");
 
-  // baseUrl peut se terminer par "/" (ex: .../v1.1/) : on le retire pour éviter
-  // un "//" que FROST rejette ("Path is not valid").
+  // baseUrl may end with "/" (e.g. .../v1.1/): strip it to avoid a "//"
+  // that FROST rejects ("Path is not valid").
   return `${baseUrl.replace(/\/+$/, "")}/${entity}${queryString ? "?" + queryString : ""}`;
 }
 
@@ -292,8 +292,8 @@ async function fetchSTA(url, options = {}) {
   const shouldNormalize = entityType !== "Observations";
   const selectedFields = _parseSelectFields(url);
 
-  // Archive : normalise les MultiDatastreams (pluriel -> alias singuliers) sur les
-  // réponses d'entités (pas les Observations, gérées par la couche graphe).
+  // Archive: normalises the MultiDatastreams (plural -> singular aliases) on entity
+  // responses (not the Observations, handled by the graph layer).
   const _adapt = (d) =>
     ARCHIVE && url.includes("MultiDatastreams") && !url.includes("/Observations")
       ? _adaptArchiveMeta(d)

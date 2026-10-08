@@ -89,7 +89,7 @@ async function loadDatastreamsInfo(serviceNum) {
   } catch (error) {
     console.error("Error:", error);
     Utils.showNotification(
-      `Erreur de chargement Service ${serviceNum}`,
+      `Loading error, Service ${serviceNum}`,
       "danger",
     );
   } finally {
@@ -145,7 +145,7 @@ async function populateObservedPropertiesList(serviceNum) {
   const data = await STAApi.fetchSTA(obspUrl);
 
   data.forEach((obsp) => {
-    // "Family" renommé "theme" (config) : on lit theme, repli sur l'ancien famille.
+    // "Family" renamed "theme" (config): read theme, fall back on the legacy famille key.
     if (obsp.properties)
       obsp.properties.famille = obsp.properties.famille ?? obsp.properties.theme;
     state.obspDict[obsp.name] = {
@@ -484,11 +484,11 @@ function plotAllDatastreams(serviceNum) {
 
   if (divs.length > 6) {
     Utils.showModal({
-      title: "⚠️ Attention",
-      body: "Il y a potentiellement beaucoup de données, êtes-vous sûr de continuer ?",
+      title: "⚠️ Warning",
+      body: "There is potentially a lot of data, are you sure you want to continue?",
       buttons: [
         {
-          text: "Continuer",
+          text: "Continue",
           class: "is-success",
           onClick: () => {
             divs.forEach((div) => {
@@ -499,7 +499,7 @@ function plotAllDatastreams(serviceNum) {
           },
         },
         {
-          text: "Annuler",
+          text: "Cancel",
           class: "",
           onClick: () => { },
         },
@@ -528,14 +528,14 @@ function toggleFullscreen() {
     }
     graphDiv.style.width = "95%";
     graphDiv.style.height = "400px";
-    document.getElementById("fullscreenBtn").innerText = "Plein écran";
+    document.getElementById("fullscreenBtn").innerText = "Full screen";
     sharedState.fullScreen = false;
   } else {
     originalWidth = graphColumn.offsetWidth + "px";
     graphColumn.style.width = "100%";
     graphColumn.classList.add("fullscreen");
     graphDiv.style.height = "75%";
-    document.getElementById("fullscreenBtn").innerText = "Retour";
+    document.getElementById("fullscreenBtn").innerText = "Back";
     sharedState.fullScreen = true;
   }
 
@@ -579,7 +579,7 @@ async function plotGraph(serviceNum) {
         id: dictInfo.id,
         title: seriesKey,
         originalName: info,
-        unit: `unité : ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`,
+        unit: `unit: ${dictInfo.unitOfMeasurement.name} (${dictInfo.unitOfMeasurement.symbol})`,
         graph: graph,
         serviceNum: serviceNum,
       };
@@ -653,7 +653,7 @@ async function downloadDataForPlot(serviceNum, id, titre, unit, graph) {
         `Data limit reached for ${titre}: showing first 100,000 records`,
       );
       Utils.showNotification(
-        `Limite de données atteinte pour ${titre}: affichage des 100 000 premiers enregistrements`,
+        `Data limit reached for ${titre}: showing the first 100,000 records`,
         "warning",
       );
     }
@@ -815,7 +815,7 @@ async function unzoomGraph() {
 
         if (limitReached) {
           Utils.showNotification(
-            `Limite de données atteinte pour ${titre}: affichage des 100 000 premiers enregistrements`,
+            `Data limit reached for ${titre}: showing the first 100,000 records`,
             "warning",
           );
         }
@@ -833,7 +833,7 @@ async function unzoomGraph() {
       } catch (error) {
         console.error(`Error downloading full dataset for ${titre}:`, error);
         Utils.showNotification(
-          `Erreur lors du téléchargement des données complètes pour ${titre}`,
+          `Error while downloading the full data for ${titre}`,
           "danger",
         );
       } finally {
@@ -985,7 +985,7 @@ function showDownloadModal() {
     : [];
 
   if (selectedValues1.length === 0 && selectedValues2.length === 0) {
-    Utils.showNotification("Aucune chronique sélectionnée", "warning");
+    Utils.showNotification("No time series selected", "warning");
     return;
   }
 
@@ -1004,22 +1004,22 @@ function showDownloadModal() {
         <div class="field">
             <label class="radio">
                 <input type="radio" name="downloadType" value="raw_all" checked>
-                Télécharger toutes les données brutes
+                Download all the raw data
             </label>
         </div>
         <hr>
-        <p class="has-text-weight-bold mb-2">Télécharger sur une période :</p>
+        <p class="has-text-weight-bold mb-2">Download over a period:</p>
         <div class="box">
             <div class="columns">
                 <div class="column">
                     <div class="field">
-                        <label class="label">Date de début</label>
+                        <label class="label">Start date</label>
                         <input type="datetime-local" id="dlStartDate" class="input" value="${startDate}">
                     </div>
                 </div>
                 <div class="column">
                     <div class="field">
-                        <label class="label">Date de fin</label>
+                        <label class="label">End date</label>
                         <input type="datetime-local" id="dlEndDate" class="input" value="${endDate}">
                     </div>
                 </div>
@@ -1027,23 +1027,23 @@ function showDownloadModal() {
             <div class="field">
                 <label class="radio">
                     <input type="radio" name="downloadType" value="raw_range">
-                    Données brutes
+                    Raw data
                 </label>
             </div>
         </div>
     `;
 
   Utils.showModal({
-    title: "📥 Téléchargement",
+    title: "📥 Download",
     body: bodyContent,
     buttons: [
       {
-        text: "Télécharger",
+        text: "Download",
         class: "is-success",
         onClick: () => executeDownload(),
       },
       {
-        text: "Annuler",
+        text: "Cancel",
         class: "",
       },
     ],
@@ -1066,12 +1066,12 @@ async function executeDownload() {
 
   if (selectedOption !== "raw_all") {
     if (!startDateInput || !endDateInput) {
-      Utils.showNotification("Veuillez sélectionner une période", "warning");
+      Utils.showNotification("Please select a period", "warning");
       return;
     }
     if (new Date(startDateInput) >= new Date(endDateInput)) {
       Utils.showNotification(
-        "La date de début doit être antérieure à la date de fin",
+        "The start date must be before the end date",
         "warning",
       );
       return;
@@ -1135,7 +1135,7 @@ async function executeDownload() {
       } catch (error) {
         console.error(`Error for ${info}:`, error);
         Utils.showNotification(
-          `Erreur lors du téléchargement de ${info}`,
+          `Error while downloading ${info}`,
           "danger",
         );
       }
@@ -1143,7 +1143,7 @@ async function executeDownload() {
   }
 
   progressBar.classList.add("is-hidden");
-  Utils.showNotification("Téléchargement terminé", "info");
+  Utils.showNotification("Download complete", "info");
 }
 
 // ============================================================================
@@ -1155,7 +1155,7 @@ async function loadService2() {
   const url = urlInput.value.trim();
 
   if (!url) {
-    Utils.showNotification("Veuillez entrer une URL", "warning");
+    Utils.showNotification("Please enter a URL", "warning");
     return;
   }
 
@@ -1205,10 +1205,10 @@ async function loadService2() {
     // Show service 2 filters
     document.getElementById("service2Filters").classList.remove("is-hidden");
 
-    Utils.showNotification("Service 2 chargé avec succès", "success");
+    Utils.showNotification("Service 2 loaded successfully", "success");
   } catch (error) {
     console.error("Error loading service 2:", error);
-    Utils.showNotification("Erreur lors du chargement du service", "danger");
+    Utils.showNotification("Error while loading the service", "danger");
   } finally {
     loadBtn.classList.remove("is-loading");
     loadBtn.disabled = false;

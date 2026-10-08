@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -16,19 +16,19 @@
     <div id="header"></div>
     <section class="section">
       <div id="container" class="container">
-        <!-- Titre centré + marge -->
+        <!-- Centered title + margin -->
         <h3 id="serviceName" class="title is-3 has-text-centered mt-5 mb-5">
-          <!-- ton texte ici -->
+          <!-- your text here -->
         </h3>
         <div class="columns">
           <div class="column">
             <div class="field">
-              <label class="label">Filtrer par point de mesure/variable:</label>
+              <label class="label">Filter by measurement point/variable:</label>
               <div class="control">
                 <input
                   type="text"
                   id="searchInput"
-                  placeholder="Exemple ST1 ou Humidité...  (colonne Name)"
+                  placeholder="e.g. ST1 or Humidity...  (Name column)"
                   class="input is-info"
                   style="margin-bottom: 10px"
                 />
@@ -37,22 +37,22 @@
           </div>
           <div class="column">
             <div class="field">
-              <label class="label">Filtrer par alerte</label>
+              <label class="label">Filter by alert</label>
               <select
                 id="searchSelectCause"
                 class="input is-info"
                 style="margin-bottom: 10px"
               >
-                <option value="">-- Choisir un filtre --</option>
+                <option value="">-- Choose a filter --</option>
                 <option value="No data">No data</option>
-                <option value="Valeur aberrante">Valeur aberrante</option>
+                <option value="Outlier">Outlier</option>
               </select>
             </div>
           </div>
         </div>
 
         <div class="block">
-          <h3 id="titleProgress" idclass="title is-5">Analyse en cours :</h3>
+          <h3 id="titleProgress" idclass="title is-5">Analysis in progress:</h3>
 
           <progress
             id="progressBar"
@@ -67,15 +67,15 @@
           >
             <thead>
               <tr>
-                <th>Nom du flux</th>
-                <th>Période observée</th>
-                <th>Alerte</th>
-                <th>Capteur</th>
-                <th>Paramètre observé</th>
+                <th>Datastream name</th>
+                <th>Observed period</th>
+                <th>Alert</th>
+                <th>Sensor</th>
+                <th>Observed property</th>
               </tr>
             </thead>
             <tbody id="datastreamsBody">
-              <!-- Injecté par JS -->
+              <!-- Injected by JS -->
             </tbody>
           </table>
         </div>

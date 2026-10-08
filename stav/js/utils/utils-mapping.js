@@ -39,7 +39,7 @@ function createStyleFunction({
   strokeColorPolygon = { default: "#00f", selected: "#f00" },
 } = {}) {
   return function (feature, resolution) {
-    const selected = feature.get("selected"); // dynamique
+    const selected = feature.get("selected"); // dynamic
     const geometryType = feature.getGeometry().getType();
 
     const textStyle =
@@ -191,7 +191,7 @@ function createFeatureCollection(things) {
   const features = [];
 
   for (const thing of things) {
-    //Careful for things who don't have loction
+    // Careful with things that don't have a location
     const hasLocation = thing.Locations?.length > 0 || thing.location;
     if (!hasLocation) continue;
     features.push(normalizeLocation(thing));

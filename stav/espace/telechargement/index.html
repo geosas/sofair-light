@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fr" style="height: 100%">
+<html lang="en" style="height: 100%">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -24,7 +24,7 @@
       <div class="column is-one-fifth" style="overflow-y: auto; height: 99%">
         <div class="card" id="FamilleCard">
           <header class="card-header">
-            <p class="card-header-title">Famille</p>
+            <p class="card-header-title">Family</p>
           </header>
           <div class="card-content">
             <div class="content" id="familleList"></div>
@@ -32,7 +32,7 @@
         </div>
         <div class="card">
           <header class="card-header">
-            <p class="card-header-title">Propriété Observée</p>
+            <p class="card-header-title">Observed property</p>
           </header>
           <div class="card-content">
             <div class="content" id="obspList"></div>
@@ -40,12 +40,12 @@
         </div>
         <div class="card">
           <header class="card-header">
-            <label class="label card-header-title">Point de mesure:</label>
+            <label class="label card-header-title">Measurement point:</label>
 
-            <input type="text" id="searchInput" placeholder="Filtrer" />
+            <input type="text" id="searchInput" placeholder="Filter" />
           </header>
           <div class="card-content">
-            <p id="downloadInfos" class="card-header-title">Téléchargement des données en cours</p>
+            <p id="downloadInfos" class="card-header-title">Loading data…</p>
             <progress id="progressBar3" class="progress is-info is-hidden" max="100">
             </progress>
             <div class="content" id="thingList"></div>
@@ -53,7 +53,7 @@
         </div>
         <div class="card">
           <header class="card-header">
-            <p class="card-header-title">Capteur</p>
+            <p class="card-header-title">Sensor</p>
           </header>
           <div class="card-content">
             <div class="content" id="sensorList"></div>
@@ -69,7 +69,7 @@
           class="buttons"
           style="display: flex; justify-content: flex-end; padding: 0"
         >
-          <button id="btn_dl" class="button">📥 Téléchargement</button>
+          <button id="btn_dl" class="button">📥 Download</button>
           <progress
             id="progressBar"
             class="progress is-info is-hidden"
@@ -78,7 +78,7 @@
           >
             0%
           </progress>
-          <button id="fullscreenBtn" class="button">🖥️ Plein écran</button>
+          <button id="fullscreenBtn" class="button">🖥️ Full screen</button>
           <div
             id="paginationControls"
             class="buttons has-addons"
@@ -89,15 +89,15 @@
               id="pageIndicator"
               class="button is-static"
               style="cursor: pointer; pointer-events: auto"
-              title="Cliquer pour saisir un numéro de page"
+              title="Click to enter a page number"
               >1 / 1</span
             >
             <button id="btn_next_page" class="button">▶</button>
           </div>
           <button class="button" id="btn_zomm" style="display: none">
-            🔎 🔽 Dézommer
+            🔎 🔽 Reset zoom
           </button>
-          <button id="btn_share" class="button">🔗 Partager</button>
+          <button id="btn_share" class="button">🔗 Share</button>
         </div>
         <div id="graphDiv" style="width: 95%; height: 400px"></div>
         <div class="box" id="DL_data" style="visibility: hidden">
@@ -115,7 +115,7 @@
       <div class="column is-one-fifth" style="overflow-y: auto; height: 99%">
         <div class="card">
           <header class="card-header">
-            <p class="card-header-title">Localisation</p>
+            <p class="card-header-title">Location</p>
           </header>
           <div class="card-content">
             <div id="map" style="width: 100%; height: 250px"></div>
@@ -123,10 +123,10 @@
         </div>
         <div class="card">
           <header class="card-header">
-            <p class="card-header-title">Chronique</p>
+            <p class="card-header-title">Time series</p>
             <span class="card-header-icon">
               <button id="plotAll" class="button is-small is-light is-hidden">
-                Tout afficher
+                Show all
               </button>
             </span>
           </header>

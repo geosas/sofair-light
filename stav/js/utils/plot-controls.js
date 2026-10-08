@@ -40,7 +40,7 @@ export function showDownloadModal({
   if (beforeShow) beforeShow();
 
   if (!datastreams || datastreams.length === 0) {
-    showNotification("Aucune chronique sélectionnée", "warning");
+    showNotification("No time series selected", "warning");
     return;
   }
 
@@ -61,22 +61,22 @@ export function showDownloadModal({
     <div class="field">
         <label class="radio">
             <input type="radio" name="downloadType" value="raw_all" checked>
-            Télécharger toutes les données brutes
+            Download all the raw data
         </label>
     </div>
     <hr>
-    <p class="has-text-weight-bold mb-2">Télécharger sur une période :</p>
+    <p class="has-text-weight-bold mb-2">Download over a period:</p>
     <div class="box">
         <div class="columns">
             <div class="column">
                 <div class="field">
-                    <label class="label">Date de début</label>
+                    <label class="label">Start date</label>
                     <input type="datetime-local" id="dlStartDate" class="input" value="${startDate}">
                 </div>
             </div>
             <div class="column">
                 <div class="field">
-                    <label class="label">Date de fin</label>
+                    <label class="label">End date</label>
                     <input type="datetime-local" id="dlEndDate" class="input" value="${endDate}">
                 </div>
             </div>
@@ -84,7 +84,7 @@ export function showDownloadModal({
         <div class="field">
             <label class="radio">
                 <input type="radio" name="downloadType" value="raw_range">
-                Données brutes
+                Raw data
             </label>
         </div>
     `;
@@ -94,22 +94,22 @@ export function showDownloadModal({
         <div class="field">
             <label class="radio">
                 <input type="radio" name="downloadType" value="agg_hour">
-                Données agrégées à l'heure
+                Hourly aggregated data
             </label>
         </div>
         <div class="field">
             <label class="radio">
                 <input type="radio" name="downloadType" value="agg_day">
-                Données agrégées au jour
+                Daily aggregated data
             </label>
         </div>
         <div id="aggTypeContainer" class="field" style="display:none; margin-top: 10px;">
-            <label class="label">Type d'agrégation :</label>
+            <label class="label">Aggregation type:</label>
             <div class="control">
                 <div class="select">
                     <select id="aggTypeSelect">
-                        <option value="MEAN">Moyenne</option>
-                        <option value="SUM">Somme</option>
+                        <option value="MEAN">Mean</option>
+                        <option value="SUM">Sum</option>
                     </select>
                 </div>
             </div>
@@ -137,17 +137,17 @@ export function showDownloadModal({
   });
 
   showModal({
-    title: "📥 Téléchargement",
+    title: "📥 Download",
     body: bodyContent,
     buttons: [
       {
-        text: "Télécharger",
+        text: "Download",
         class: "is-success",
         onClick: () =>
           _executeDownload(datastreams, urlService, modeService, progressBar),
       },
       {
-        text: "Annuler",
+        text: "Cancel",
         class: "",
       },
     ],
@@ -178,12 +178,12 @@ async function _executeDownload(
   // Validate date range for non-raw_all options
   if (selectedOption !== "raw_all") {
     if (!startDateInput || !endDateInput) {
-      showNotification("Veuillez sélectionner une période", "warning");
+      showNotification("Please select a period", "warning");
       return;
     }
     if (new Date(startDateInput) >= new Date(endDateInput)) {
       showNotification(
-        "La date de début doit être antérieure à la date de fin",
+        "The start date must be before the end date",
         "warning",
       );
       return;
@@ -247,7 +247,7 @@ async function _executeDownload(
             );
           } else {
             showNotification(
-              `Agrégation non supportée pour ${ds.name}`,
+              `Aggregation not supported for ${ds.name}`,
               "warning",
             );
             continue;
@@ -269,7 +269,7 @@ async function _executeDownload(
             );
           } else {
             showNotification(
-              `Agrégation non supportée pour ${ds.name}`,
+              `Aggregation not supported for ${ds.name}`,
               "warning",
             );
             continue;
@@ -299,7 +299,7 @@ async function _executeDownload(
     } catch (error) {
       console.error(`Error for ${ds.name}:`, error);
       showNotification(
-        `Erreur lors du téléchargement de ${ds.name}`,
+        `Error while downloading ${ds.name}`,
         "danger",
         5000,
       );
@@ -310,7 +310,7 @@ async function _executeDownload(
     progressBar.classList.add("is-hidden");
     progressBar.style.display = "";
   }
-  showNotification("Téléchargement terminé", "info");
+  showNotification("Download complete", "info");
 }
 
 // ============================================================================
@@ -330,7 +330,7 @@ export function parseShareParam() {
     return JSON.parse(jsonStr);
   } catch (err) {
     console.error("Invalid share parameter:", err);
-    showNotification("Lien de partage invalide", "danger");
+    showNotification("Invalid share link", "danger");
     return null;
   }
 }
@@ -362,9 +362,9 @@ async function copyShareUrl(getShareData) {
   if (!url) return;
   try {
     await navigator.clipboard.writeText(url);
-    showNotification("Lien copié dans le presse-papier", "info", 5000);
+    showNotification("Link copied to the clipboard", "info", 5000);
   } catch (err) {
-    prompt("Copiez ce lien :", url);
+    prompt("Copy this link:", url);
   }
 }
 

@@ -51,15 +51,15 @@ export function transformDataArray(dataArrayResponse) {
   const resultIndex = components.indexOf("result");
 
   return dataArray.map((row) => {
-    // Archive : result = [brut, QF, corrigé] -> on trace la valeur brute [0].
+    // Archive: result = [raw, QF, corrected] -> plot the raw value [0].
     const v = row[resultIndex];
     return [new Date(row[phenomenonTimeIndex]), Array.isArray(v) ? v[0] : v];
   });
 }
 
-// QF (Argo) -> couleur de fond. Fallback par défaut uniquement : la map réelle
-// vient du descripteur de config (champ `qfColors`, dérivé côté serveur de la
-// source unique app/data/qualification/qf_flags.json) via setQfColors().
+// QF (Argo) -> background colour. Default fallback only: the actual map comes
+// from the config descriptor (`qfColors` field, derived server-side from the
+// single source app/data/qualification/qf_flags.json) via setQfColors().
 export const ARCHIVE_QF_COLORS = {
   14: "rgba(255,0,0,.40)",
   13: "rgba(240,164,22,.40)",
@@ -69,13 +69,13 @@ export const ARCHIVE_QF_COLORS = {
   12: "rgba(85,204,112,.22)",
 };
 
-// Map QF -> couleur effective (par défaut = fallback ci-dessus). Remplacée au
-// chargement de la config par setQfColors(config.qfColors) — voir app-init.js.
+// Effective QF -> colour map (defaults to the fallback above). Replaced when the
+// config is loaded by setQfColors(config.qfColors) — see app-init.js.
 let qfColors = { ...ARCHIVE_QF_COLORS };
 
 /**
- * Définit la map QF -> couleur depuis le descripteur de config (source unique
- * serveur). Sans appel (ou map vide), on garde ARCHIVE_QF_COLORS par défaut.
+ * Sets the QF -> colour map from the config descriptor (server-side single
+ * source). Without a call (or with an empty map), ARCHIVE_QF_COLORS is kept.
  * @param {Object<string,string>} map - { code: "rgba(...)" }
  */
 export function setQfColors(map) {
@@ -84,8 +84,8 @@ export function setQfColors(map) {
 }
 
 /**
- * Regroupe les points en plages contiguës de même QF (result[1]).
- * @param {Object} dataArrayResponse - {dataArray, components} (result = [brut, QF, corrigé])
+ * Groups the points into contiguous ranges with the same QF (result[1]).
+ * @param {Object} dataArrayResponse - {dataArray, components} (result = [raw, QF, corrected])
  * @returns {Array<{start:number, end:number, qf:number}>}
  */
 export function buildQfRanges(dataArrayResponse) {
@@ -114,10 +114,10 @@ export function buildQfRanges(dataArrayResponse) {
 }
 
 /**
- * underlayCallback qui peint les bandes QF puis délègue à un underlay de base
- * (ex: seuils minValue/maxValue) — dygraph n'accepte qu'UN underlayCallback.
- * @param {Array} ranges - de buildQfRanges()
- * @param {Function} [baseUnderlay] - underlay existant à composer
+ * underlayCallback that paints the QF bands, then delegates to a base underlay
+ * (e.g. minValue/maxValue thresholds) — dygraph only accepts ONE underlayCallback.
+ * @param {Array} ranges - from buildQfRanges()
+ * @param {Function} [baseUnderlay] - existing underlay to combine
  * @returns {Function} underlayCallback
  */
 export function makeQfUnderlay(ranges, baseUnderlay) {
@@ -133,11 +133,11 @@ export function makeQfUnderlay(ranges, baseUnderlay) {
 }
 
 /**
- * underlayCallback à utiliser : bandes QF si (archive ET une seule série),
- * sinon l'underlay de base (seuils). Pour les pages multi-séries (métrologue,
- * téléchargement) où colorer le fond n'a de sens qu'avec une série affichée.
- * @param {Array} qfRanges - de buildQfRanges() (série unique)
- * @param {number} seriesCount - nb de séries affichées
+ * underlayCallback to use: QF bands if (archive AND a single series), otherwise
+ * the base underlay (thresholds). For multi-series pages (metrology, data
+ * access) where colouring the background only makes sense with one series shown.
+ * @param {Array} qfRanges - from buildQfRanges() (single series)
+ * @param {number} seriesCount - number of series displayed
  * @param {Function|null} baseUnderlay
  * @returns {Function|null}
  */
@@ -255,15 +255,15 @@ export function buildGroupByParam(aggregation, graphType) {
  * Returns a label describing the aggregation applied.
  * @param {string|null} aggregation - 'hour', 'day', or null
  * @param {string} graphType - 'bar' or 'line'
- * @returns {string} e.g., "Données brutes", "Moyenne/heure", "Cumul/jour"
+ * @returns {string} e.g., "Raw data", "Mean/hour", "Total/day"
  */
 export function getAggregationLabel(aggregation, graphType) {
-  if (!aggregation) return "Données brutes";
-  if (aggregation === "moving_average") return "Moyenne mobile";
+  if (!aggregation) return "Raw data";
+  if (aggregation === "moving_average") return "Moving average";
   if (graphType === "bar") {
-    return aggregation === "hour" ? "Cumul/heure" : "Cumul/jour";
+    return aggregation === "hour" ? "Total/hour" : "Total/day";
   }
-  return aggregation === "hour" ? "Moyenne/heure" : "Moyenne/jour";
+  return aggregation === "hour" ? "Mean/hour" : "Mean/day";
 }
 
 /**
@@ -294,7 +294,7 @@ export async function downloadObservations(params) {
     : undefined;
 
   if (mode === "Frost_Geosas") {
-    //maybe if else  would be more simple
+    // maybe an if/else would be simpler
     const aggregation =
       precomputedAgg ??
       determineAggregation(
@@ -384,7 +384,7 @@ export function createThresholdCallback(thresholds) {
 export function createDygraph(graphDiv, legendDiv, extraOptions = {}) {
   return new Dygraph(graphDiv, [], {
     drawPoints: true,
-    connectSeparatedPoints: false,//better for see gap but not for multiplot
+    connectSeparatedPoints: false,// better to see gaps, but not for multi-plots
     digitsAfterDecimal: 3,
     legend: "always",
     labelsDiv: legendDiv,
@@ -416,13 +416,13 @@ export function calculStatGraph(dygraph, seriesTypeDict) {
   if (!modalShown && data.length > 500000) {
     modalShown = true;
     showModal({
-      title: "⚠️ Attention",
-      body: `Il y a beaucoup de données : ${data.length} observations, 
-            votre navigateur  va peut-être subir des ralentissement.
-            Ce message ne s'affichera plus.`,
+      title: "⚠️ Warning",
+      body: `There is a lot of data: ${data.length} observations,
+            your browser may slow down.
+            This message will not be shown again.`,
       buttons: [
         {
-          text: "Continuer",
+          text: "Continue",
           class: "is-success",
         },
       ],
@@ -430,7 +430,7 @@ export function calculStatGraph(dygraph, seriesTypeDict) {
   }
   data.forEach((row) => {
     const x = row[0];
-    //only visible row -> betwen xmin and xmax
+    // only visible rows -> between xmin and xmax
     if (x >= xmin && x <= xmax) {
       series.forEach((_, index) => {
         const y = row[index + 1];
@@ -479,9 +479,9 @@ export function renderStatisticsTable(
         <thead>
             <tr>
                 <th>Variable</th>
-                <th>Fréquence</th>
-                <th>Aggrégation (visuelle)</th>
-                <th>Statistique sur la période affichée</th>
+                <th>Frequency</th>
+                <th>Aggregation (visual)</th>
+                <th>Statistic over the displayed period</th>
             </tr>
         </thead>
         <tbody></tbody>
@@ -499,14 +499,14 @@ export function renderStatisticsTable(
     const unit = seriesDataDict[key].unit;
     const statKey = key + " " + unit;
     const statGeneral =
-      seriesDataDict[key].graph === "bar" ? "Cumul" : "Moyenne";
+      seriesDataDict[key].graph === "bar" ? "Total" : "Mean";
 
-    // frequency est un objet {value, unit} (config STA) ; on l'affiche "20 min".
+    // frequency is a {value, unit} object (STA config); displayed as "20 min".
     const freqRaw = seriesDataDict[key]?.properties?.frequency;
     const frequency =
       freqRaw && typeof freqRaw === "object"
         ? `${freqRaw.value} ${freqRaw.unit ?? ""}`.trim()
-        : (freqRaw ?? "Non renseignée");
+        : (freqRaw ?? "Not specified");
 
     const row = document.createElement("tr");
     row.innerHTML = `

@@ -1,6 +1,6 @@
 /**
- * Page Decouverte
- * A GetCapabilities() like geoserver
+ * Discovery page
+ * A GetCapabilities()-like summary (as in GeoServer)
  * Interactive map with Things, filtering by sensors/properties, and capability summaries
  */
 
@@ -20,10 +20,10 @@ const state = {
 
 // Constants for entity summaries
 const ENTITY_LABELS = {
-  Things: "points de mesure (Things)",
-  Sensors: "types de capteurs (Sensors)",
-  ObservedProperties: "propriétés observées (ObservedProperties)",
-  Datastreams: "chroniques (DataStreams)",
+  Things: "measurement points (Things)",
+  Sensors: "sensor types (Sensors)",
+  ObservedProperties: "observed properties (ObservedProperties)",
+  Datastreams: "time series (Datastreams)",
 };
 
 const downloadInfos = document.getElementById("downloadInfos");
@@ -75,7 +75,7 @@ async function displayCapabilities() {
 
       const dateElement = document.getElementById("DateInfos");
       if (dateElement) {
-        dateElement.innerHTML = `Premier enregistrement : <b>${firstDate}</b><br>Dernier enregistrement : <b>${lastDate}</b>`;
+        dateElement.innerHTML = `First record: <b>${firstDate}</b><br>Last record: <b>${lastDate}</b>`;
       }
     }
   } catch (error) {
@@ -125,10 +125,10 @@ async function createSensorsTable() {
 
       const metadataCell = document.createElement("td");
       const metadata = sensor.metadata || "";
-      const displayText = metadata ? metadata.substr(0, 15) : "(aucun)";
+      const displayText = metadata ? metadata.substr(0, 15) : "(none)";
       metadataCell.innerHTML = metadata
         ? `<a href="${Utils.escapeHtml(metadata)}" target="_blank">${Utils.escapeHtml(displayText)}</a>`
-        : "(aucun)";
+        : "(none)";
       row.appendChild(radioCell);
       row.appendChild(nameCell);
       row.appendChild(descCell);
@@ -257,7 +257,7 @@ async function filterByEntity(entityId, entityType, inputElement) {
 }
 
 /**
- * Handles map click events, for highligth a Thing
+ * Handles map click events, to highlight a Thing
  * @param {Object} evt - OpenLayers click event
  */
 function handleMapClick(evt) {
@@ -298,7 +298,7 @@ function handleMapClick(evt) {
         );
         STAApi.fetchSTA(propsUrl)
           .then((props) => {
-            infoDiv.innerHTML += "<br>Propriétés observées :";
+            infoDiv.innerHTML += "<br>Observed properties:";
             props.forEach((prop) => {
               infoDiv.innerHTML += ` <b>- ${Utils.escapeHtml(prop.name)}</b>`;
             });
@@ -314,7 +314,7 @@ function handleMapClick(evt) {
         });
         STAApi.fetchSTA(sensUrl)
           .then((sensors) => {
-            infoDiv.innerHTML += "<br>Capteurs :";
+            infoDiv.innerHTML += "<br>Sensors:";
             sensors.forEach((sensor) => {
               infoDiv.innerHTML += ` <b>- ${Utils.escapeHtml(sensor.name)}</b>`;
             });
@@ -345,7 +345,7 @@ async function loadThingsOnMap() {
     UtilsMap.addCursorFeedback(state.map);
   } catch (error) {
     console.error("Failed to load Things on map:", error);
-    Utils.showNotification("Erreur lors du chargement de la carte", "danger");
+    Utils.showNotification("Error while loading the map", "danger");
   }
 }
 
@@ -398,7 +398,7 @@ async function main() {
   state.map = UtilsMap.createMap("map", { zoom: 15 });
   await loadThingsOnMap();
   document.getElementById("progressBar").classList.add("is-hidden");
-  downloadInfos.innerText = "Emplacement des points de mesure";
+  downloadInfos.innerText = "Location of the measurement points";
 }
 
 main();

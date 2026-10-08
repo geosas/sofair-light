@@ -14,18 +14,18 @@
 import { BASE_URL } from "./utils.js";
 
 /**
- * Déduit le fichier de config par défaut à partir du nom de la racine de montage.
- * Ex: servi sous /sites-urbains-rennais/ -> config/sites-urbains-rennais.json.
- * Permet d'ouvrir STAV sans ?config= quand la racine porte le nom de l'observatoire.
- * @returns {string|null} URL du fichier de config, ou null (montage à la racine)
+ * Derives the default config file from the name of the mount root.
+ * E.g. served under /sites-urbains-rennais/ -> config/sites-urbains-rennais.json.
+ * Lets STAV open without ?config= when the root carries the observatory name.
+ * @returns {string|null} URL of the config file, or null (mounted at the root)
  */
 function defaultConfigFromMountRoot() {
   try {
     const base = new URL(BASE_URL);
     const segments = base.pathname.split("/").filter(Boolean);
-    const observatoire = segments[segments.length - 1];
-    if (!observatoire) return null;
-    return `${BASE_URL}config/${observatoire}.json`;
+    const observatory = segments[segments.length - 1];
+    if (!observatory) return null;
+    return `${BASE_URL}config/${observatory}.json`;
   } catch (error) {
     return null;
   }
@@ -49,7 +49,7 @@ async function fetchConfigFile(configUrl) {
 
 /**
  * Ensures the config parameter is present in the URL
- * ceinture et bretelle old code but i keep it in case
+ * belt and braces: old code, kept just in case
  * @param {string} configName - Configuration file name
  */
 function ensureConfigInUrl(configName) {
@@ -95,7 +95,7 @@ async function loadConfiguration() {
     sessionStorage.setItem("config", configFromUrl);
   }
 
-  // Priorité : ?config= explicite > racine de montage (= observatoire) > session (standalone)
+  // Priority: explicit ?config= > mount root (= observatory) > session (standalone)
   const mountDefault = defaultConfigFromMountRoot();
   const configName =
     configFromUrl || mountDefault || sessionStorage.getItem("config");
@@ -105,8 +105,8 @@ async function loadConfiguration() {
     return { configName: null, data: null };
   }
 
-  // Config déduite de la racine : chaque page la redéduit seule -> on ne pollue ni
-  // l'URL ni les liens (URL propre, pas de contamination inter-montages via session)
+  // Config derived from the root: each page re-derives it on its own -> we pollute
+  // neither the URL nor the links (clean URL, no cross-mount leak via the session)
   const derivedFromMount = !configFromUrl && configName === mountDefault;
 
   if (!derivedFromMount) {

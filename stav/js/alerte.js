@@ -1,7 +1,7 @@
 /**
  * Alerting Page
  * Monitors datastreams for anomalies (values outside min/max thresholds, missing data)
- * 7 days ago fot the check
+ * over the last 7 days
  */
 
 import { waitForAppReady } from "./utils/app-init.js";
@@ -55,7 +55,7 @@ async function main() {
 
     if (things.length === 0) {
       tbody.innerHTML =
-        '<tr><td colspan="5">Aucun point de mesure trouvé.</td></tr>';
+        '<tr><td colspan="5">No measurement point found.</td></tr>';
       return;
     }
 
@@ -89,7 +89,7 @@ async function main() {
   } catch (error) {
     console.error("Error loading alert data:", error);
     tbody.innerHTML =
-      '<tr><td colspan="5" class="notification is-danger">Impossible de charger les données.</td></tr>';
+      '<tr><td colspan="5" class="notification is-danger">Unable to load the data.</td></tr>';
   }
 }
 
@@ -156,7 +156,7 @@ async function checkDatastreamForAlerts(
           anomalousValue = anomalousValue.toFixed(3);
         }
         const unit = datastream.unitOfMeasurement?.symbol || "";
-        alertMessage = `Valeur aberrante : ${anomalousValue} ${unit}`;
+        alertMessage = `Outlier: ${anomalousValue} ${unit}`;
         rowClass = "is-warning";
       }
     } else {
@@ -168,7 +168,7 @@ async function checkDatastreamForAlerts(
     // Add last measurement time
     if (endDate) {
       const timeAgo = Utils.formatTimeAgo(endDate, now);
-      alertMessage += `<br>Dernière mesure : ${timeAgo}`;
+      alertMessage += `<br>Last measurement: ${timeAgo} ago`;
 
       // Check if data is too old (>7 days)
       if (endDate < new Date(sevenDaysAgoISO)) {
@@ -216,7 +216,7 @@ async function checkDatastreamForAlerts(
 
 /**
  * Filters table rows by name (search input)
- * next improvement merge filter with metrology page andother page
+ * next improvement: merge this filter with the metrology page and other pages
  */
 function filterTable() {
   const input = document.getElementById("searchInput");
@@ -245,7 +245,7 @@ function filterTableCause() {
   const rows = table.getElementsByTagName("tr");
 
   for (let i = 1; i < rows.length; i++) {
-    const td = rows[i].getElementsByTagName("td")[1]; // "Alerte" column
+    const td = rows[i].getElementsByTagName("td")[1]; // "Alert" column
     if (td) {
       const txtValue = td.textContent || td.innerText;
       rows[i].style.display =

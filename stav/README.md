@@ -51,10 +51,10 @@ STAV allows users to:
 
 STAV provides several dedicated interfaces for different user profiles (scientists, metrologists, new users, general audience):
 
-- **Accueil**: Explore the SensorThings service globally: measured parameters, sensors used, and locations of measurement points
-- **Description des points de mesures**: View detailed information for each measurement point, including photos if available
-- **Accès aux données**: Visualize time series and download observations
-- **Métrologie**: Field operator tools for checking latest observations and sensor status
+- **Home**: Explore the SensorThings service globally: measured parameters, sensors used, and locations of measurement points
+- **Measurement points**: View detailed information for each measurement point, including photos if available
+- **Data access**: Visualize time series and download observations
+- **Metrology**: Field operator tools for checking latest observations and sensor status
 
 ## Target Users and Interfaces
 
@@ -143,8 +143,8 @@ Create `config/my-service.json`:
 - `serviceName` (required): Display name for the service in STAV
 - `description` (required): Description of the service
 - `mode` (optional): Enable custom STA improvement. Use: `"stean"` for [STEAN](https://github.com/Mario-35/Stean) STA server or `"Frost_Geosas"` for GéoSAS-specific features,
-- `metadata` (optional): URL (URI) to metadata record (automatically adds a "Metadonnée" link in the navbar)
-- `metrology` (optional): use `true` for enable the metrology page (automatically adds a "Métrologie" link in the navbar),
+- `metadata` (optional): URL (URI) to metadata record (automatically adds a "Metadata" link in the navbar)
+- `metrology` (optional): use `true` for enable the metrology page (automatically adds a "Metrology" link in the navbar),
 - `barObservedProperties` (optional): list of ObservedProperty names to render as bar charts with SUM aggregation (e.g. `["Precipitation", "Rainfall"]`). All others default to line charts with MEAN aggregation.
 
 

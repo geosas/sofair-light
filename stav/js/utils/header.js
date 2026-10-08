@@ -100,7 +100,7 @@ function addMetadataLink(config) {
   const metadataLink = document.createElement("a");
   metadataLink.className = "navbar-item";
   metadataLink.href = config.metadata;
-  metadataLink.textContent = "Metadonnée";
+  metadataLink.textContent = "Metadata";
   metadataLink.target = "_blank";
   metadataLink.rel = "noopener";
   metadataLink.setAttribute("data-metadata-link", "true");
@@ -160,7 +160,7 @@ async function initializeHeader(options = {}) {
     options;
 
   // Use import.meta.url to get the default header path relative to this JS file
-  // maybe it possible to do it a different way
+  // maybe it is possible to do it a different way
   const defaultHeaderPath = new URL("../../header.html", import.meta.url).href;
 
   const success = await injectHeader(defaultHeaderPath, targetSelector);

@@ -4,7 +4,7 @@
     border-radius: 3px;
     box-shadow: 0 0 3px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
-    /* Force le texte à rester sur une seule ligne */
+    /* Keep the text on a single line */
     text-align: left;
-    /* Centre le texte à gauche */
+    /* Align the text to the left */
 }
