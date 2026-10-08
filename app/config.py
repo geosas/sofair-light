@@ -52,7 +52,7 @@ class Config:
 
     # Flask secret key (change it in production)
     SECRET_KEY = os.environ.get(
-        'SECRET_KEY') or 'une_clé_secrète_très_sécurisée'
+        'SECRET_KEY') or 'insecure-default-secret-key'
 
     # SQLite database configuration
     SQLALCHEMY_DATABASE_URI = f"sqlite:///{os.path.join(basedir, 'database.db')}"
@@ -60,7 +60,7 @@ class Config:
 
     # JWT configuration (optional)
     JWT_SECRET_KEY = os.environ.get(
-        'JWT_SECRET_KEY') or 'une_clé_jwt_sécurisée'
+        'JWT_SECRET_KEY') or 'insecure-default-jwt-key'
     JWT_ACCESS_TOKEN_EXPIRES = 3600  # 1 hour, in seconds
     JWT_TOKEN_LOCATION = ["headers", "cookies"]
     JWT_COOKIE_SECURE = False  # set to True for HTTPS production
@@ -75,7 +75,7 @@ class Config:
         "@id": "http://127.0.0.1:5000/docs",
         "url": "http://127.0.0.1:5000/docs",
         "name": "API SOFAIR LIGHT",
-        "description": "Sensor Observations to FAIR data. API de diffusion de données d'obseravtions en OGC SensorThings.",
+        "description": "Sensor Observations to FAIR data. API to publish observation data as OGC SensorThings.",
         "keywords": [
             "SensorThings",
             "OGC",
@@ -148,7 +148,7 @@ class Config:
     # Shared secret for LoRaWAN ingestion (value of the 'LoRaWAN-Request' header),
     # to be overridden by the STALT_LORAWAN_SECRET environment variable in production
     STALT_LORAWAN_SECRET = os.environ.get(
-        'STALT_LORAWAN_SECRET') or 'changez-moi-lorawan'
+        'STALT_LORAWAN_SECRET') or 'change-me-lorawan'
 
     # ORCID SSO (federated login, on top of the local auth). ORCID ONLY performs
     # authentication; the role/authorisation stays local (see doc/sso_orcid.md).

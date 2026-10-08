@@ -53,9 +53,9 @@ class ExeConfigCreateDatastream:
 
             for i in thing.index:
                 if 'sensor' in i:
-                    capteur = thing[i]
+                    sensor_name = thing[i]
                     sensor = sensorConf[sensorConf.name ==
-                                        capteur].T.dropna()
+                                        sensor_name].T.dropna()
 
                     for j in sensor.index:
                         if 'observedProperty' in j:
@@ -63,7 +63,7 @@ class ExeConfigCreateDatastream:
 
                             obsP_df = obsPConf[obsPConf.name == obsP]
 
-                            dataStream = f"{thing['name']}_{capteur}_{obsP}"
+                            dataStream = f"{thing['name']}_{sensor_name}_{obsP}"
 
                             dataStreamS['description'].append("")
                             dataStreamS['Share'].append("")

@@ -39,7 +39,7 @@ class ExeConfigPostDatastream:
             objetNew = [x for x in name if x not in objetValue['name'].values]
             objetOk = [x for x in name if x in objetValue['name'].values]
             print(objet, 'already published:', objetOk, "\n")
-            print(objet, 'nouveau :', objetNew)
+            print(objet, 'new:', objetNew)
             return objetNew
 
     @classmethod

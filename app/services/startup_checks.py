@@ -7,9 +7,9 @@ import os
 # Config key -> the placeholder literal it is compared against. A match means
 # the deployment never overrode it. 
 _SIGNING_SECRETS = {
-    "SECRET_KEY": "une_clé_secrète_très_sécurisée",
-    "JWT_SECRET_KEY": "une_clé_jwt_sécurisée",
-    "STALT_LORAWAN_SECRET": "changez-moi-lorawan",
+    "SECRET_KEY": "insecure-default-secret-key",
+    "JWT_SECRET_KEY": "insecure-default-jwt-key",
+    "STALT_LORAWAN_SECRET": "change-me-lorawan",
 }
 
 # The environment variable a deployer must set for each of them.

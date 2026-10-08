@@ -50,7 +50,7 @@ class DataDriverPostToSTA:
 
     class Schema(BaseModel):
         # it is possible to replace ... with a default value
-        rawFile64: str = Field(..., title="Fichier data brute", min_length=1,
+        rawFile64: str = Field(..., title="Raw data file", min_length=1,
                                description="Raw data file encoded in base64")
         driver: str = Field(..., title="driver", min_length=1,
                             description="Driver to use for read rawFile64")
@@ -134,7 +134,7 @@ class DataDriverPostToSTA:
                 driver, csv_file_like, obsP)
 
         except Exception as e:
-            return {"error": "Erreur lors de la lecture du fichier", "exception": str(e)}, 500
+            return {"error": "Error while reading the file", "exception": str(e)}, 500
 
         df['phenomenonTime'] = df['phenomenonTime'].dt.strftime(
             '%Y-%m-%dT%H:%M:%SZ')
@@ -216,7 +216,7 @@ class DataDriverPostToSTA:
                 id_MultiDatastreams.append(i["@iot.id"])
                 continue  # nothing new to insert for this datastream
 
-            print('envoie data')
+            print('sending data')
             write_archive_observations(df_post, i["@iot.id"], Config.DB_archive,
                                        delete_range=delete_range)
             id_MultiDatastreams.append(i["@iot.id"])

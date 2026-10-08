@@ -261,7 +261,7 @@
     }
     function isoFmt(ms) { return new Date(ms).toISOString().slice(0, 16).replace('T', ' '); }
 
-    // ---- Chargement Things / Datastreams ----
+    // ---- Load Things / Datastreams ----
     fetch(`${apiUrl}Things?$select=name,id`).then(r => r.json()).then(data => {
         var sel = document.getElementById('thingSel');
         (data.value || []).forEach(t => { sel.innerHTML += `<option value="${t['@iot.id']}">${t.name}</option>`; });
@@ -536,7 +536,7 @@
         el.classList.remove('is-hidden');
     }
 
-    // ---- Envoi ----
+    // ---- Submit ----
     function sendQualif() {
         if (idData == null || winStart == null) return;
         var btn = document.getElementById('btnSend');

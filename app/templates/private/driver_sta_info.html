@@ -27,7 +27,7 @@
             <p>
                 {{ _('Prepare a python script containing a run function whose arguments are: the in-memory file and [observedProperty] (take inspiration from the existing drivers). The goal is for the function output to be a pandas dataframe with a "phenomenonTime" (str) column in UTC format = %%Y-%%m-%%dT%%H:%%M:%%SZ; each of the following columns must be named exactly as a value passed in observedProperties.') }}
             </p>
-            <p>{{ _('The driver script name must be a single word taken from the archive service Sensors.name, e.g. "OTT" for "Orphéus mini OTT".') }}</p>
+            <p>{{ _('The driver script name must be a single word taken from the archive service Sensors.name, e.g. "OTT" for "Orpheus mini OTT".') }}</p>
             <p>{{ _('Finally add the script in the driver directory') }}</p>
             <a class="button is-link is-small" href="{{ url_for('private.driver_template') }}">
                 ⬇ {{ _('Download an empty script') }}
