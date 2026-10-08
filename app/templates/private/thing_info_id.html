@@ -10,14 +10,14 @@
             <h2 class="title is-4">{{ _('Measurement point') }}</h2>
             <div class="content">
                 <div class="image-container" style="text-align: center; margin-bottom: 20px;">
-                    {% if thing['properties'].get('url_photo') %}
-                    <img src="{{ thing['properties']['url_photo'] }}" alt="{{ _('Measurement point preview') }}"
-                        style="max-width: 100%; height: auto; border-radius: 8px;">
+                    {% for photo in thing['photos'] %}
+                    <img src="{{ photo }}" alt="{{ _('Measurement point preview') }}"
+                        style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 10px;">
                     {% else %}
                     <p style="font-style: italic; color: gray;">{{ _('No image available.') }}</p>
-                    {% endif %}
+                    {% endfor %}
                 </div>
-                {% if not thing['properties'].get('url_photo') %}
+                {% if not thing['photos'] %}
                 <form id="uploadPhotoThing_{{ thing['@iot.id'] }}" class="uploadPhotoThing" style="margin-top: 20px;">
                     <div class="field">
                         <label class="label">{{ _('Upload an image to illustrate the measurement point') }}</label>

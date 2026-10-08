@@ -1378,3 +1378,7 @@ msgstr ""
 #: app/templates/base.html
 msgid "Configure SoftSensors"
 msgstr "Configurer les SoftSensors"
+
+#: app/templates/private/thing_info.html
+msgid "Add an image"
+msgstr "Ajouter une image"

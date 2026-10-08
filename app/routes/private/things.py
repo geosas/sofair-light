@@ -15,6 +15,24 @@ from app.services.utils import allowed_file, resize_image
 from app.routes.private import private_bp, ALLOWED_EXTENSIONS
 
 
+def _thing_photos(properties):
+    """All photo URLs of a Thing as a list (`image` str/list + legacy `url_photo`), http -> https."""
+    photos = properties.get("image") or []
+    if isinstance(photos, str):
+        photos = [photos]
+    photos = list(photos)
+    legacy = properties.get("url_photo")
+    if legacy and legacy not in photos:
+        photos.append(legacy)
+    return [p.replace("http://", "https://", 1) for p in photos]
+
+
+def _preview_url(url_photo):
+    """URL of the resized preview: <dir>/preview/resize_<file>."""
+    url_parts = url_photo.split('/')
+    return '/'.join(url_parts[:-1]) + '/preview/resize_' + url_parts[-1]
+
+
 @private_bp.get('/thingInfo')
 @jwt_required_or_redirect()
 def thing_info():
@@ -31,14 +49,13 @@ def thing_info():
         data = r.json()['value']
 
         for item in data:
-            properties = item.get("properties", {})
-            url_photo = properties.get("url_photo")
-            if url_photo:
-                url_parts = url_photo.split('/')
-                filename = url_parts[-1]
-                new_url = '/'.join(url_parts[:-1]) + \
-                    '/preview/resize_' + filename
-                properties["url_photo"] = new_url  # Update the URL
+            properties = item.get("properties") or {}
+            item["properties"] = properties
+            photos = _thing_photos(properties)
+            item["photo_count"] = len(photos)
+            if photos:
+                # The template reads `url_photo`: expose the first preview there
+                properties["url_photo"] = _preview_url(photos[0])
 
         return render_template('private/thing_info.html', things=data)
     except:
@@ -71,30 +88,39 @@ def post_thing_info():
         resize_image(file, image_path, 750, 750)
         resize_image(image_path, image_path_preview, 350, 350)
         params = {"$select": "properties"}
-        r = sta_client.get("partage", f"/Things({idThing})", params=params)
 
         try:
             r = sta_client.get(
                 "partage", f"/Things({idThing})", params=params)
         except:
-            return jsonify({"error": "SensorThings service not active or unreachable"}), 500
+            return jsonify({"error": _("SensorThings service not active or unreachable")}), 500
         if not r.ok:
-            return jsonify({"error": "SensorThings service not active or unreachable"}), 500
+            return jsonify({"error": _("SensorThings service not active or unreachable")}), 500
 
-        propertiesThing = r.json()['properties']
+        propertiesThing = r.json().get('properties') or {}
 
-        propertiesThing['url_photo'] = request.host_url[:-1] + url_for(
-            'static', filename="img/things/"+filename)
+        # `image` is the list STAV reads; https so it loads on https pages
+        photos = _thing_photos(propertiesThing)
+        propertiesThing.pop('url_photo', None)  # legacy key, merged into `image`
+        new_photo = url_for(
+            'static', filename="img/things/"+filename, _external=True, _scheme='https')
+        if new_photo not in photos:
+            photos.append(new_photo)
+        propertiesThing['image'] = photos
         properties = {'properties': propertiesThing}
 
-        r = sta_client.patch("partage", f"/Things({idThing})", json=properties)
-        # if r.ok
-    url_parts = propertiesThing['url_photo'].split('/')
-    filename = url_parts[-1]
-    new_url = '/'.join(url_parts[:-1]) + '/preview/resize_' + filename
+        try:
+            r = sta_client.patch("partage", f"/Things({idThing})", json=properties)
+        except:
+            return jsonify({"error": _("SensorThings service not active or unreachable")}), 500
+        if not r.ok:
+            return jsonify({"error": _("SensorThings service active but something gone wrong")}), 500
+    else:
+        return jsonify({"error": _("Invalid file name")}), 400
 
     return jsonify({"msg": "ok",
-                    "url_photo": new_url})
+                    "url_photo": _preview_url(new_photo),
+                    "photo_count": len(photos)})
 
 
 @private_bp.post('/patchThingDescription')
@@ -125,7 +151,7 @@ def patch_thing_description():
 def thing_info_id(idThing):
 
     params = {"$select": "name,description,properties,id",
-              "$expand": "Locations($select=name,location),Datastreams($select=name,phenomenonTime,description;$expand=Sensor($select=name,metadata);$expand=ObservedProperty($select=name,definition))"
+              "$expand": "Locations($select=name,location),Datastreams($select=name,phenomenonTime,description;$expand=Sensor($select=name,metadata),ObservedProperty($select=name,definition))"
               }
 
     try:
@@ -136,5 +162,8 @@ def thing_info_id(idThing):
         return render_template('error.html', error=_("SensorThings service not active or unreachable")), 500
 
     data = r.json()
+    properties = data.get("properties") or {}
+    data["properties"] = properties
+    data["photos"] = _thing_photos(properties)
 
     return render_template('private/thing_info_id.html', thing=data)

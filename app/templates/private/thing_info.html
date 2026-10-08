@@ -43,6 +43,7 @@
                     <p class="title is-6 mb-2">
                         <a href="{{ url_for('private.thing_info_id', idThing=tid) }}">{{ i['name'] }}</a>
                         <span class="tag is-pulled-right">#{{ tid }}</span>
+                        {% if i['photo_count'] > 1 %}<span class="tag is-pulled-right mr-1">📷 {{ i['photo_count'] }}</span>{% endif %}
                     </p>
 
                     <!-- Description (affichage) -->
@@ -58,10 +59,9 @@
                         <p id="desc_msg_{{ tid }}" class="help is-hidden"></p>
                     </div>
 
-                    {% if not i['properties'].get('url_photo') %}
                     <form id="uploadPhotoThing_{{ tid }}" class="uploadPhotoThing mt-3">
                         <div class="field">
-                            <label class="label is-small">{{ _('Upload an image to illustrate the measurement point') }}</label>
+                            <label class="label is-small">{{ _('Add an image') }}</label>
                             <div class="control">
                                 <input class="input is-small" type="file" id="photo_thing_{{ tid }}"
                                     accept="image/png, image/jpeg, image/jpg" required>
@@ -74,7 +74,6 @@
                         <progress id="message_{{ tid }}_pgb" class="progress is-small is-primary is-hidden"
                             max="100">30%</progress>
                     </form>
-                    {% endif %}
                 </div>
 
                 <footer class="card-footer">
@@ -182,14 +181,14 @@
                         messageDiv.textContent = {{ _('Photo sent successfully!')|tojson }};
 
                         const cardImageDiv = document.querySelector(".card-image_" + id);
-                        if (cardImageDiv) {
-                            const noImageText = cardImageDiv.querySelector("span");
-                            if (noImageText) { noImageText.remove(); }
+                        // The card shows only the first photo: set it if there was none yet
+                        if (cardImageDiv && !cardImageDiv.querySelector("img")) {
                             const imgElement = document.createElement("img");
                             imgElement.src = data['url_photo'];
                             imgElement.alt = {{ _('Measurement point preview')|tojson }};
-                            cardImageDiv.appendChild(imgElement);
+                            cardImageDiv.replaceChildren(imgElement);
                         }
+                        document.getElementById("photo_thing_" + id).value = "";
                     })
                     .catch(error => {
                         document.getElementById("message_" + id + "_pgb").classList.add("is-hidden");
