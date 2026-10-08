@@ -234,8 +234,8 @@ msgstr "Télécharger"
 
 #: app/templates/private/createConfigObs.html:22
 #: app/templates/private/createConfigObs.html:87
-msgid "How to fill in the file?"
-msgstr "Comment remplir le fichier ?"
+msgid "How to fill in the configuration file?"
+msgstr "Comment remplir le fichier de configuration ?"
 
 #: app/templates/private/createConfigObs.html:24
 #: app/templates/private/createConfigObs.html:89
@@ -1318,3 +1318,47 @@ msgstr "Licence"
 #: app/templates/base.html
 msgid "Source code"
 msgstr "Code source"
+
+#: app/templates/private/createConfigObs.html
+msgid "The .xlsx template has one tab (sheet) per type of object. Fill them in this order:"
+msgstr "Le modèle .xlsx contient un onglet (feuille) par type d'objet. Remplissez-les dans cet ordre :"
+
+#: app/templates/private/createConfigObs.html
+msgid "what is measured (name, definition = thesaurus URI, description, unit, optional theme)."
+msgstr "ce qui est mesuré (nom, définition = URI de thésaurus, description, unité, thème optionnel)."
+
+#: app/templates/private/createConfigObs.html
+msgid "the sensors (name, description, encodingType, metadata = datasheet URL) and, in the observedProperty1, 2… columns, the observed properties each sensor measures."
+msgstr "les capteurs (nom, description, encodingType, metadata = URL de la fiche technique) et, dans les colonnes observedProperty1, 2…, les propriétés observées que mesure chaque capteur."
+
+#: app/templates/private/createConfigObs.html
+msgid "the measurement points (name, description, type = Point, x = longitude, y = latitude in WGS84) and, in the sensor1, 2… columns, the sensors installed there."
+msgstr "les points de mesure (nom, description, type = Point, x = longitude, y = latitude en WGS84) et, dans les colonnes sensor1, 2…, les capteurs qui y sont installés."
+
+#: app/templates/private/createConfigObs.html
+msgid "Step 1: upload the file. The API generates the 4_datastream tab: one Datastream per measurement point × sensor × observed property."
+msgstr "Étape 1 : envoyez le fichier. L'API génère l'onglet 4_datastream : un Datastream par point de mesure × capteur × propriété observée."
+
+#: app/templates/private/createConfigObs.html
+msgid "complete each row: description, Share (publish on the public service or not), nameShare (public name), observationProcedure (acquisition method), frequency, min/max thresholds."
+msgstr "complétez chaque ligne : description, Share (publier ou non sur le service public), nameShare (nom public), observationProcedure (méthode d'acquisition), fréquence, seuils min/max."
+
+#: app/templates/private/createConfigObs.html
+msgid "Step 2: upload the completed file. The API creates the Sensors, ObservedProperties, Things and Datastreams on the archive and public SensorThings services."
+msgstr "Étape 2 : envoyez le fichier complété. L'API crée les Sensors, ObservedProperties, Things et Datastreams sur les services SensorThings archive et public."
+
+#: app/templates/private/createConfigObs.html
+msgid "Names must be identical from one tab to another (case, spaces)."
+msgstr "Les noms doivent être identiques d'un onglet à l'autre (majuscules, espaces)."
+
+#: app/templates/private/createConfigObs.html
+msgid "Do not use the \"_\" character in names, and do not edit the nameUnique column."
+msgstr "N'utilisez pas le caractère « _ » dans les noms et ne modifiez pas la colonne nameUnique."
+
+#: app/templates/private/createConfigObs.html
+msgid "Re-uploading only adds new objects: an already published object is not renamed or updated."
+msgstr "Un nouvel envoi ajoute uniquement les nouveaux objets : un objet déjà publié n'est ni renommé ni mis à jour."
+
+#: app/templates/private/createConfigObs.html
+msgid "Close"
+msgstr "Fermer"

@@ -19,10 +19,10 @@
                     </a>
                 </div>
                 <div class="box has-text-centered">
-                    <p class="title is-5">🤔 {{ _('How to fill in the file?') }}</p>
-                    <a href="" class="button is-link is-light" download>
+                    <p class="title is-5">🤔 {{ _('How to fill in the configuration file?') }}</p>
+                    <button type="button" class="button is-link is-light js-open-guide">
                         {{ _('See the guide') }}
-                    </a>
+                    </button>
                 </div>
             </div>
             <div class="column is-half">
@@ -84,10 +84,10 @@
                     </a>
                 </div>
                 <div class="box has-text-centered">
-                    <p class="title is-5">🤔 {{ _('How to fill in the file?') }}</p>
-                    <a href="" class="button is-link is-light" download>
+                    <p class="title is-5">🤔 {{ _('How to fill in the configuration file?') }}</p>
+                    <button type="button" class="button is-link is-light js-open-guide">
                         {{ _('See the guide') }}
-                    </a>
+                    </button>
 
                 </div>
             </div>
@@ -141,7 +141,49 @@
         {% endif %}
     </div>
 </section>
+
+<!-- Guide modal: how to fill in the config xlsx -->
+<div class="modal" id="guideModal">
+    <div class="modal-background js-close-guide"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">🤔 {{ _('How to fill in the configuration file?') }}</p>
+            <button type="button" class="delete js-close-guide" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body content has-text-left">
+            <p>{{ _('The .xlsx template has one tab (sheet) per type of object. Fill them in this order:') }}</p>
+            <ol>
+                <li><strong>1_observedProperty</strong> : {{ _('what is measured (name, definition = thesaurus URI, description, unit, optional theme).') }}</li>
+                <li><strong>2_sensor</strong> : {{ _('the sensors (name, description, encodingType, metadata = datasheet URL) and, in the observedProperty1, 2… columns, the observed properties each sensor measures.') }}</li>
+                <li><strong>3_thing</strong> : {{ _('the measurement points (name, description, type = Point, x = longitude, y = latitude in WGS84) and, in the sensor1, 2… columns, the sensors installed there.') }}</li>
+                <li>{{ _('Step 1: upload the file. The API generates the 4_datastream tab: one Datastream per measurement point × sensor × observed property.') }}</li>
+                <li><strong>4_datastream</strong> : {{ _('complete each row: description, Share (publish on the public service or not), nameShare (public name), observationProcedure (acquisition method), frequency, min/max thresholds.') }}</li>
+                <li>{{ _('Step 2: upload the completed file. The API creates the Sensors, ObservedProperties, Things and Datastreams on the archive and public SensorThings services.') }}</li>
+            </ol>
+            <div class="notification is-warning">
+                <ul>
+                    <li>{{ _('Names must be identical from one tab to another (case, spaces).') }}</li>
+                    <li>{{ _('Do not use the "_" character in names, and do not edit the nameUnique column.') }}</li>
+                    <li>{{ _('Re-uploading only adds new objects: an already published object is not renamed or updated.') }}</li>
+                </ul>
+            </div>
+        </section>
+        <footer class="modal-card-foot">
+            <button type="button" class="button js-close-guide">{{ _('Close') }}</button>
+        </footer>
+    </div>
+</div>
+
 <script>
+    // Guide modal open/close
+    const guideModal = document.getElementById("guideModal");
+    document.querySelectorAll(".js-open-guide").forEach(btn =>
+        btn.addEventListener("click", () => guideModal.classList.add("is-active")));
+    document.querySelectorAll(".js-close-guide").forEach(el =>
+        el.addEventListener("click", () => guideModal.classList.remove("is-active")));
+    document.addEventListener("keydown", e => {
+        if (e.key === "Escape") guideModal.classList.remove("is-active");
+    });
 
     function handleFile(id_input) {
         return new Promise((resolve, reject) => {
