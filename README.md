@@ -90,3 +90,20 @@ pybabel update  -i messages.pot -d app/translations -l fr
 pybabel compile -d app/translations
 ```
 
+### 4. Try it with the demo dataset
+
+A ready-to-use configuration and an OTT piezometer data file are provided in `app/static/demo/`
+Use a test instance: the demo creates real objects in FROST.
+
+1. **Configuration** (`/private/configuration-obs`): upload `config_demo_complete.xlsx` at **step 2**
+    (its `4_datastream` tab is already filled in).
+2. **Data import** (`/private/import-data`): driver **OTT**, measurement point **PZ1.1**,
+    file `PZ1.1_OTT_20240829.csv` → inspect, then send.
+3. **Visualise** in STAV (`/<observatory>/`): PZ1.1 → Groundwater depth / temperature.
+4. **SoftSensor (water table elevation)**: the `PZ1.1_Orpheus mini OTT nappe_Water table elevation` datastream is a softSensor,
+     it stays empty until you:
+     - link it in **Configuration › Configure SoftSensors** (`/private/configure-softsensor`):
+       source = `PZ1.1_Orpheus mini OTT nappe_Groundwater depth`, method = **Ground water level**,
+       target = `PZ1.1_Orpheus mini OTT nappe_Water table elevation`;
+     - then qualify the source in **Management › Qualify data** (`/private/qualification`):
+       saving a qualification computes and publishes the elevation (= Thing elevation - depth).

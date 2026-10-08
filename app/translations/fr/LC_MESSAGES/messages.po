@@ -1362,3 +1362,19 @@ msgstr "Un nouvel envoi ajoute uniquement les nouveaux objets : un objet déjà 
 #: app/templates/private/createConfigObs.html
 msgid "Close"
 msgstr "Fermer"
+
+#: app/templates/private/createConfigObs.html
+msgid "Download the demo config"
+msgstr "Télécharger la config de démo"
+
+#: app/templates/private/createConfigObs.html
+msgid ""
+"Tip: try first with the demo config (measurement point PZ1.1), it can be "
+"uploaded directly at step 2."
+msgstr ""
+"Astuce : essayez d'abord avec la config de démo (point de mesure PZ1.1), "
+"elle peut être envoyée directement à l'étape 2."
+
+#: app/templates/base.html
+msgid "Configure SoftSensors"
+msgstr "Configurer les SoftSensors"

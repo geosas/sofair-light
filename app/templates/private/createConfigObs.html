@@ -17,6 +17,10 @@
                         class="button is-link is-light" download>
                         📥 {{ _('Download') }}
                     </a>
+                    <a href="{{ url_for('static', filename='demo/config_demo_complete.xlsx') }}"
+                        class="button is-link is-light" download>
+                        🧪 {{ _('Download the demo config') }}
+                    </a>
                 </div>
                 <div class="box has-text-centered">
                     <p class="title is-5">🤔 {{ _('How to fill in the configuration file?') }}</p>
@@ -81,6 +85,10 @@
                     <a href="{{ url_for('static', filename='xlsx/src/template_config.xlsx') }}"
                         class="button is-link is-light" download>
                         📥 {{ _('Download') }}
+                    </a>
+                    <a href="{{ url_for('static', filename='demo/config_demo_complete.xlsx') }}"
+                        class="button is-link is-light" download>
+                        🧪 {{ _('Download the demo config') }}
                     </a>
                 </div>
                 <div class="box has-text-centered">
@@ -151,6 +159,7 @@
             <button type="button" class="delete js-close-guide" aria-label="close"></button>
         </header>
         <section class="modal-card-body content has-text-left">
+            <p><em>{{ _('Tip: try first with the demo config (measurement point PZ1.1), it can be uploaded directly at step 2.') }}</em></p>
             <p>{{ _('The .xlsx template has one tab (sheet) per type of object. Fill them in this order:') }}</p>
             <ol>
                 <li><strong>1_observedProperty</strong> : {{ _('what is measured (name, definition = thesaurus URI, description, unit, optional theme).') }}</li>
