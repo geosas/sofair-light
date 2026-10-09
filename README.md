@@ -48,17 +48,32 @@ the application relies on it. With the FROST servers deployed by `frost/create_d
 run, the defaults already work.
 
 **b) Environment files: secrets and DB credentials.** These are never written in `config.py`.
-Copy the example files and fill in the empty values:
+`run.py` loads two local files at startup (both gitignored): `.env.api` and `.env.sensor`.
+
+*`.env.api`* depends on how you deployed FROST:
+
+- **With `frost/create_db.sh`** (step 1.1): do **not** copy `.env.api.example`. The script already
+  created `.env.api` with the database credentials (`STALT_DB_*`). Append the secrets (SECRET_KEY, JWT_SECRET_KEY) to it.
+  Re-running `create_db.sh` later overwrites `.env.api` again: re-append the secrets afterwards.
+
+- **With your own SensorThings / PostgreSQL**: copy the example and fill in every empty value
+  (`STALT_DB_*`, `SECRET_KEY`, `JWT_SECRET_KEY`):
+
+  ```bash
+  cp .env.api.example .env.api
+  ```
+
+In both cases, optionally add `STALT_LORAWAN_SECRET` (LoRaWAN ingestion) and `ORCID_*` (see
+[ORCID SSO configuration](#orcid-sso-configuration)).
+
+*`.env.sensor`* is always created from its example; set `SENSOR_OTT_PASSWORD`:
 
 ```bash
-cp .env.api.example .env.api        # SECRET_KEY, JWT_SECRET_KEY, STALT_DB_*, STALT_LORAWAN_SECRET, ORCID_*
-cp .env.sensor.example .env.sensor  # SENSOR_OTT_PASSWORD
+cp .env.sensor.example .env.sensor
 ```
 
-`run.py` loads both files at startup (both are gitignored). If you use `frost/create_db.sh`, run
-it **before** filling `.env.api`: it overwrites the whole file with the `STALT_DB_*` block only,
-so add the other variables afterwards. The application **refuses to start** while `SECRET_KEY`,
-`JWT_SECRET_KEY` or `SENSOR_OTT_PASSWORD` keep their default value. Generate keys with:
+The application **refuses to start** while `SECRET_KEY`, `JWT_SECRET_KEY` or
+`SENSOR_OTT_PASSWORD` keep their default value. Generate a value with:
 
 ```bash
 python -c "import secrets; print(secrets.token_urlsafe(48))"
