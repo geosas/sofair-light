@@ -113,7 +113,13 @@ class DataDriverInspectBeforeSTA:
         # get info STA
         # Accept both bike-collected CSV (veloProcessing) and HTTPS-pushed
         # connected sensors (httpsConnected): same driver pipeline, two entry points.
-        params = {"$filter": f"(properties/observationProcedure eq 'veloProcessing' or properties/observationProcedure eq 'httpsConnected') and substringof('{driver}',Sensor/name) and substringof('{dataSname}',name) ",
+        # Sensor/name substring this driver decodes (driver constant, else its file name)
+        try:
+            sensor_match = getattr(ScriptManagerVeloProcessing.load(driver),
+                                   "SENSOR_NAME_MATCH", driver)
+        except Exception as e:
+            return {"error": "Unable to load the driver", "exception": str(e)}, 500
+        params = {"$filter": f"(properties/observationProcedure eq 'veloProcessing' or properties/observationProcedure eq 'httpsConnected') and substringof('{sensor_match}',Sensor/name) and substringof('{dataSname}',name) ",
                      "$select": "id,name",
                      "$expand": "Sensor($select=name),ObservedProperties($select=name)"}
         try:
@@ -122,7 +128,7 @@ class DataDriverInspectBeforeSTA:
         except Exception as e:
             return {"error": "The archive SensorThings service does not appear to be active", "exception": str(e)}, 500
         if not r.ok:
-            return {"error": "Unable to find the measurement point in the SensorThings service, check its name", "exception": str(e)}, 500
+            return {"error": "Unable to find the measurement point in the SensorThings service, check its name", "exception": r.text}, 500
 
         MultiDatastreams = r.json()['value']
         if len(MultiDatastreams) == 0:
@@ -142,6 +148,9 @@ class DataDriverInspectBeforeSTA:
             print(e)
             return {"error": "Error while reading the file", "exception": str(e)}, 500
         print("Driver decoding ok")
+        if not isinstance(df, pd.DataFrame):
+            return {"error": "The driver did not return a pandas DataFrame",
+                    "exception": str(df)}, 500
 
         df = df.sort_values('phenomenonTime').reset_index(drop=True)
         first_date = df['phenomenonTime'].iloc[0].strftime(

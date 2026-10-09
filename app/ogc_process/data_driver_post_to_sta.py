@@ -109,16 +109,22 @@ class DataDriverPostToSTA:
         # get info STA
         # Accept both bike-collected CSV (veloProcessing) and HTTPS-pushed
         # connected sensors (httpsConnected): same driver pipeline, two entry points.
-        parametre = {"$filter": f"(properties/observationProcedure eq 'veloProcessing' or properties/observationProcedure eq 'httpsConnected') and substringof('{driver}',Sensor/name) and substringof('{dataSname}',name) ",
+        # Sensor/name substring this driver decodes (driver constant, else its file name)
+        try:
+            sensor_match = getattr(ScriptManagerVeloProcessing.load(driver),
+                                   "SENSOR_NAME_MATCH", driver)
+        except Exception as e:
+            return {"error": "Unable to load the driver", "exception": str(e)}, 500
+        parametre = {"$filter": f"(properties/observationProcedure eq 'veloProcessing' or properties/observationProcedure eq 'httpsConnected') and substringof('{sensor_match}',Sensor/name) and substringof('{dataSname}',name) ",
                      "$select": "id,name,properties",
                      "$expand": "Sensor($select=name),ObservedProperties($select=name)"}
         try:
             r = sta_client.get(
                 "archive", "/MultiDatastreams", params=parametre)
         except Exception as e:
-            return {"error": "Le service sensorThings archive ne semble pas actif", "exception": str(e)}, 500
+            return {"error": "The archive SensorThings service does not appear to be active", "exception": str(e)}, 500
         if not r.ok:
-            return {"error": "Unable to find the measurement point in the SensorThings service, check its name", "exception": str(e)}, 500
+            return {"error": "Unable to find the measurement point in the SensorThings service, check its name", "exception": r.text}, 500
 
         MultiDatastreams = r.json()['value']
         if len(MultiDatastreams) == 0:
@@ -135,6 +141,9 @@ class DataDriverPostToSTA:
 
         except Exception as e:
             return {"error": "Error while reading the file", "exception": str(e)}, 500
+        if not isinstance(df, pd.DataFrame):
+            return {"error": "The driver did not return a pandas DataFrame",
+                    "exception": str(df)}, 500
 
         df['phenomenonTime'] = df['phenomenonTime'].dt.strftime(
             '%Y-%m-%dT%H:%M:%SZ')

@@ -93,19 +93,23 @@ class ExeGetDataInfos:
 
         data_name_partage = r.json()['properties']['nameShare']
 
-        url_qualif = f"{url_partage}/Datastreams?$select=name,phenomenonTime,id&$filter=name eq '{data_name_partage}'"
-        print(url_qualif)
+        odata_name = str(data_name_partage).replace("'", "''")
+        r = sta_client.raw_get(
+            f"{url_partage}/Datastreams",
+            params={"$select": "name,phenomenonTime,id",
+                    "$filter": f"name eq '{odata_name}'"})
+        print(r.url)
 
-        r = sta_client.raw_get(url_qualif)
         # here we must retrieve the dates at least daily to know whether the data is already qualified and
         # and set the background color
-        datastream_partage = f"{Config.STALT_partage_proxyname}Datastreams({r.json()['value'][0]['@iot.id']})/Observations?$resultFormat=csv&$groupby=day"
-        print(datastream_partage)
-        df_qualif = pd.read_csv(datastream_partage)
-
-        if r.json()['value'] == []:
+        partage_values = r.json().get('value', []) if r.ok else []
+        if not partage_values:
             date_qualification = []
-        date_qualification = list(df_qualif['phenomenonTime'].values)
+        else:
+            datastream_partage = f"{Config.STALT_partage_proxyname}Datastreams({partage_values[0]['@iot.id']})/Observations?$resultFormat=csv&$groupby=day"
+            print(datastream_partage)
+            df_qualif = pd.read_csv(datastream_partage)
+            date_qualification = list(df_qualif['phenomenonTime'].values)
         # return send_file(output, mimetype='text/csv', as_attachment=True, download_name=f'datastream_resume.csv')
         response = {
             "date_qualification": date_qualification,

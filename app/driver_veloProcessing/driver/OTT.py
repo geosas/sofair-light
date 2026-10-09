@@ -6,6 +6,8 @@ from app.config_sensor import SENSOR_CREDENTIALS
 
 # File extensions accepted for HTTPS ingestion (/sensors/OTT/<param>)
 ALLOWED_EXTENSIONS = {"csv", "txt"}
+# Substring matched against Sensor/name to pick the MultiDatastreams this driver
+SENSOR_NAME_MATCH = "mini OTT"
 
 
 def authenticate(request, param):
@@ -43,17 +45,23 @@ def authenticate(request, param):
 def run(rawFile, observedProperties):
     """Driver for sensor OTT
 
-    This driver converts a raw OTT file into a pandas DataFrame.
-    The OTT must be configured to produce a file that follows this format: 
-    "Date","Time","Temp","","Temp",""
+    This driver converts a raw OTT Orpheus Mini file (',' separated, one
+    header line) into a pandas DataFrame. The format depends on the
+    observedProperties of the MultiDatastreams:
+
+    Groundwater (Groundwater depth, Groundwater temperature), 4 columns:
+    "DD/MM/YYYY","HH:MM:SS","m","°C"
+    30/09/2021,00:00:00,-3.676,12.300
+
+    Stream (Stream stage, Stream temperature), 6 columns:
     "DD/MM/YYYY","HH:MM:SS","m","","°C",""
 
-    The output DataFrame columns must follow this format:
+    The output DataFrame columns are:
     "phenomenonTime", observedProperty 1, observedProperty 2
 
 
     Args:
-        rawFile (StringIO): rawFile is a StringIO instance containing the CSV (or .txt) file content as text, allowing reading by pandas or other file-processing tools.  
+        rawFile (StringIO): rawFile is a StringIO instance containing the CSV (or .txt) file content as text, allowing reading by pandas or other file-processing tools.
         observedProperties (list): list of the file's observedProperties
 
     Returns:
@@ -61,20 +69,29 @@ def run(rawFile, observedProperties):
     """
     print('OTT decoding')
 
-    ott_grounwater = ['groundwater depth', 'groundwater temperature']
-    ott_stream = ['stream stage', 'stream water temperature']
+    ott_grounwater = ['Groundwater depth', 'Groundwater temperature']
+    ott_stream = ['Stream stage', 'Stream temperature']
 
     df = pd.read_csv(rawFile, sep=',', skiprows=1, header=None)
 
     if set(observedProperties).issubset(set(ott_grounwater)) and len(observedProperties) == len(ott_grounwater):
-        df.columns = ['date', 'heure', 'groundwater depth',
-                      "chepas", 'groundwater temperature', "chepas2"]
+        if df.shape[1] != 4:
+            raise ValueError(
+                f"Expected 4 columns separated by ',', got {df.shape[1]}: check the file separator")
+
+        df.columns = ['date', 'heure', 'Groundwater depth',
+                      'Groundwater temperature']
 
     elif set(observedProperties).issubset(set(ott_stream)) and len(observedProperties) == len(ott_stream):
-        df.columns = ['date', 'heure', 'stream stage',
-                      "chepas", 'stream water temperature', "chepas2"]
+        if df.shape[1] != 6:
+            raise ValueError(
+                f"Expected 6 columns separated by ',', got {df.shape[1]}: check the file separator")
+
+        df.columns = ['date', 'heure', 'Stream stage',
+                      "chepas", 'Stream temperature', "chepas2"]
     else:
-        return {"error": "Unable to find the correct ObservedProperties"}
+        raise ValueError(
+            f"Unable to find the correct ObservedProperties: {observedProperties}")
 
     df['phenomenonTime'] = df['date'] + " " + df['heure']
     df['phenomenonTime'] = pd.to_datetime(

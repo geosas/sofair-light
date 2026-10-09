@@ -93,7 +93,8 @@ def serve_stav(path):
         # A directory must end with “/”, otherwise relative paths (../../css/...)
         # go up one level too far → redirect
         if path and not request.path.endswith("/"):
-            new_url = request.path + "/"
+            # script_root: keep the mount prefix (e.g. /sofair-light under mod_wsgi)
+            new_url = request.script_root + request.path + "/"
             if request.query_string:
                 new_url += "?" + request.query_string.decode()
             return redirect(new_url, code=308)

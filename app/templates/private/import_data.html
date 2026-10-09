@@ -173,7 +173,7 @@
                         // Check the response contains JSON before trying to read it
                         return response.json().then(err => {
                             console.log(err)
-                            const errorMessage = err['error'];
+                            const errorMessage = err['exception'] || err['error'];
                             throw new Error(errorMessage);
                         })
                     }
@@ -344,7 +344,7 @@
                         // Check the response contains JSON before trying to read it
                         return response.json().then(err => {
                             console.log(err)
-                            const errorMessage = err['error'];
+                            const errorMessage = err['exception'] || err['error'];
                             throw new Error(errorMessage);
                         })
                     }

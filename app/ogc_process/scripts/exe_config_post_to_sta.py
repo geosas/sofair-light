@@ -113,10 +113,14 @@ class instanceST():
             return objetNew
 
     def getIdObjet(self, objet, name):
-
-        r = sta_client.raw_get("%s/%s?$filter=name eq '%s'" %
-                               (self.urlServeur, objet, name))
-
+        # name goes through params= (properly URL-encoded: & + # ...) and single
+        # quotes are doubled (OData string literal escaping).
+        odata_name = str(name).replace("'", "''")
+        r = sta_client.raw_get("%s/%s" % (self.urlServeur, objet),
+                               params={"$filter": f"name eq '{odata_name}'"})
+        if not r.ok:
+            print("lookup failed", objet, name, r.status_code, r.text)
+            return -1
         objet_json = r.json()['value']
         if len(objet_json) != 1:
             print("the object", objet, name, " could not be found")

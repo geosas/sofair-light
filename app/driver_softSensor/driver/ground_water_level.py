@@ -1,17 +1,17 @@
 """Ground water level: water-table derived from a measured depth.
 
-altitude = elevation - depth
+Ground water level = elevation + depth  
 
 `elevation` is the reference altitude of the measurement point, resolved at
 from the source datastream's Thing (`properties.elevation`, added
-to the `thing` sheet of the config xlsx) and passed in `params`.
+to the `thing` sheet of the config xlsx).
 """
 import pandas as pd
 
 METADATA = {
     "id": "ground_water_level",
     "label": "Ground water level",
-    "description": "Water-table altitude = Thing elevation - measured depth.",
+    "description": "Water-table altitude = Thing elevation + measured depth (negative, below ground).",
     "params": [],
     "elevationFromThing": True,
 }
@@ -29,5 +29,5 @@ def run(source_df, params):
     """
     elevation = float(params["elevation"])
     out = source_df.copy()
-    out["value"] = elevation - pd.to_numeric(out["value"])
+    out["value"] = elevation + pd.to_numeric(out["value"])
     return out[["phenomenonTime", "value"]]
