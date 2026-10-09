@@ -17,6 +17,26 @@ These ports match `STALT_archive` / `STALT_partage` in `app/config.py`.
 
 ---
 
+## Prerequisite: a PostgreSQL cluster with PostGIS
+
+The scripts expect a PostgreSQL cluster **with the PostGIS extension installed**,
+listening on **port 5433** of the host (`127.0.0.1`). A dedicated cluster is
+recommended, so the FROST databases stay separate from your other databases.
+
+If your cluster listens on another port (e.g. the default 5432), override it when
+running the scripts:
+
+```bash
+PGPORT=5432 ./create_db.sh
+```
+
+The port is then written to `frost/.env` and `../.env.api`, so the API and the
+containers follow automatically. `reset_db.sh` and `delete_db.sh` do **not** read
+it back: pass the same `PGPORT=...` to them too.
+
+The commands below assume PostgreSQL 17 (`/etc/postgresql/17/main`,
+`postgresql@17-main`): adapt the version to yours.
+
 ## Prerequisite: allow access from the containers
 
 Do this **once**, before the first `create_db.sh`. The containers connect from

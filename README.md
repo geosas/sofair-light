@@ -22,11 +22,47 @@ pip install -r requirements.txt
 If you don't have a SensorThings service available, deploy two STA servers (archive + partage).
 A preconfigured `docker-compose.yaml` is in `/frost` or you can use `create_db.sh`.
 
+This requires Docker and a PostgreSQL cluster with PostGIS on the host, listening on **port 5433**
+by default (a dedicated cluster is recommended). For another port, run
+`PGPORT=<port> ./create_db.sh`. Full instructions are in
+[`frost/README_install.md`](frost/README_install.md).
+
 ### 2. Configure
 
-Customise the **first part** of `app/config.py` (`Config` class) for your deployment; the second
-part (below the marker comment) must not be edited. Secrets and DB credentials come from
-environment variables (see `app/config.py` and the `frost/` scripts).
+Configuration is split between two places:
+
+**a) `app/config.py` (`Config` class): deployment settings.** Edit only these values:
+
+| Setting | Purpose |
+|---------|---------|
+| `APP_TITLE` | Name displayed by your instance |
+| `URL_PROJET` | Public URL of the application |
+| `BABEL_DEFAULT_LOCALE` | Default UI language (`'en'` or `'fr'`) |
+| `SERVICE_INFO` | Service metadata (name, provider, address, contact) |
+| `STALT_archive` / `STALT_partage` | URLs of your two FROST servers (archive = private, partage = public) |
+| `STALT_archive_proxyname` / `STALT_partage_proxyname` | Public URLs of the `/sta/` proxy (based on `URL_PROJET`) |
+| `STALT_observatoire` | Observatory name, also the URL root of the STAV front (`/<name>/`) |
+
+Leave everything else unchanged (`STALT_CONFIG`, `STALT_OBSP_QF`, `DB_archive`/`DB_partage`…):
+the application relies on it. With the FROST servers deployed by `frost/create_db.sh` and a local
+run, the defaults already work.
+
+**b) Environment files: secrets and DB credentials.** These are never written in `config.py`.
+Copy the example files and fill in the empty values:
+
+```bash
+cp .env.api.example .env.api        # SECRET_KEY, JWT_SECRET_KEY, STALT_DB_*, STALT_LORAWAN_SECRET, ORCID_*
+cp .env.sensor.example .env.sensor  # SENSOR_OTT_PASSWORD
+```
+
+`run.py` loads both files at startup (both are gitignored). If you use `frost/create_db.sh`, run
+it **before** filling `.env.api`: it overwrites the whole file with the `STALT_DB_*` block only,
+so add the other variables afterwards. The application **refuses to start** while `SECRET_KEY`,
+`JWT_SECRET_KEY` or `SENSOR_OTT_PASSWORD` keep their default value. Generate keys with:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(48))"
+```
 
 ### 3.1 Run locally
 
