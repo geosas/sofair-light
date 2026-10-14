@@ -19,6 +19,8 @@ app/database.db
 # OGC async job results
 app/ogc_process/job_store_data/
 api_ogc_process/flask_ogc_api_processes/job_store_data/
+# Generated gauging plots (/tarage)
+app/static/plots/
 # Generated config spreadsheets
 app/static/xlsx/tmp/
 !app/static/xlsx/tmp/.gitkeep
@@ -40,3 +42,6 @@ app/static/img/things/preview/*
 
 # --- i18n build artefact ----------------------------------------------------
 messages.pot
+
+# Local Claude Code notes (imports ../api_propre_sofair_light/CLAUDE.md)
+CLAUDE.md

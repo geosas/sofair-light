@@ -87,6 +87,55 @@ def configure_softsensor():
                            associations=associations)
 
 
+def set_producer(source_id, method, target, params):
+    """Associate a SoftSensor: PATCH `softSensorProducer` = {method, target,
+    params} on the SOURCE archive MultiDatastream. Also used by the
+    /tarage/list page (Apply the rating curve). Returns (result dict, None) or (None, (error, code))."""
+    target = (target or '').strip()
+    if method not in ScriptManagerSoftSensor.get_scripts_name():
+        return None, (_("Unknown method"), 400)
+    if not target:
+        return None, (_("Please select a derived datastream"), 400)
+    # Keep only the params declared by the method's METADATA (numbers).
+    meta = next((m for m in ScriptManagerSoftSensor.get_metadata()
+                 if m['id'] == method), {})
+    clean = {}
+    for p in meta.get('params', []):
+        v = (params or {}).get(p['key'])
+        if v in (None, ''):
+            return None, (_("Missing parameter %(k)s", k=p['key']), 400)
+        try:
+            clean[p['key']] = float(v)
+        except (TypeError, ValueError):
+            return None, (_("Parameter %(k)s must be a number", k=p['key']), 400)
+
+    r = sta_client.get("archive", f"/MultiDatastreams({source_id})",
+                       params={"$select": "properties"})
+    if not r.ok:
+        return None, (_("SensorThings service not active or unreachable"), 500)
+    props = r.json().get('properties') or {}
+    props[PRODUCER_KEY] = {"method": method, "target": target, "params": clean}
+    r = sta_client.patch("archive", f"/MultiDatastreams({source_id})",
+                         json={"properties": props})
+    if not r.ok:
+        return None, (_("SensorThings service active but something gone wrong"), 500)
+
+    result = {"msg": "ok"}
+    # Methods that expose a validity range (for rating curve) overwrite the
+    # derived target's maxValue with the computed bound (a * (h_max - h0)^b),
+    # on the archive MultiDatastream and its partage Datastream.
+    mod = ScriptManagerSoftSensor.load(method)
+    if hasattr(mod, 'derived_max_value'):
+        try:
+            mv = mod.derived_max_value(clean)
+            if mv is not None:
+                result['maxValue'] = mv
+                result['maxValue_applied'] = _set_target_maxvalue(target, mv)
+        except Exception as e:
+            result['maxValue_error'] = str(e)
+    return result, None
+
+
 @private_bp.post('/configure-softsensor')
 @jwt_required_or_redirect()
 def save_softsensor():
@@ -99,53 +148,21 @@ def save_softsensor():
     except (TypeError, ValueError):
         return jsonify({"error": _("Invalid source datastream")}), 400
 
+    if not data.get('remove'):
+        result, error = set_producer(source_id, data.get('method'),
+                                     data.get('target'), data.get('params'))
+        if error:
+            return jsonify({"error": error[0]}), error[1]
+        return jsonify(result)
+
     r = sta_client.get("archive", f"/MultiDatastreams({source_id})",
                        params={"$select": "properties"})
     if not r.ok:
         return jsonify({"error": _("SensorThings service not active or unreachable")}), 500
     props = r.json().get('properties') or {}
-
-    if data.get('remove'):
-        props.pop(PRODUCER_KEY, None)
-    else:
-        method = data.get('method')
-        target = (data.get('target') or '').strip()
-        if method not in ScriptManagerSoftSensor.get_scripts_name():
-            return jsonify({"error": _("Unknown method")}), 400
-        if not target:
-            return jsonify({"error": _("Please select a derived datastream")}), 400
-        # Keep only the params declared by the method's METADATA (numbers).
-        meta = next((m for m in ScriptManagerSoftSensor.get_metadata()
-                     if m['id'] == method), {})
-        clean = {}
-        for p in meta.get('params', []):
-            v = (data.get('params') or {}).get(p['key'])
-            if v in (None, ''):
-                return jsonify({"error": _("Missing parameter %(k)s", k=p['key'])}), 400
-            try:
-                clean[p['key']] = float(v)
-            except (TypeError, ValueError):
-                return jsonify({"error": _("Parameter %(k)s must be a number", k=p['key'])}), 400
-        props[PRODUCER_KEY] = {"method": method,
-                               "target": target, "params": clean}
-
+    props.pop(PRODUCER_KEY, None)
     r = sta_client.patch("archive", f"/MultiDatastreams({source_id})",
                          json={"properties": props})
     if not r.ok:
         return jsonify({"error": _("SensorThings service active but something gone wrong")}), 500
-
-    result = {"msg": "ok"}
-    # Methods that expose a validity range (for rating curve) overwrite the
-    # derived target's partage maxValue with the computed bound (a * h_max^b).
-    if not data.get('remove'):
-        mod = ScriptManagerSoftSensor.load(method)
-        if hasattr(mod, 'derived_max_value'):
-            try:
-                mv = mod.derived_max_value(clean)
-                if mv is not None:
-                    result['maxValue'] = mv
-                    result['maxValue_applied'] = _set_target_maxvalue(
-                        target, mv)
-            except Exception as e:
-                result['maxValue_error'] = str(e)
-    return jsonify(result)
+    return jsonify({"msg": "ok"})

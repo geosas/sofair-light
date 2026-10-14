@@ -112,8 +112,13 @@
                         <a class="navbar-item">
                             {{ _('Derived variable computation') }}
                         </a>
-                        <a class="navbar-item" href="{{ request.script_root }}/tarage/dilution">
-                            {{ _('Rating curve') }}
+                        <hr class="navbar-divider">
+                        <div class="navbar-item has-text-weight-semibold">{{ _('Salt-dilution gauging') }}</div>
+                        <a class="navbar-item pl-5" href="{{ request.script_root }}/tarage/dilution">
+                            {{ _('Discharge by salt dilution') }}
+                        </a>
+                        <a class="navbar-item pl-5" href="{{ request.script_root }}/tarage/list">
+                            {{ _('Tracing gaugings') }}
                         </a>
                     </div>
                 </div>
@@ -162,7 +167,8 @@
                             {{ _('Contact') }}
                         </a>
                         <hr class="navbar-divider">
-                        <a class="navbar-item">
+                        <a class="navbar-item" href="https://github.com/geosas/sofair-light/issues"
+                           target="_blank" rel="noopener">
                             {{ _('Report an issue') }}
                         </a>
                     </div>
@@ -210,9 +216,11 @@
             <p>
                 <strong>SOFAIR Light</strong> &middot;
                 {{ _('Free software distributed under the GPL-3.0 licence.') }}
-                <a href="{{ config.LICENSE_URL }}" target="_blank" rel="noopener">{{ _('Licence') }}</a>
+                <a href="{{ config.get('LICENSE_URL') or 'https://www.gnu.org/licenses/gpl-3.0.html' }}"
+                   target="_blank" rel="noopener">{{ _('Licence') }}</a>
                 &middot;
-                <a href="{{ config.SOURCE_URL }}" target="_blank" rel="noopener">{{ _('Source code') }}</a>
+                <a href="{{ config.get('SOURCE_URL') or 'https://github.com/geosas/sofair-light' }}"
+                   target="_blank" rel="noopener">{{ _('Source code') }}</a>
             </p>
         </div>
     </footer>

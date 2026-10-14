@@ -1,0 +1,807 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ol.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dygraph.min.css') }}" />
+
+<div class="container has-text-left" style="max-width: 960px;">
+
+    <!-- Header -->
+    <div class="is-flex is-justify-content-space-between is-align-items-center mb-5">
+        <div>
+            <h1 class="title mb-1">{{ _('Tracing gaugings') }}</h1>
+            {% if thing_id %}
+            <p class="subtitle mb-0">{{ thing_name }}</p>
+            {% else %}
+            <p class="subtitle mb-0">{{ _('Select a measurement point') }}</p>
+            {% endif %}
+        </div>
+        <div class="is-flex" style="gap:0.5rem; align-items:center;">
+            {% if thing_id %}
+            <a class="button is-light is-small" href="{{ url_for('tarage.gauging_list') }}">
+                ← {{ _('Change point') }}
+            </a>
+            {% endif %}
+            <button class="button is-light is-small" type="button" onclick="refreshPlots()"
+                    title="{{ _('Deletes the cached graphs, they are rebuilt on the next load') }}">
+                ↺ {{ _('Rebuild the graphs') }}
+            </button>
+        </div>
+    </div>
+
+    {% if error %}
+    <div class="notification is-danger is-light">{{ error }}</div>
+    {% endif %}
+
+    <!-- Mode: measurement point selector -->
+    {% if not thing_id %}
+
+    {% if not things %}
+    <div class="notification is-warning is-light">{{ _('No measurement point available.') }}</div>
+    {% else %}
+    <div class="columns is-multiline">
+        {% for t in things %}
+        <div class="column is-half">
+            <a href="{{ url_for('tarage.gauging_list', thing_id=t.id) }}"
+               class="box is-flex is-align-items-center"
+               style="gap:1rem; text-decoration:none;">
+                <span style="font-size:1.6rem;">📍</span>
+                <div>
+                    <p class="has-text-weight-semibold mb-0">{{ t.name }}</p>
+                    <p class="is-size-7 has-text-grey">ID {{ t.id }}</p>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Mode: history of a Thing -->
+    {% else %}
+
+    <!-- OL map + reference water-level station -->
+    <div class="columns is-variable is-4 mb-4">
+
+        {% if thing_location %}
+        <div class="column">
+            <div class="box p-0" style="overflow:hidden; border-radius:6px; height:100%;">
+                <div id="thing-map" style="height:240px; width:100%;"></div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="column">
+            <div class="box" style="height:100%;">
+                <p class="heading mb-3">{{ _('Reference measurement point (water level)') }}</p>
+
+                {% if height_ref %}
+
+                    {% if height_ref.unavailable %}
+                    <div class="notification is-warning is-light py-2 px-3 mb-3" style="font-size:0.85rem;">
+                        {{ _('No measurement point available') }}
+                    </div>
+                    {% else %}
+                    <div class="mb-2">
+                        <p class="is-size-7 has-text-grey mb-0">{{ _('Measurement point') }}</p>
+                        <p class="has-text-weight-semibold">{{ height_ref.thing_name }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <p class="is-size-7 has-text-grey mb-0">MultiDatastream</p>
+                        <p class="is-size-7">{{ height_ref.ds_name }}</p>
+                    </div>
+
+                    {% if ds_counts.total > 0 %}
+                    <div class="mb-3">
+                        <p class="is-size-7 has-text-grey mb-1">
+                            {{ _('Tracing gaugings: %(n)s in total', n=ds_counts.total) }}
+                        </p>
+                        <div class="tags mb-0">
+                            <span class="tag is-success is-light">{{ _('%(n)s qualified', n=ds_counts.good) }}</span>
+                            <span class="tag is-light">{{ _('%(n)s not qualified', n=ds_counts.unqualified) }}</span>
+                            {% if ds_counts.rejected > 0 %}
+                            <span class="tag is-danger is-light">{{ _('%(n)s rejected', n=ds_counts.rejected) }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% endif %}
+
+                    <button class="button is-light is-small" onclick="showRefSelector()">
+                        ↺ {{ _('Change') }}
+                    </button>
+
+                {% endif %}
+
+                <!-- Selector: shown when no reference is stored yet -->
+                <div id="ref-selector" {% if height_ref %}style="display:none;"{% endif %}>
+
+                    <div class="field mb-2">
+                        <label class="label is-small">{{ _('Measurement point') }}</label>
+                        <div class="control">
+                            <div class="select is-fullwidth is-small">
+                                <select id="ref-thing-select" onchange="loadRefDatastreams()">
+                                    <option value="">{{ _('— Choose —') }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field mb-3" id="ref-ds-wrap" style="display:none;">
+                        <label class="label is-small">MultiDatastream</label>
+                        <div class="control">
+                            <div class="select is-fullwidth is-small">
+                                <select id="ref-ds-select">
+                                    <option value="">{{ _('— Choose —') }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="is-flex is-align-items-center" style="gap:0.5rem; flex-wrap:wrap;">
+                        <button class="button is-primary is-small" onclick="saveRefHeight()">{{ _('Validate') }}</button>
+                        <button class="button is-light is-small" onclick="saveRefUnavailable()">{{ _('Not available') }}</button>
+                    </div>
+                    <p class="is-size-7 mt-2" id="ref-status"></p>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Rainfall station of the site (depends on the area) -->
+    <div class="box mb-4">
+        <p class="heading mb-2">{{ _('Rainfall station') }}</p>
+        <div class="field has-addons mb-1">
+            <div class="control is-expanded">
+                <input class="input is-small" type="url" id="precip-url"
+                       value="{{ precipitation_url or '' }}"
+                       placeholder="https://…/v1.1/Datastreams(83)">
+            </div>
+            <div class="control">
+                <button class="button is-primary is-small" type="button" onclick="savePrecipitation()">
+                    {{ _('Save') }}
+                </button>
+            </div>
+        </div>
+        <p class="help">{{ _('URL of the rainfall Datastream of a public SensorThings service. Leave empty to hide the rainfall.') }}</p>
+        <p class="is-size-7 mt-1" id="precip-status"></p>
+    </div>
+
+    {% if not height_ref %}
+    <div class="notification is-info is-light">
+        {{ _('Select a reference measurement point (water level) above before viewing the gaugings.') }}
+    </div>
+    {% else %}
+
+    <!-- Discharge time series + stage-discharge relation -->
+    {% if sf_plot_url %}
+    <div class="box mb-4 p-4">
+        <p class="heading mb-2">{{ _('Discharge by tracing') }} — {{ thing_name }}</p>
+        <img src="{{ url_for('static', filename=sf_plot_url) }}" alt="{{ _('Discharge by tracing') }}"
+             style="width:100%; border-radius:4px;">
+    </div>
+    {% endif %}
+
+    {% if rating_curve_data %}
+    <div class="box mb-4 p-4">
+        <div class="is-flex is-justify-content-space-between is-align-items-center mb-3">
+            <p class="heading mb-0">{{ _('Stage-discharge relation') }}</p>
+            <a class="button is-light is-small"
+               href="{{ url_for('tarage.export_rating_curve', thing_id=thing_id) }}">↓ CSV</a>
+        </div>
+
+        <div class="columns is-variable is-3">
+            <!-- Left: interactive Dygraphs scatter -->
+            <div class="column">
+                <p class="is-size-7 has-text-grey mb-2">{{ _('Measured data') }}</p>
+                <div style="background:#fff; border-radius:4px; padding:4px;">
+                    <div id="rating-curve-chart" style="width:100%;"></div>
+                </div>
+                <div id="rating-curve-tooltip" class="is-size-7 has-text-grey mt-2"
+                     style="min-height:2.4em; padding:0.3rem 0.2rem;"></div>
+            </div>
+
+            <!-- Right: fitted rating curve (matplotlib) -->
+            {% if rating_curve_fit_url %}
+            <div class="column">
+                <p class="is-size-7 has-text-grey mb-2">{{ _('Fitted rating curve') }} — Q = a·(h−h₀)^b</p>
+                <img src="{{ url_for('static', filename=rating_curve_fit_url) }}"
+                     alt="{{ _('Fitted rating curve') }}" style="width:100%; border-radius:4px;">
+            </div>
+            {% endif %}
+        </div>
+
+        {% if rating_fit %}
+        <!-- Coefficients + apply the curve to the reference water level -->
+        <div class="mt-3 pt-3" style="border-top:1px solid rgba(128,128,128,.2);">
+            <p class="heading mb-2">{{ _('Coefficients') }} — Q = a·(h−h₀)^b</p>
+            <div class="tags mb-2">
+                <span class="tag">a = {{ rating_fit.a }} ± {{ rating_fit.sigma_a }}</span>
+                <span class="tag">b = {{ rating_fit.b }} ± {{ rating_fit.sigma_b }}</span>
+                <span class="tag">h₀ = {{ rating_fit.h0 }} ± {{ rating_fit.sigma_h0 }} m</span>
+                <span class="tag">h_max = {{ rating_fit.h_max }} m</span>
+                <span class="tag">R² = {{ rating_fit.r2 }}</span>
+                <span class="tag">{{ _('%(n)s points', n=rating_fit.n_points) }}</span>
+            </div>
+
+            <p class="heading mb-2">{{ _('Apply to the SoftSensor') }}</p>
+            {% if softsensor_targets and not height_ref.unavailable %}
+            <div class="field has-addons mb-1">
+                <div class="control is-expanded">
+                    <div class="select is-fullwidth is-small">
+                        <select id="target-select">
+                            {% for t in softsensor_targets %}
+                            <option value="{{ t.id }}">{{ t.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="control">
+                    <button class="button is-primary is-small" type="button" id="btn-apply" onclick="applyCurve()">
+                        {{ _('Apply') }}
+                    </button>
+                </div>
+            </div>
+            <p class="help">{{ _('The derived discharge is computed with a, b, h0 and h_max from the reference water level (%(name)s), when the water level is qualified. The fit is kept in its properties (ratingCurve).', name=height_ref.ds_name) }}</p>
+            <p class="is-size-7 mt-1" id="apply-status"></p>
+            {% else %}
+            <p class="is-size-7 has-text-grey">
+                {{ _('No derived discharge MultiDatastream (observationProcedure SoftSensor) in the configuration.') }}
+                <a href="{{ request.script_root }}/private/configure-softsensor">{{ _('Configure SoftSensors') }}</a>
+            </p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if not datastreams %}
+    <div class="notification is-warning is-light">
+        {{ _('No conductivity gauging available for this point.') }}
+    </div>
+    {% else %}
+
+    {% for ds in datastreams %}
+    <div class="card mb-4" id="card-{{ ds.id }}">
+
+        <header class="card-header">
+            <p class="card-header-title" style="font-size:1rem;">{{ ds.name }}</p>
+            {% if ds.n_obs is not none %}
+            <span class="card-header-icon">
+                <span class="tag is-small">{{ _('%(n)s points', n=ds.n_obs) }}</span>
+            </span>
+            {% endif %}
+        </header>
+
+        <div class="card-content py-3">
+
+            <!-- Top row: metadata + conductivity graph -->
+            <div class="columns is-vcentered" style="gap:0;">
+
+                <div class="column is-narrow" style="min-width:220px; max-width:240px;">
+                    {% if ds.pt %}
+                    <div class="mb-3">
+                        <p class="heading mb-0">{{ _('Period') }}</p>
+                        <p class="is-size-7">{{ ds.pt }}</p>
+                    </div>
+                    {% endif %}
+
+                    {% if ds.masses %}
+                    <div class="mb-3">
+                        <p class="heading mb-0">{{ _('Salt mass') }}</p>
+                        {% if ds.masses | length == 1 %}
+                        <p><strong>{{ ds.masses[0] }} g</strong></p>
+                        {% else %}
+                        <div>
+                            {% for m in ds.masses %}
+                            <span class="tag is-small mb-1">{{ _('Range %(n)s: %(m)s g', n=loop.index, m=m) }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if ds.debits and not ds.strip_svg %}
+                    <div class="mb-2">
+                        <p class="heading mb-1">{{ _('Computed discharge') }}</p>
+                        <p class="title is-4 mb-0">
+                            {{ ds.debit_mean }}
+                            <span class="is-size-6 has-text-grey-light">{{ ds.units }}</span>
+                        </p>
+                    </div>
+                    {% endif %}
+
+                    {% if not ds.masses and not ds.debits %}
+                    <p class="is-size-7 has-text-grey">{{ _('No metadata available.') }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="column" style="padding-left:1rem;">
+                    {% if ds.plot_url %}
+                    <img src="{{ url_for('static', filename=ds.plot_url) }}"
+                         alt="{{ _('Conductivity') }} — {{ ds.name }}" style="width:100%; border-radius:4px;">
+                    {% else %}
+                    <p class="has-text-grey is-size-7">{{ _('No observation available for this MultiDatastream.') }}</p>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- Strip chart + qualification (full width) -->
+            {% if ds.strip_svg %}
+            <div class="mt-3 pt-3" style="border-top:1px solid rgba(128,128,128,.2);">
+                <p class="heading mb-2">{{ _('Computed discharges') }}</p>
+                {{ ds.strip_svg | safe }}
+                <p class="is-size-6 has-text-grey mt-1 mb-3">
+                    {% for d in ds.debits %}{{ d }}{% if not loop.last %}, {% endif %}{% endfor %}
+                    {{ ds.units }}
+                </p>
+
+                <div class="columns is-variable is-3">
+
+                    <!-- Column 1: qualification table -->
+                    <div class="column is-narrow" style="min-width:300px;">
+                        <p class="heading mb-2">{{ _('Qualification') }}</p>
+                        <table class="table is-narrow is-fullwidth is-bordered">
+                            <thead>
+                                <tr>
+                                    <th style="width:2.5rem;">#</th>
+                                    <th>{{ _('Discharge') }} ({{ ds.units }})</th>
+                                    <th style="width:9rem;">{{ _('Qualification') }}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in ds.debits %}
+                                {% set idx = loop.index0 %}
+                                {% set flag = ds.quality_flags[idx] if ds.quality_flags and idx < ds.quality_flags|length else none %}
+                                <tr>
+                                    <td class="has-text-grey">{{ loop.index }}</td>
+                                    <td><strong>{{ d }}</strong></td>
+                                    <td>
+                                        <div class="buttons has-addons mb-0" data-ds="{{ ds.id }}" data-idx="{{ idx }}">
+                                            <button type="button"
+                                                    class="button is-small qual-btn {% if flag == true %}is-success is-selected{% endif %}"
+                                                    data-val="true" onclick="toggleQual(this)">{{ _('Good') }}</button>
+                                            <button type="button"
+                                                    class="button is-small qual-btn {% if flag == false %}is-danger is-selected{% endif %}"
+                                                    data-val="false" onclick="toggleQual(this)">{{ _('Wrong') }}</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="is-flex is-align-items-center" style="gap:0.75rem;">
+                            <button class="button is-primary is-small"
+                                    onclick="saveQualification({{ ds.id }}, {{ ds.debits | length }})">
+                                {{ _('Save') }}
+                            </button>
+                            <span class="is-size-7 has-text-grey" id="qual-status-{{ ds.id }}">
+                                {% if ds.quality_flags %}{{ _('Existing qualification, can be edited.') }}{% endif %}
+                            </span>
+                        </div>
+
+                        <!-- Water level -->
+                        <div class="mt-3 pt-3" style="border-top:1px solid rgba(128,128,128,.2);">
+                            <p class="heading mb-2">{{ _('Water level') }}</p>
+                            {% if ds.height is not none %}
+                            <p class="mb-2">
+                                <strong>{{ ds.height }}</strong>
+                                <span class="is-size-7 has-text-grey-light">m</span>
+                                <span class="is-size-7 has-text-grey"> — {{ _('saved') }}</span>
+                            </p>
+                            {% endif %}
+                            <div class="is-flex is-align-items-center" style="gap:0.5rem;">
+                                <input class="input is-small" type="number" step="0.001"
+                                       id="hauteur-input-{{ ds.id }}" placeholder="0.42"
+                                       value="{{ ds.height if ds.height is not none else '' }}"
+                                       style="max-width:110px;">
+                                <span class="is-size-7 has-text-grey">m</span>
+                                <button class="button is-info is-small" onclick="saveHauteur({{ ds.id }})">
+                                    {{ _('Save') }}
+                                </button>
+                            </div>
+                            <p class="is-size-7 mt-1" id="hauteur-status-{{ ds.id }}"></p>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: absolute + relative uncertainty -->
+                    {% if ds.incert_abs is not none %}
+                    <div class="column is-narrow" style="min-width:160px;">
+                        <p class="heading mb-3">{{ _('Uncertainty') }} (GUM §4.3.7)</p>
+                        <div class="mb-3">
+                            <p class="is-size-7 has-text-grey mb-1">{{ _('Absolute') }}</p>
+                            <p class="title is-4 mb-0">
+                                {{ ds.incert_abs }}
+                                <span class="is-size-6 has-text-grey-light">{{ ds.units }}</span>
+                            </p>
+                        </div>
+                        <div>
+                            <p class="is-size-7 has-text-grey mb-1">{{ _('Relative') }}</p>
+                            <span class="tag is-medium
+                                {% if ds.incert_rel < 5 %}is-success
+                                {% elif ds.incert_rel <= 10 %}is-warning
+                                {% else %}is-danger{% endif %}"
+                                  style="font-size:1.1rem; padding:0.6rem 0.9rem;">
+                                {{ ds.incert_rel }} %
+                            </span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Column 3: rainfall + water level -->
+                    <div class="column">
+                        <p class="heading mb-2">{{ _('Rainfall of the day') }}</p>
+                        {% if ds.precip_url %}
+                        <img src="{{ url_for('static', filename=ds.precip_url) }}"
+                             alt="{{ _('Rainfall of the day') }}" style="width:100%; border-radius:4px;">
+                        {% else %}
+                        <p class="is-size-7 has-text-grey">{{ _('No rainfall data available.') }}</p>
+                        {% endif %}
+
+                        {% if ds.height_url %}
+                        <p class="heading mt-3 mb-2">{{ _('Water level') }}</p>
+                        <img src="{{ url_for('static', filename=ds.height_url) }}"
+                             alt="{{ _('Water level') }}" style="width:100%; border-radius:4px;">
+                        {% elif height_ref and not height_ref.unavailable %}
+                        <p class="is-size-7 has-text-grey mt-2">{{ _('No water level data available.') }}</p>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+    {% endfor %}
+
+    {% endif %}{# /datastreams #}
+    {% endif %}{# /height_ref #}
+    {% endif %}{# /thing_id #}
+
+</div>
+
+<script src="{{ url_for('static', filename='js/lib/ol.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/dygraph.min.js') }}"></script>
+<script>
+const API = "{{ request.script_root }}/tarage/list/api";
+const T = {{ {
+    'hover': _('Hover a point to show its details.'),
+    'height': _('Height'),
+    'heightAxis': _('Height (m)'),
+    'dischargeAxis': _('Discharge (L/s)'),
+    'meanDischarge': _('Mean discharge'),
+    'qualified': _('Qualified'),
+    'notQualified': _('Not qualified'),
+    'rejected': _('Rejected'),
+    'loading': _('Loading…'),
+    'choose': _('— Choose —'),
+    'error': _('Error'),
+    'errorMsg': _('Error: {msg}'),
+    'networkError': _('Network error.'),
+    'selectPointDs': _('Select a measurement point and a MultiDatastream.'),
+    'saving': _('Saving…'),
+    'invalidValue': _('Invalid value.'),
+    'heightSaved': _('{v} m saved.'),
+    'qualifyAll': _('Qualify all the measurements before saving.'),
+    'qualSaved': _('Qualification saved. Refreshing…'),
+    'precipSaved': _('Rainfall station saved. Refreshing…'),
+    'applied': _('Applied: the discharge will be computed at the next qualification of the water level.'),
+}|tojson }};
+
+// Fetch options: JWT cookie + CSRF double-submit header
+function writeOptions(method, body) {
+    const csrf = (document.cookie.match(/csrf_access_token=([^;]+)/) || [])[1];
+    return {
+        method,
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf },
+        body: body === undefined ? undefined : JSON.stringify(body),
+    };
+}
+
+function setStatus(el, text, color) {
+    el.textContent = text;
+    el.style.color = color;
+}
+
+async function refreshPlots() {
+    await fetch("{{ url_for('tarage.refresh_plots') }}", writeOptions('POST'));
+    location.reload();
+}
+
+/* ── OL map ── */
+{% if thing_location %}
+(function () {
+    const coord = ol.proj.fromLonLat([{{ thing_location.lng }}, {{ thing_location.lat }}]);
+    const markerSrc = new ol.source.Vector({
+        features: [new ol.Feature({ geometry: new ol.geom.Point(coord) })]
+    });
+    new ol.Map({
+        target: 'thing-map',
+        layers: [
+            new ol.layer.Tile({ source: new ol.source.OSM() }),
+            new ol.layer.Vector({
+                source: markerSrc,
+                style: new ol.style.Style({
+                    image: new ol.style.Circle({
+                        radius: 9,
+                        fill: new ol.style.Fill({ color: '#3273dc' }),
+                        stroke: new ol.style.Stroke({ color: 'white', width: 2.5 }),
+                    }),
+                }),
+            }),
+        ],
+        view: new ol.View({ center: coord, zoom: 14 }),
+        controls: ol.control.defaults.defaults({ attribution: false }),
+    });
+})();
+{% endif %}
+
+/* ── Stage-discharge relation (Dygraphs) ── */
+{% if rating_curve_data %}
+(function () {
+    const rawData = {{ rating_curve_data | tojson }};
+    const tip = document.getElementById('rating-curve-tooltip');
+    tip.textContent = T.hover;
+
+    // Sorted by increasing height (x axis)
+    rawData.sort((a, b) => a.height - b.height);
+
+    // Tiny jitter on identical x to avoid Dygraphs conflicts
+    const seen = {};
+    rawData.forEach(d => {
+        const key = d.height.toFixed(4);
+        seen[key] = (seen[key] || 0) + 1;
+        if (seen[key] > 1) d.height += (seen[key] - 1) * 0.0001;
+    });
+
+    // 3 series: qualified | not qualified | rejected (null = no point)
+    const dgData = rawData.map(d => [
+        d.height,
+        d.status === 'good' ? d.debit_moyen : null,
+        d.status === 'unqualified' ? d.debit_moyen : null,
+        d.status === 'rejected' ? d.debit_moyen : null,
+    ]);
+
+    const STATUS_LABEL = { good: T.qualified, unqualified: T.notQualified, rejected: T.rejected };
+
+    // Axis limits: 0 -> max + 10 %
+    const xMax = Math.max(...rawData.map(d => d.height));
+    const yMax = Math.max(...rawData.map(d => d.debit_moyen));
+
+    function fmtDate(iso) {
+        if (!iso) return '—';
+        return iso.replace('T', ' ').replace('Z', '').slice(0, 16);
+    }
+
+    // Square canvas
+    const chartEl = document.getElementById('rating-curve-chart');
+    chartEl.style.height = chartEl.offsetWidth + 'px';
+
+    new Dygraph(chartEl, dgData, {
+        labels: [T.height, T.qualified, T.notQualified, T.rejected],
+        colors: ['#48c774', '#aaaaaa', '#f14668'],
+        drawLines: false,
+        strokeWidth: 0,
+        drawPoints: true,
+        pointSize: 6,
+        highlightCircleSize: 9,
+        legend: 'never',
+        xlabel: T.heightAxis,
+        ylabel: T.dischargeAxis,
+        dateWindow: [0, xMax * 1.1],
+        valueRange: [0, yMax * 1.1],
+        axes: {
+            x: { valueFormatter: v => v.toFixed(3) + ' m', axisLabelFormatter: v => v.toFixed(3) },
+            y: { valueFormatter: v => v.toFixed(2) + ' L/s', axisLabelFormatter: v => v.toFixed(1) },
+        },
+        highlightCallback: function (event, x, points, row) {
+            if (row < 0 || row >= rawData.length) return;
+            const d = rawData[row];
+            tip.innerHTML = '';
+            const name = document.createElement('strong');
+            name.textContent = d.name;
+            tip.append(name,
+                ` | ${STATUS_LABEL[d.status]} | ${T.height}: ${d.height.toFixed(3)} m | ` +
+                `${T.meanDischarge}: ${d.debit_moyen} L/s | ${fmtDate(d.date_debut)} → ${fmtDate(d.date_fin)}`);
+        },
+        unhighlightCallback: function () { tip.textContent = T.hover; },
+    });
+})();
+{% endif %}
+
+/* ── Reference water-level station ── */
+const CURRENT_THING_ID = {{ thing_id or 'null' }};
+let refThingsLoaded = false;
+
+function fillSelect(sel, items) {
+    sel.innerHTML = '';
+    const empty = document.createElement('option');
+    empty.value = '';
+    empty.textContent = T.choose;
+    sel.appendChild(empty);
+    items.forEach(it => {
+        const opt = document.createElement('option');
+        opt.value = it.id;
+        opt.textContent = it.name;
+        sel.appendChild(opt);
+    });
+}
+
+async function loadRefThings() {
+    if (refThingsLoaded) return;
+    refThingsLoaded = true;
+    const sel = document.getElementById('ref-thing-select');
+    if (!sel) return;
+    try {
+        const resp = await fetch(`${API}/ref-things`, { credentials: 'same-origin' });
+        fillSelect(sel, await resp.json());
+    } catch (e) {
+        console.error('Error while loading the water-level Things', e);
+    }
+}
+
+async function loadRefDatastreams() {
+    const thingSel = document.getElementById('ref-thing-select');
+    const dsWrap = document.getElementById('ref-ds-wrap');
+    const dsSel = document.getElementById('ref-ds-select');
+    if (!thingSel.value) { dsWrap.style.display = 'none'; return; }
+    dsSel.innerHTML = `<option>${T.loading}</option>`;
+    dsWrap.style.display = '';
+    try {
+        const resp = await fetch(`${API}/ref-things/${thingSel.value}/datastreams`, { credentials: 'same-origin' });
+        fillSelect(dsSel, await resp.json());
+    } catch (e) {
+        dsSel.innerHTML = `<option>${T.error}</option>`;
+    }
+}
+
+async function sendRef(body) {
+    const status = document.getElementById('ref-status');
+    setStatus(status, T.saving, '#888');
+    try {
+        const resp = await fetch(`${API}/thing/${CURRENT_THING_ID}/height-ref`, writeOptions('PATCH', body));
+        if (resp.ok) { location.reload(); return; }
+        const err = await resp.json();
+        setStatus(status, T.errorMsg.replace('{msg}', err.error || resp.status), '#f14668');
+    } catch (e) {
+        setStatus(status, T.networkError, '#f14668');
+    }
+}
+
+function saveRefHeight() {
+    const thingVal = document.getElementById('ref-thing-select').value;
+    const dsVal = document.getElementById('ref-ds-select').value;
+    if (!thingVal || !dsVal) {
+        setStatus(document.getElementById('ref-status'), T.selectPointDs, '#f14668');
+        return;
+    }
+    sendRef({ thing_id: parseInt(thingVal), ds_id: parseInt(dsVal) });
+}
+
+function saveRefUnavailable() {
+    sendRef({ unavailable: true });
+}
+
+function showRefSelector() {
+    document.getElementById('ref-selector').style.display = '';
+    loadRefThings();
+}
+
+// Load the Things when the selector is visible from the start (no reference yet)
+document.addEventListener('DOMContentLoaded', () => {
+    const sel = document.getElementById('ref-selector');
+    if (sel && sel.style.display !== 'none') loadRefThings();
+});
+
+/* ── Apply the fitted rating curve to the SoftSensor ── */
+{% if rating_fit and height_ref and not height_ref.unavailable %}
+const FIT = {{ dict(rating_fit, source_id=height_ref.ds_id, gauging_site=thing_name)|tojson }};
+
+async function applyCurve() {
+    const status = document.getElementById('apply-status');
+    const btn = document.getElementById('btn-apply');
+    setStatus(status, T.saving, '#888');
+    btn.classList.add('is-loading');
+    try {
+        const resp = await fetch(`${API}/apply-rating-curve`, writeOptions('POST',
+            { ...FIT, target_id: parseInt(document.getElementById('target-select').value) }));
+        const data = await resp.json();
+        if (resp.ok) {
+            setStatus(status, T.applied, '#48c774');
+        } else {
+            setStatus(status, T.errorMsg.replace('{msg}', data.error || resp.status), '#f14668');
+        }
+    } catch (e) {
+        setStatus(status, T.networkError, '#f14668');
+    } finally {
+        btn.classList.remove('is-loading');
+    }
+}
+{% endif %}
+
+/* ── Rainfall station of the site ── */
+async function savePrecipitation() {
+    const status = document.getElementById('precip-status');
+    setStatus(status, T.saving, '#888');
+    try {
+        const resp = await fetch(`${API}/thing/${CURRENT_THING_ID}/precipitation-ref`,
+            writeOptions('PATCH', { url: document.getElementById('precip-url').value.trim() }));
+        if (resp.ok) {
+            setStatus(status, T.precipSaved, '#48c774');
+            setTimeout(() => location.reload(), 800);
+        } else {
+            const err = await resp.json();
+            setStatus(status, T.errorMsg.replace('{msg}', err.error || resp.status), '#f14668');
+        }
+    } catch (e) {
+        setStatus(status, T.networkError, '#f14668');
+    }
+}
+
+/* ── Water level of a gauging ── */
+async function saveHauteur(dsId) {
+    const input = document.getElementById(`hauteur-input-${dsId}`);
+    const status = document.getElementById(`hauteur-status-${dsId}`);
+    const val = parseFloat(input.value);
+    if (isNaN(val)) {
+        setStatus(status, T.invalidValue, '#f14668');
+        return;
+    }
+    setStatus(status, T.saving, '#888');
+    try {
+        const resp = await fetch(`${API}/height/${dsId}`, writeOptions('PATCH', { value: val }));
+        if (resp.ok) {
+            setStatus(status, T.heightSaved.replace('{v}', val), '#48c774');
+        } else {
+            const err = await resp.json();
+            setStatus(status, T.errorMsg.replace('{msg}', err.error || resp.status), '#f14668');
+        }
+    } catch (e) {
+        setStatus(status, T.networkError, '#f14668');
+    }
+}
+
+/* ── Qualification ── */
+function toggleQual(btn) {
+    const group = btn.closest('[data-ds]');
+    group.querySelectorAll('.qual-btn').forEach(b => {
+        b.classList.remove('is-success', 'is-danger', 'is-selected');
+    });
+    btn.classList.add(btn.dataset.val === 'true' ? 'is-success' : 'is-danger', 'is-selected');
+}
+
+async function saveQualification(dsId, n) {
+    const statusEl = document.getElementById(`qual-status-${dsId}`);
+    const flags = [];
+
+    for (let i = 0; i < n; i++) {
+        const group = document.querySelector(`[data-ds="${dsId}"][data-idx="${i}"]`);
+        const selected = group ? group.querySelector('.qual-btn.is-selected') : null;
+        if (!selected) {
+            setStatus(statusEl, T.qualifyAll, '#f14668');
+            return;
+        }
+        flags.push(selected.dataset.val === 'true');
+    }
+
+    setStatus(statusEl, T.saving, '#888');
+    try {
+        const resp = await fetch(`${API}/qualify/${dsId}`, writeOptions('PATCH', { qualityFlag: flags }));
+        if (resp.ok) {
+            setStatus(statusEl, T.qualSaved, '#48c774');
+            setTimeout(() => location.reload(), 800);
+        } else {
+            const err = await resp.json();
+            setStatus(statusEl, T.errorMsg.replace('{msg}', err.error || resp.status), '#f14668');
+        }
+    } catch (e) {
+        setStatus(statusEl, T.networkError, '#f14668');
+    }
+}
+</script>
+{% endblock %}

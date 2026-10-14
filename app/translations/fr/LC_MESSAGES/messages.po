@@ -1382,3 +1382,955 @@ msgstr "Configurer les SoftSensors"
 #: app/templates/private/thing_info.html
 msgid "Add an image"
 msgstr "Ajouter une image"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "SensorThings error (%(code)s)"
+msgstr "Erreur SensorThings (%(code)s)"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "ObservedProperty '%(name)s' not found"
+msgstr "ObservedProperty « %(name)s » introuvable"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "Unable to fetch the Datastreams: %(error)s"
+msgstr "Impossible de récupérer les Datastreams : %(error)s"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "The site name is required."
+msgstr "Le nom du site est obligatoire."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Invalid coordinates"
+msgstr "Coordonnées invalides"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Thing creation failed"
+msgstr "Échec de la création du Thing"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "No CSV sent"
+msgstr "Aucun CSV envoyé"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "Invalid parameters: %(error)s"
+msgstr "Paramètres invalides : %(error)s"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "No measurement range defined"
+msgstr "Aucune plage de mesure définie"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "Number of masses (%(masses)s) != number of ranges (%(ranges)s)"
+msgstr "Nombre de masses (%(masses)s) ≠ nombre de plages (%(ranges)s)"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "Error while reading the CSV: %(error)s"
+msgstr "Erreur de lecture du CSV : %(error)s"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "No data in the range %(start)s -> %(end)s"
+msgstr "Aucune donnée dans la plage %(start)s → %(end)s"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "Zero or negative integral on the range %(start)s. Check that the range contains the conductivity peak."
+msgstr "Intégrale nulle ou négative sur la plage %(start)s. Vérifiez que la plage contient bien le pic de conductivité."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Missing ds_id"
+msgstr "ds_id manquant"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "Sensor '%(name)s' not found"
+msgstr "Sensor « %(name)s » introuvable"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "Unable to create the conductivity Datastream: %(error)s"
+msgstr "Impossible de créer le Datastream de conductivité : %(error)s"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "Error while posting the conductivity: %(error)s"
+msgstr "Erreur lors de l'envoi de la conductivité : %(error)s"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "Unable to create the Sensor: %(error)s"
+msgstr "Impossible de créer le Sensor : %(error)s"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "Unable to create the discharge Datastream: %(error)s"
+msgstr "Impossible de créer le Datastream de débit : %(error)s"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+#, python-format
+msgid "Error while posting the discharge: %(error)s"
+msgstr "Erreur lors de l'envoi du débit : %(error)s"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Discharge by salt dilution"
+msgstr "Débit par dilution de sel"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Salt (NaCl) injection method"
+msgstr "Méthode par injection de sel (NaCl)"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Checking the observed property"
+msgstr "Vérification de la propriété observée"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Measurement site selection"
+msgstr "Sélection du site de mesure"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Site (Thing)"
+msgstr "Site (Thing)"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "-- Choose a site --"
+msgstr "-- Choisir un site --"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "or"
+msgstr "ou"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "+ New site"
+msgstr "+ Nouveau site"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Calculation parameters"
+msgstr "Paramètres de calcul"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Injected salt mass (g)"
+msgstr "Masse de sel injectée (g)"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Different masses per range"
+msgstr "Masses différentes par plage"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Measurement interval Δt (s)"
+msgstr "Intervalle de mesure Δt (s)"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Conductivity CSV file (in mS/cm)"
+msgstr "Fichier CSV de conductivité (en mS/cm)"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "columns: date, result"
+msgstr "colonnes : date, result"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Once the file is selected, a window opens to view the series and define the measurement ranges."
+msgstr "Après sélection du fichier, une fenêtre s'ouvre pour visualiser la série et définir les plages de mesure."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Selected measurement ranges"
+msgstr "Plages de mesure sélectionnées"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Edit the ranges"
+msgstr "Modifier les plages"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Compute the discharge"
+msgstr "Calculer le débit"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Import a CSV and define the measurement ranges."
+msgstr "Importez un CSV et définissez les plages de mesure."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Data publication"
+msgstr "Publication des données"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Do the results look valid? Publish the data to SensorThings."
+msgstr "Les résultats vous semblent valides ? Publiez les données dans SensorThings."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Publish the data"
+msgstr "Publier les données"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "What do you want to do?"
+msgstr "Que souhaitez-vous faire ?"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Start a new measurement"
+msgstr "Recommencer une mesure"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Create a new measurement site"
+msgstr "Créer un nouveau site de mesure"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Site name"
+msgstr "Nom du site"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Longitude"
+msgstr "Longitude"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Latitude"
+msgstr "Latitude"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Click on the map to place the point."
+msgstr "Cliquez sur la carte pour placer le point."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Create the site"
+msgstr "Créer le site"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "CSV analysis: measurement range selection"
+msgstr "Analyse du CSV : sélection des plages de mesure"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "+ Add a range"
+msgstr "+ Ajouter une plage"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Reset"
+msgstr "Réinitialiser"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Manual range input"
+msgstr "Saisie manuelle d'une plage"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "End"
+msgstr "Fin"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "+ Add"
+msgstr "+ Ajouter"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Validate"
+msgstr "Valider"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Error"
+msgstr "Erreur"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Network error"
+msgstr "Erreur réseau"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Unable to reach the server."
+msgstr "Impossible de contacter le serveur."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "ID: {id}"
+msgstr "ID : {id}"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Error while loading the sites."
+msgstr "Erreur lors du chargement des sites."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Define the measurement ranges first."
+msgstr "Définissez d'abord les plages de mesure."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Range {n}"
+msgstr "Plage {n}"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Unable to read the CSV. Check the format (date, result)."
+msgstr "Impossible de lire le CSV. Vérifiez le format (date, result)."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Error during the calculation."
+msgstr "Erreur lors du calcul."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Network error."
+msgstr "Erreur réseau."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Conductivity"
+msgstr "Conductivité"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Conductivity (mS/cm)"
+msgstr "Conductivité (mS/cm)"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Enter the start and the end."
+msgstr "Renseignez le début et la fin."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "The end must be after the start."
+msgstr "La fin doit être après le début."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "No range defined."
+msgstr "Aucune plage définie."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Validate (1 range)"
+msgstr "Valider (1 plage)"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Validate ({n} ranges)"
+msgstr "Valider ({n} plages)"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Measurement {n}"
+msgstr "Mesure {n}"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Click on the graph to mark the <strong>start</strong> of the measurement."
+msgstr "Cliquez sur le graphique pour marquer le <strong>début</strong> de la mesure."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Click on the graph to mark the <strong>end</strong> of the measurement."
+msgstr "Cliquez sur le graphique pour marquer la <strong>fin</strong> de la mesure."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Click on \"+ Add a range\" then click on the graph (start → end)."
+msgstr "Cliquez sur « + Ajouter une plage » puis cliquez sur le graphique (début → fin)."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Define at least one measurement range before validating."
+msgstr "Définissez au moins une plage de mesure avant de valider."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Missing coordinates. Click on the map or enter them."
+msgstr "Coordonnées manquantes. Cliquez sur la carte ou saisissez-les."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Error while creating the site."
+msgstr "Erreur lors de la création du site."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Published"
+msgstr "Publié"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Data published successfully!"
+msgstr "Données publiées avec succès !"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "{n} conductivity observations"
+msgstr "{n} observations de conductivité"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "{n} discharge observation(s)"
+msgstr "{n} observation(s) de débit"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Error while publishing."
+msgstr "Erreur lors de la publication."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Mean discharge"
+msgstr "Débit moyen"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Uncertainty"
+msgstr "Incertitude"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Number of measurements"
+msgstr "Nb de mesures"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Distribution of the measurements, band"
+msgstr "Distribution des mesures, bande"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Measurement"
+msgstr "Mesure"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Discharge"
+msgstr "Débit"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Deviation / mean"
+msgstr "Écart / moy."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Mean"
+msgstr "Moyenne"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Loading the observations…"
+msgstr "Chargement des observations…"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "No observation available."
+msgstr "Aucune observation disponible."
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "History"
+msgstr "Historique"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "New"
+msgstr "Nouvelles"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Discharge (L/s)"
+msgstr "Débit (L/s)"
+
+#: app/routes/tarage.py app/templates/private/tarage/dilution.html
+msgid "Error while loading the graph."
+msgstr "Erreur lors du chargement du graphique."
+
+#: app/routes/tarage.py
+msgid "The Thing has no Location"
+msgstr "Le Thing n'a pas de Location"
+
+#: app/routes/tarage.py
+#, python-format
+msgid "Unable to get the FeatureOfInterest: %(error)s"
+msgstr "Impossible de récupérer le FeatureOfInterest : %(error)s"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Good (mean of the validated discharges)"
+msgstr "Bon (moy. des débits validés)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Not qualified"
+msgstr "Non qualifié"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "All rejected"
+msgstr "Tous rejetés"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Discharges (tracing)"
+msgstr "Débits (traçage)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Height (m)"
+msgstr "Hauteur (m)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Gauging"
+msgstr "Jaugeage"
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "%(entity)s not found (%(code)s)"
+msgstr "%(entity)s introuvable (%(code)s)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Missing JSON body"
+msgstr "Corps JSON manquant"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "thing_id and ds_id are required"
+msgstr "thing_id et ds_id sont requis"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Invalid value"
+msgstr "Valeur invalide"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Missing qualityFlag"
+msgstr "qualityFlag manquant"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Measurements"
+msgstr "Mesures"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Estimated Q"
+msgstr "Q estimé"
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "Q at the calibration h_max = %(q)s L/s"
+msgstr "Q à h_max de calage = %(q)s L/s"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Date"
+msgstr "Date"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Estimated discharge (L/s)"
+msgstr "Débit estimé (L/s)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Discharge time series: Q = a · h^b (MC uncertainties)"
+msgstr "Chronique de débit : Q = a · h^b (incertitudes MC)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Mean Q"
+msgstr "Q moyen"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Water level (m)"
+msgstr "Hauteur d'eau (m)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Simulated discharge (L/s)"
+msgstr "Débit simulé (L/s)"
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "Uncertainty propagation: Monte Carlo (σ_h = %(s)s %%)"
+msgstr "Propagation d'incertitude : Monte Carlo (σ_h = %(s)s %%)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Invalid form parameters."
+msgstr "Paramètres de formulaire invalides."
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "No MultiDatastream '%(name)s' found for this site."
+msgstr "Aucun MultiDatastream « %(name)s » trouvé pour ce site."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "No discharge observation available."
+msgstr "Aucune observation de débit disponible."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "No water level observation in the time range of the discharge measurements."
+msgstr "Aucune observation de hauteur dans la plage temporelle des mesures de débit."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Not enough matched points to fit the curve (at least 2)."
+msgstr "Pas assez de points appariés pour ajuster la courbe (minimum 2)."
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "Fit failed (curve_fit): %(error)s"
+msgstr "Échec de l'ajustement (curve_fit) : %(error)s"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Observatory access"
+msgstr "Accès à l'observatoire"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Raw data"
+msgstr "Données brutes"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Tracing gaugings"
+msgstr "Mesures de traçage"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Administration"
+msgstr "Administration"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Invite a user"
+msgstr "Inviter un utilisateur"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Select a measurement point"
+msgstr "Sélectionnez un point de mesure"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Change point"
+msgstr "Changer de point"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Deletes the cached graphs, they are rebuilt on the next load"
+msgstr "Supprime les graphiques en cache, ils sont régénérés au prochain chargement"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Rebuild the graphs"
+msgstr "Régénérer les graphiques"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "No measurement point available."
+msgstr "Aucun point de mesure disponible."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Reference measurement point (water level)"
+msgstr "Point de mesure de référence (hauteur)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "No measurement point available"
+msgstr "Aucun point de mesure disponible"
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "Tracing gaugings: %(n)s in total"
+msgstr "Mesures de traçage : %(n)s au total"
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "%(n)s qualified"
+msgstr "%(n)s qualifiée(s)"
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "%(n)s not qualified"
+msgstr "%(n)s non qualifiée(s)"
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "%(n)s rejected"
+msgstr "%(n)s rejetée(s)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Change"
+msgstr "Changer"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "— Choose —"
+msgstr "— Choisir —"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Not available"
+msgstr "Non disponible"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Select a reference measurement point (water level) above before viewing the gaugings."
+msgstr "Sélectionnez un point de mesure de référence (hauteur) ci-dessus avant de consulter les mesures."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Discharge by tracing"
+msgstr "Débit par traçage"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Stage-discharge relation"
+msgstr "Relation hauteur-débit"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Measured data"
+msgstr "Données mesurées"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Fitted rating curve"
+msgstr "Courbe de tarage ajustée"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "No conductivity gauging available for this point."
+msgstr "Aucune mesure de conductivité disponible pour ce point."
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "%(n)s points"
+msgstr "%(n)s points"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Period"
+msgstr "Période"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Salt mass"
+msgstr "Masse de sel"
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "Range %(n)s: %(m)s g"
+msgstr "Plage %(n)s : %(m)s g"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Computed discharge"
+msgstr "Débit calculé"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "No metadata available."
+msgstr "Aucune métadonnée disponible."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "No observation available for this MultiDatastream."
+msgstr "Aucune observation disponible pour ce MultiDatastream."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Computed discharges"
+msgstr "Débits calculés"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Good"
+msgstr "Bon"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Existing qualification, can be edited."
+msgstr "Qualification existante, modifiable."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Water level"
+msgstr "Hauteur d'eau"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "saved"
+msgstr "enregistrée"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Absolute"
+msgstr "Absolue"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Relative"
+msgstr "Relative"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Rainfall of the day"
+msgstr "Pluviométrie du jour"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "No rainfall data available."
+msgstr "Aucune donnée de pluie disponible."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "No water level data available."
+msgstr "Aucune donnée de hauteur disponible."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Hover a point to show its details."
+msgstr "Passez la souris sur un point pour afficher les détails."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Height"
+msgstr "Hauteur"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Qualified"
+msgstr "Qualifié"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Rejected"
+msgstr "Rejeté"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Error: {msg}"
+msgstr "Erreur : {msg}"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Select a measurement point and a MultiDatastream."
+msgstr "Sélectionnez un point de mesure et un MultiDatastream."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Saving…"
+msgstr "Enregistrement…"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Invalid value."
+msgstr "Valeur invalide."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "{v} m saved."
+msgstr "{v} m enregistré."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Qualify all the measurements before saving."
+msgstr "Qualifiez toutes les mesures avant d'enregistrer."
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Qualification saved. Refreshing…"
+msgstr "Qualification enregistrée. Actualisation…"
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "Measurement site: water level (%(name)s)"
+msgstr "Site de mesure : hauteur (%(name)s)"
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "Measurement site: discharge (%(name)s)"
+msgstr "Site de mesure : débit (%(name)s)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Water level uncertainty"
+msgstr "Incertitude sur la hauteur"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "relative to each measured height"
+msgstr "relative à chaque hauteur mesurée"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Compute the rating curve"
+msgstr "Calculer la courbe de tarage"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Coefficients"
+msgstr "Coefficients"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Matched points"
+msgstr "Points appariés"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "To apply this curve to the water level data, enter a, b and h_max in"
+msgstr "Pour appliquer cette courbe aux données de hauteur, saisissez a, b et h_max dans"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "method"
+msgstr "méthode"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Uncertainty propagation: Monte Carlo"
+msgstr "Propagation d'incertitude : Monte Carlo"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Discharge time series: Q = a · h^b with MC uncertainties"
+msgstr "Chronique de débit : Q = a · h^b avec incertitudes MC"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Discharge time series"
+msgstr "Chronique de débit"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Matched measurement points"
+msgstr "Points de mesure appariés"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Measured Q (L/s)"
+msgstr "Q mesuré (L/s)"
+
+#: app/routes/tarage app/templates/private/tarage
+msgid "Computed Q (L/s)"
+msgstr "Q calculé (L/s)"
+
+#: app/routes/tarage app/templates/private/tarage
+#, python-format
+msgid "Residual (%%)"
+msgstr "Résidu (%%)"
+
+#: app/routes/tarage app/templates/private
+msgid "Unknown method"
+msgstr "Méthode inconnue"
+
+#: app/routes/tarage app/templates/private
+msgid "Please select a derived datastream"
+msgstr "Veuillez choisir un datastream dérivé"
+
+#: app/routes/tarage app/templates/private
+#, python-format
+msgid "Missing parameter %(k)s"
+msgstr "Paramètre %(k)s manquant"
+
+#: app/routes/tarage app/templates/private
+#, python-format
+msgid "Parameter %(k)s must be a number"
+msgstr "Le paramètre %(k)s doit être un nombre"
+
+#: app/routes/tarage app/templates/private
+msgid "Invalid source datastream"
+msgstr "Datastream source invalide"
+
+#: app/routes/tarage app/templates/private
+msgid "Invalid URL"
+msgstr "URL invalide"
+
+#: app/routes/tarage app/templates/private
+msgid "Associate each derived datastream (observationProcedure = SoftSensor) with a computation method and its source datastream. On qualification of the source, the derived series is recomputed and published."
+msgstr "Associez chaque datastream dérivé (observationProcedure = SoftSensor) à une méthode de calcul et à son datastream source. À la qualification de la source, la série dérivée est recalculée et publiée."
+
+#: app/routes/tarage app/templates/private
+msgid "No derived datastream found (none tagged observationProcedure = SoftSensor). Add them in the config spreadsheet first."
+msgstr "Aucun datastream dérivé trouvé (aucun avec observationProcedure = SoftSensor). Ajoutez-les d'abord dans le tableur de configuration."
+
+#: app/routes/tarage app/templates/private
+msgid "load error"
+msgstr "erreur de chargement"
+
+#: app/routes/tarage app/templates/private
+msgid "Derived datastream (target)"
+msgstr "Datastream dérivé (cible)"
+
+#: app/routes/tarage app/templates/private
+msgid "- choose, "
+msgstr "- choisir -"
+
+#: app/routes/tarage app/templates/private
+msgid "Source datastream"
+msgstr "Datastream source"
+
+#: app/routes/tarage app/templates/private
+msgid "Save association"
+msgstr "Enregistrer l'association"
+
+#: app/routes/tarage app/templates/private
+msgid "Existing associations"
+msgstr "Associations existantes"
+
+#: app/routes/tarage app/templates/private
+msgid "Source"
+msgstr "Source"
+
+#: app/routes/tarage app/templates/private
+msgid "Method"
+msgstr "Méthode"
+
+#: app/routes/tarage app/templates/private
+msgid "Derived (target)"
+msgstr "Dérivé (cible)"
+
+#: app/routes/tarage app/templates/private
+msgid "Params"
+msgstr "Paramètres"
+
+#: app/routes/tarage app/templates/private
+msgid "No association yet."
+msgstr "Aucune association pour le moment."
+
+#: app/routes/tarage app/templates/private
+msgid "Error while saving."
+msgstr "Erreur lors de l'enregistrement."
+
+#: app/routes/tarage app/templates/private
+msgid "Remove this association?"
+msgstr "Supprimer cette association ?"
+
+#: app/routes/tarage app/templates/private
+msgid "Rainfall station"
+msgstr "Pluviomètre"
+
+#: app/routes/tarage app/templates/private
+msgid "URL of the rainfall Datastream of a public SensorThings service. Leave empty to hide the rainfall."
+msgstr "URL du Datastream de pluie d'un service SensorThings public. Laisser vide pour masquer la pluie."
+
+#: app/routes/tarage app/templates/private
+msgid "Rainfall station saved. Refreshing…"
+msgstr "Pluviomètre enregistré. Actualisation…"
+
+#: app/routes/tarage app/templates/private
+msgid "Apply to the SoftSensor"
+msgstr "Appliquer au SoftSensor"
+
+#: app/routes/tarage app/templates/private
+msgid "Apply"
+msgstr "Appliquer"
+
+#: app/routes/tarage app/templates/private
+msgid "The derived discharge MultiDatastream is computed with a, b and h_max from the water level, when the water level is qualified. The fit is kept in its properties (ratingCurve)."
+msgstr "Le MultiDatastream de débit dérivé est calculé avec a, b et h_max à partir de la hauteur, quand la hauteur est qualifiée. L'ajustement est gardé dans ses propriétés (ratingCurve)."
+
+#: app/routes/tarage app/templates/private
+msgid "No derived discharge MultiDatastream (observationProcedure SoftSensor) in the configuration."
+msgstr "Aucun MultiDatastream de débit dérivé (observationProcedure SoftSensor) dans la configuration."
+
+#: app/routes/tarage app/templates/private
+msgid "Applied: the discharge will be computed at the next qualification of the water level."
+msgstr "Appliqué : le débit sera calculé à la prochaine qualification de la hauteur."
+
+#: app/templates/base.html
+msgid "Salt-dilution gauging"
+msgstr "Jaugeage par dilution"
+
+#: app/templates/private/tarage/list.html
+#, python-format
+msgid "The derived discharge is computed with a, b, h0 and h_max from the reference water level (%(name)s), when the water level is qualified. The fit is kept in its properties (ratingCurve)."
+msgstr "Le débit dérivé est calculé avec a, b, h0 et h_max à partir de la hauteur de référence (%(name)s), quand la hauteur est qualifiée. L'ajustement est gardé dans ses propriétés (ratingCurve)."
+
+#: app/driver_softSensor/driver/rating_curve.py
+msgid "h0 (water level of zero discharge, 0 if none)"
+msgstr "h0 (hauteur de débit nul, 0 si aucune)"

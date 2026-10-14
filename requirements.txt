@@ -16,3 +16,6 @@ apiflask>=3.1.0
 Flask-Babel
 Authlib
 -e ./api_ogc_process
+numpy
+matplotlib
+scipy

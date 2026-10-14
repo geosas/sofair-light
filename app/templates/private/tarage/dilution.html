@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ol.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dygraph.min.css') }}" />
+<style>
+    .step-connector { width: 2px; height: 20px; background: #dbdbdb; margin-left: 22px; }
+    .step-num {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 2rem; height: 2rem; border-radius: 50%; background: #3273dc; color: white;
+        font-weight: bold; font-size: 0.95rem; flex-shrink: 0; margin-right: 0.75rem;
+        transition: background 0.3s;
+    }
+    .step-num.is-success { background: #48c774; }
+    .step-num.is-warning { background: #ffdd57; color: #363636; }
+    .step-num.is-danger { background: #f14668; }
+    .step-header { display: flex; align-items: center; }
+    .step-header .tag { margin-left: auto; }
+    /* The cursor must reach dygraph's inner canvases */
+    #csv-chart canvas { cursor: inherit; }
+    /* Dygraph: dark mode fixes */
+    @media (prefers-color-scheme: dark) {
+        .dygraph-axis-label { color: #cccccc !important; }
+        .dygraph-legend { background-color: rgba(30, 30, 30, 0.85) !important; color: #cccccc !important; }
+    }
+</style>
+
+<div class="container has-text-left" style="max-width: 720px;">
+    <h1 class="title">{{ _('Discharge by salt dilution') }}</h1>
+    <p class="subtitle">{{ _('Salt (NaCl) injection method') }}</p>
+
+    <!-- STEP 1: conductivity ObservedProperty -->
+    <div class="step-wrapper" id="step-1">
+        <div class="box">
+            <div class="step-header mb-3">
+                <span class="step-num" id="step-1-num">1</span>
+                <strong>{{ _('Checking the observed property') }}</strong>
+                <span class="tag" id="step-1-tag"></span>
+            </div>
+            <progress class="progress is-small is-primary" max="100" id="step-1-progress"></progress>
+            <p class="help" id="step-1-msg"></p>
+        </div>
+        <div class="step-connector"></div>
+    </div>
+
+    <!-- STEP 2: site selection -->
+    <div class="step-wrapper is-hidden" id="step-2">
+        <div class="box">
+            <div class="step-header mb-4">
+                <span class="step-num" id="step-2-num">2</span>
+                <strong>{{ _('Measurement site selection') }}</strong>
+            </div>
+            <div class="field">
+                <label class="label">{{ _('Site (Thing)') }}</label>
+                <div class="is-flex is-align-items-center" style="gap: 0.75rem;">
+                    <div class="select is-fullwidth" style="flex: 1;">
+                        <select id="thing-select">
+                            <option value="">{{ _('-- Choose a site --') }}</option>
+                        </select>
+                    </div>
+                    <span class="has-text-grey">{{ _('or') }}</span>
+                    <button type="button" class="button is-light is-small" id="btn-create-thing-step2"
+                        style="white-space: nowrap;">
+                        {{ _('+ New site') }}
+                    </button>
+                </div>
+                <p class="help is-danger is-hidden" id="step-2-msg"></p>
+            </div>
+        </div>
+        <div class="step-connector"></div>
+    </div>
+
+    <!-- STEP 3: parameters & calculation -->
+    <div class="step-wrapper is-hidden" id="step-3">
+        <div class="box">
+            <div class="step-header mb-4">
+                <span class="step-num" id="step-3-num">3</span>
+                <strong>{{ _('Calculation parameters') }}</strong>
+            </div>
+
+            <form id="calc-form">
+                <div class="field">
+                    <label class="label">{{ _('Injected salt mass (g)') }}</label>
+                    <div class="control" id="masse-unique-wrap">
+                        <input class="input" type="number" id="masse-sel" step="0.1" placeholder="500">
+                    </div>
+                    <div id="masses-multi-wrap" class="is-hidden mt-2"></div>
+                    <label class="checkbox mt-2 is-size-7">
+                        <input type="checkbox" id="toggle-masses-multi">
+                        {{ _('Different masses per range') }}
+                    </label>
+                </div>
+
+                <div class="field">
+                    <label class="label">{{ _('Measurement interval Δt (s)') }}</label>
+                    <div class="control">
+                        <input class="input" type="number" id="delta-t" step="0.1" placeholder="10" required>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">
+                        {{ _('Conductivity CSV file (in mS/cm)') }}
+                        <span class="has-text-weight-normal has-text-grey-light">— {{ _('columns: date, result') }}</span>
+                    </label>
+                    <div class="control">
+                        <input class="input" type="file" id="csv-file" accept=".csv,.txt" required>
+                    </div>
+                    <p class="help">{{ _('Once the file is selected, a window opens to view the series and define the measurement ranges.') }}</p>
+                </div>
+
+                <!-- Summary of the ranges (shown once the CSV window is validated) -->
+                <div class="field is-hidden" id="ranges-summary-wrap">
+                    <label class="label">{{ _('Selected measurement ranges') }}</label>
+                    <div id="ranges-summary" class="tags mb-1"></div>
+                    <button type="button" class="button is-small is-light" id="btn-edit-ranges">
+                        {{ _('Edit the ranges') }}
+                    </button>
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <button class="button is-primary" type="submit" id="calc-btn" disabled>
+                            {{ _('Compute the discharge') }}
+                        </button>
+                    </div>
+                    <p class="help is-warning" id="calc-no-ranges-msg">{{ _('Import a CSV and define the measurement ranges.') }}</p>
+                </div>
+            </form>
+
+            <!-- Results (filled by JS) -->
+            <div class="is-hidden mt-4" id="calc-result"></div>
+        </div>
+    </div>
+
+    <!-- STEP 4: publication -->
+    <div class="step-wrapper is-hidden" id="step-4">
+        <div class="box">
+            <div class="step-header mb-4">
+                <span class="step-num" id="step-4-num">4</span>
+                <strong>{{ _('Data publication') }}</strong>
+                <span class="tag" id="step-4-tag"></span>
+            </div>
+            <p class="mb-3">{{ _('Do the results look valid? Publish the data to SensorThings.') }}</p>
+            <div class="buttons">
+                <button class="button is-success" id="btn-publish" type="button">
+                    {{ _('Publish the data') }}
+                </button>
+            </div>
+            <progress class="progress is-small is-success is-hidden" max="100" id="step-4-progress"></progress>
+            <div class="is-hidden mt-3" id="step-4-result"></div>
+            <div class="is-hidden mt-4" id="discharge-chart" style="width:100%; height:280px;"></div>
+        </div>
+        <div class="step-connector"></div>
+    </div>
+
+    <!-- STEP 5: next actions -->
+    <div class="step-wrapper is-hidden" id="step-5">
+        <div class="box">
+            <div class="step-header mb-4">
+                <span class="step-num is-success" id="step-5-num">5</span>
+                <strong>{{ _('What do you want to do?') }}</strong>
+            </div>
+            <div class="buttons">
+                <button class="button is-light" type="button" onclick="location.reload()">
+                    ↺ {{ _('Start a new measurement') }}
+                </button>
+                <a class="button is-primary" href="{{ url_for('tarage.gauging_list') }}">
+                    {{ _('Tracing gaugings') }} →
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: create a Thing -->
+<div class="modal" id="modal-thing">
+    <div class="modal-background"></div>
+    <div class="modal-card" style="width: 760px; max-width: 95vw;">
+        <header class="modal-card-head">
+            <p class="modal-card-title">{{ _('Create a new measurement site') }}</p>
+            <button class="delete" aria-label="close" id="modal-close"></button>
+        </header>
+
+        <section class="modal-card-body has-text-left">
+            <div class="columns">
+                <div class="column is-half">
+                    <div class="field">
+                        <label class="label">{{ _('Site name') }} <span class="has-text-danger">*</span></label>
+                        <div class="control">
+                            <input class="input" type="text" id="thing-name">
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="label">{{ _('Description') }}</label>
+                        <div class="control">
+                            <textarea class="textarea" id="thing-desc" rows="2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="columns">
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">{{ _('Longitude') }}</label>
+                                <div class="control">
+                                    <input class="input" type="number" id="thing-lng" step="0.000001"
+                                        placeholder="-1.678">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="field">
+                                <label class="label">{{ _('Latitude') }}</label>
+                                <div class="control">
+                                    <input class="input" type="number" id="thing-lat" step="0.000001"
+                                        placeholder="48.112">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="help has-text-grey">{{ _('Click on the map to place the point.') }}</p>
+                </div>
+
+                <div class="column is-half">
+                    <div id="ol-map" style="height: 290px; border-radius: 4px; border: 1px solid #dbdbdb;"></div>
+                </div>
+            </div>
+
+            <p class="help is-danger is-hidden" id="modal-error"></p>
+        </section>
+
+        <footer class="modal-card-foot" style="justify-content: flex-start; gap: 0.5rem;">
+            <button class="button is-primary" id="modal-submit">{{ _('Create the site') }}</button>
+            <button class="button" id="modal-cancel">{{ _('Cancel') }}</button>
+        </footer>
+    </div>
+</div>
+
+<!-- MODAL CSV: series view & range selection -->
+<div class="modal" id="modal-csv">
+    <div class="modal-background"></div>
+    <div class="modal-card" style="width: 95vw; max-width: 1400px;">
+        <header class="modal-card-head">
+            <p class="modal-card-title">{{ _('CSV analysis: measurement range selection') }}</p>
+            <button class="delete" aria-label="close" id="csv-modal-close"></button>
+        </header>
+
+        <section class="modal-card-body has-text-left" style="padding: 1rem 1.25rem;">
+            <!-- Interaction mode status bar (text set by JS) -->
+            <div class="notification is-info is-light py-2 px-3 mb-3" id="csv-status-bar">
+                <span id="csv-status-msg"></span>
+            </div>
+
+            <div class="columns" style="min-height: 440px;">
+                <!-- Graph (65 %) -->
+                <div class="column" style="flex: 0 0 65%; max-width: 65%;">
+                    <div id="csv-chart" style="width: 100%; height: 400px;"></div>
+                </div>
+
+                <!-- Controls (35 %) -->
+                <div class="column"
+                    style="flex: 0 0 35%; max-width: 35%; border-left: 1px solid #dbdbdb; padding-left: 1.25rem;">
+
+                    <div class="buttons mb-3">
+                        <button class="button is-primary is-small" id="btn-add-range">
+                            {{ _('+ Add a range') }}
+                        </button>
+                        <button class="button is-light is-small" id="btn-reset-ranges">
+                            {{ _('Reset') }}
+                        </button>
+                    </div>
+
+                    <!-- Range list -->
+                    <div id="ranges-list"></div>
+
+                    <hr class="my-3">
+
+                    <!-- Manual input -->
+                    <p class="is-size-7 has-text-weight-bold mb-2">{{ _('Manual range input') }}</p>
+
+                    <div class="field">
+                        <label class="label is-small">{{ _('Start') }}</label>
+                        <div class="control">
+                            <input class="input is-small" type="datetime-local" id="manual-start" step="1">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label is-small">{{ _('End') }}</label>
+                        <div class="control">
+                            <input class="input is-small" type="datetime-local" id="manual-end" step="1">
+                        </div>
+                    </div>
+                    <p class="help is-danger is-hidden mb-2" id="manual-range-error"></p>
+                    <button class="button is-small is-info" id="btn-manual-add">{{ _('+ Add') }}</button>
+                </div>
+            </div>
+        </section>
+
+        <footer class="modal-card-foot" style="justify-content: flex-start; gap: 0.5rem;">
+            <button class="button is-primary" id="csv-modal-validate">{{ _('Validate') }}</button>
+            <button class="button" id="csv-modal-cancel">{{ _('Cancel') }}</button>
+        </footer>
+    </div>
+</div>
+
+<script>
+    // Page config read by dilution.js: API root + translated UI strings
+    // ({n}, {id} are replaced at runtime)
+    window.TARAGE = {
+        api: "{{ request.script_root }}/tarage/api",
+        i18n: {{ {
+            'error': _('Error'),
+            'networkError': _('Network error'),
+            'serverUnreachable': _('Unable to reach the server.'),
+            'opId': _('ID: {id}'),
+            'sitesLoadError': _('Error while loading the sites.'),
+            'chooseSite': _('-- Choose a site --'),
+            'defineRangesFirst': _('Define the measurement ranges first.'),
+            'range': _('Range {n}'),
+            'csvReadError': _('Unable to read the CSV. Check the format (date, result).'),
+            'calcError': _('Error during the calculation.'),
+            'networkErrorDot': _('Network error.'),
+            'conductivity': _('Conductivity'),
+            'conductivityAxis': _('Conductivity (mS/cm)'),
+            'addRange': _('+ Add a range'),
+            'cancel': _('Cancel'),
+            'enterStartEnd': _('Enter the start and the end.'),
+            'endAfterStart': _('The end must be after the start.'),
+            'noRange': _('No range defined.'),
+            'validate': _('Validate'),
+            'validateOne': _('Validate (1 range)'),
+            'validateMany': _('Validate ({n} ranges)'),
+            'measurement': _('Measurement {n}'),
+            'start': _('Start'),
+            'end': _('End'),
+            'statusStart': _('Click on the graph to mark the <strong>start</strong> of the measurement.'),
+            'statusEnd': _('Click on the graph to mark the <strong>end</strong> of the measurement.'),
+            'statusNormal': _('Click on "+ Add a range" then click on the graph (start → end).'),
+            'atLeastOneRange': _('Define at least one measurement range before validating.'),
+            'siteNameRequired': _('The site name is required.'),
+            'missingCoords': _('Missing coordinates. Click on the map or enter them.'),
+            'siteCreateError': _('Error while creating the site.'),
+            'published': _('Published'),
+            'publishSuccess': _('Data published successfully!'),
+            'nCondObs': _('{n} conductivity observations'),
+            'nDischargeObs': _('{n} discharge observation(s)'),
+            'publishError': _('Error while publishing.'),
+            'meanDischarge': _('Mean discharge'),
+            'uncertainty': _('Uncertainty'),
+            'nMeasurements': _('Number of measurements'),
+            'distribution': _('Distribution of the measurements, band'),
+            'measurementCol': _('Measurement'),
+            'dischargeCol': _('Discharge'),
+            'deviationCol': _('Deviation / mean'),
+            'mean': _('Mean'),
+            'loadingObs': _('Loading the observations…'),
+            'noObs': _('No observation available.'),
+            'history': _('History'),
+            'newObs': _('New'),
+            'dischargeAxis': _('Discharge (L/s)'),
+            'chartError': _('Error while loading the graph.'),
+        }|tojson }},
+    };
+</script>
+<script src="{{ url_for('static', filename='js/lib/ol.js') }}"></script>
+<script src="{{ url_for('static', filename='js/lib/dygraph.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/script/tarage/dilution.js') }}"></script>
+{% endblock %}

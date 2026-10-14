@@ -192,7 +192,8 @@ def create_app():
 
     app.register_blueprint(_build_ogc_blueprint(app))
     app.register_blueprint(sta_bp, url_prefix="/sta")
-    #app.register_blueprint(tarage_bp, url_prefix="/tarage")
+    # Gauging tools (salt dilution, rating curve)
+    app.register_blueprint(tarage_bp, url_prefix="/tarage")
     # HTTPS ingestion for non-LoRaWAN sensors; security is built into each driver
     app.register_blueprint(sensors_bp, url_prefix="/sensors")
     # STAV front served under the root = observatory name (same origin -> auth OK)
