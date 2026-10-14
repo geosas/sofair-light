@@ -71,12 +71,15 @@
                         {{ _('Configuration') }}
                     </a>
                     <div class="navbar-dropdown">
+                        <div class="navbar-item has-text-weight-semibold">{{ _('Observatory') }}</div>
                         <a class="navbar-item" href="{{ request.script_root }}/private/configuration-obs">
                             {{ _('Create, add sensors (SensorThings)') }}
                         </a>
                         <a class="navbar-item" href="{{ request.script_root }}/private/thingInfo">
                             {{ _('Measurement points (photos, edits)') }}
                         </a>
+                        <hr class="navbar-divider">
+                        <div class="navbar-item has-text-weight-semibold">{{ _('Data acquisition') }}</div>
                         <a class="navbar-item" href="{{ request.script_root }}/private/driverInfo">
                             {{ _('Available drivers description') }}
                         </a>
@@ -100,7 +103,7 @@
                         <a class="navbar-item" href="{{ request.script_root }}/private/qualification">
                             {{ _('Qualify data') }}
                         </a>
-                        <a class="navbar-item">
+                        <!--a class="navbar-item">
                             {{ _('Alerts and monitoring') }}
                         </a>
                         <a class="navbar-item">
@@ -111,7 +114,7 @@
                         </a>
                         <a class="navbar-item">
                             {{ _('Derived variable computation') }}
-                        </a>
+                        </a-->
                         <hr class="navbar-divider">
                         <div class="navbar-item has-text-weight-semibold">{{ _('Salt-dilution gauging') }}</div>
                         <a class="navbar-item pl-5" href="{{ request.script_root }}/tarage/dilution">

@@ -2334,3 +2334,11 @@ msgstr "Le débit dérivé est calculé avec a, b, h0 et h_max à partir de la h
 #: app/driver_softSensor/driver/rating_curve.py
 msgid "h0 (water level of zero discharge, 0 if none)"
 msgstr "h0 (hauteur de débit nul, 0 si aucune)"
+
+#: app/templates/base.html
+msgid "Observatory"
+msgstr "Observatoire"
+
+#: app/templates/base.html
+msgid "Data acquisition"
+msgstr "Acquisition des données"
