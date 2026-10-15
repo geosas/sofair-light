@@ -148,17 +148,18 @@ A ready-to-use configuration and an OTT Orpheus Mini piezometer data file are pr
   W1, ST1, Outlet-Quince-upstream/downstream and their Datastreams).
 
   1. **Configuration** (`/private/configuration-obs`): upload `config_demo_complete.xlsx` directly at
-    step 2 (its `4_datastream` tab is already filled in), skip step 1.
+     step 2 (its `4_datastream` tab is already filled in), skip step 1.
   2. **Data import** (`/private/import-data`): in the **OrpheusOTT** card, choose
-    `PZ1.1_OTT_20240829.csv` → **Inspection**, then **Archive the data**. The measurement point is
-    read from the file name (text before the first `_` → `PZ1.1`).
+     `PZ1.1_OTT_20240829.csv` → **Inspection**, then **Archive the data**. The measurement point is
+     read from the file name (text before the first `_` → `PZ1.1`).
   3. **Visualise in STAV** (*Observatory access › Published data*):
-    PZ1.1 → Groundwater depth / temperature.
+     PZ1.1 → Groundwater depth / temperature.
   4. **SoftSensor (water table elevation)**: the `PZ1.1_Orpheus mini OTT nappe_Water table elevation`
-    datastream is a SoftSensor, it stays empty until you:
-    - link it in *Configuration › Configure SoftSensors* (`/private/configure-softsensor`):
-      source = `PZ1.1_Orpheus mini OTT nappe_Groundwater depth`, method = **Ground water level**,
-      target = `PZ1.1_Orpheus mini OTT nappe_Water table elevation`
-    - then qualify the source in *Management › Qualify data* (`/private/qualification`): saving a
-      qualification computes and publishes the elevation (= Thing elevation + depth, the depth being
-      negative below ground).
+     datastream is a SoftSensor, it stays empty until you:
+     - link it in *Configuration › Configure SoftSensors* (`/private/configure-softsensor`):
+       source = `PZ1.1_Orpheus mini OTT nappe_Groundwater depth`, method = **Ground water level**,
+       target = `PZ1.1_Orpheus mini OTT nappe_Water table elevation`
+     - then qualify the source in *Management › Qualify data* (`/private/qualification`): saving a
+       qualification computes and publishes the elevation (= Thing elevation + depth, the depth being
+       negative below ground).
+
